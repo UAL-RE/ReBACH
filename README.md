@@ -4,7 +4,7 @@ cloud-hosted storage solution
 
 Package will include:
 1. API data retrieval from Figshare instance using this
-   [Python](https://github.com/ualibraries/figshare) package
+   [Python](https://github.com/UAL-RE/figshare) package
 2. Processing data for preservation using BagIt. The Library of Congress
    [Python Bagit](https://github.com/LibraryOfCongress/bagit-python)
    comes to mind.
