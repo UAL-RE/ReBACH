@@ -34,7 +34,7 @@ def dir_path(string):
 
 def main():
     if len(sys.argv) >= 2 and sys.argv[1]=='--test':
-        schema="ual-rdm-directory-schema.json"
+        schema=os.path.abspath("ualrdm-directory-schema.json")
         validate_path=os.path.abspath("tests/pass-Fangyue_Zhang_16823602")
     else:
         parser = argparse.ArgumentParser()
