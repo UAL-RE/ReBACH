@@ -4,9 +4,12 @@ Created on Wed Dec 22 11:28:16 2021
 
 @author: riosf
 
-Validates a given validate_path against the given schema. Uses https://pypi.org/project/directory-schema/
-requires jsonschema >=4.0.0
-Most of the code is taken and modified from the directory_schema library https://github.com/hubmapconsortium-graveyard/directory-schema
+Validates a given validate_path against the given schema.
+
+Uses https://pypi.org/project/directory-schema/, requires jsonschema >=4.0.0
+
+Most of the code is taken and modified from the directory_schema library
+https://github.com/hubmapconsortium-graveyard/directory-schema
 
 usage: python curation-directory-validate.py [-h] [--test] DIRECTORY SCHEMA
 
@@ -18,45 +21,51 @@ optional arguments:
   -h, --help  show this help message and exit
   --test      run with the hardcoded test values
 """
-import os,argparse,sys
+
+import os
+import argparse
+import sys
 
 from jsonschema.exceptions import SchemaError
-from jsonschema import Draft201909Validator,Draft7Validator
+from jsonschema import Draft201909Validator, Draft7Validator
 from yaml import safe_load as load_yaml
 from yaml import dump as dump_yaml
 
+
 def dir_path(string):
-    string=os.path.abspath(string)
+    string = os.path.abspath(string)
     if os.path.isdir(string):
         return string
     else:
         raise Exception(f'"{string}" is not a directory')
 
+
 def main():
-    if len(sys.argv) >= 2 and sys.argv[1]=='--test':
-        schema=os.path.abspath("ualrdm-directory-schema.json")
-        validate_path=os.path.abspath("tests/pass-Fangyue_Zhang_16823602")
+    if len(sys.argv) >= 2 and sys.argv[1] == '--test':
+        schema = os.path.abspath("ualrdm-directory-schema.json")
+        validate_path = os.path.abspath("tests/pass-Fangyue_Zhang_16823602")
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument('dir', metavar='DIRECTORY', type=dir_path,
                             help='Directory to validate')
         parser.add_argument('schema', metavar='SCHEMA',
                             help='Schema (JSON or YAML) to validate against')
-        parser.add_argument('--test', action='store_true',help='run with the hardcoded test values')                        
+        parser.add_argument('--test', action='store_true',
+                            help='run with the hardcoded test values')
         args = parser.parse_args()
-    
-        schema=args.schema
-        validate_path=os.path.abspath(args.dir)
-    
+
+        schema = args.schema
+        validate_path = os.path.abspath(args.dir)
+
         print("Validating: '{0}'".format(validate_path))
-    
-    #print the JSON-ified directory structure
+
+    # print the JSON-ified directory structure
     print(_dir_to_list(validate_path))
 
     try:
         print("Using schema {0}".format(schema))
-        f=open(schema,"r")
-        data=f.read()
+        f = open(schema, "r")
+        data = f.read()
         f.close()
         schema_dict = load_yaml(data)
     except Exception as e:
@@ -65,7 +74,7 @@ def main():
     except SchemaError:
         print("Provided document is not valid JSON or YAML Schema")
         return(2)
-    
+
     print()
     print("Validation Results")
     print("------------------")
@@ -74,9 +83,10 @@ def main():
         print("Success")
     except Exception as e:
         print("Error: {0}".format(e))
-          
+
     return(0)
-    
+
+
 def _dir_to_list(path):
     '''
     Walk the directory at `path`, and return a dict like that from `tree -J`:
@@ -103,22 +113,23 @@ def _dir_to_list(path):
             items_to_return.append(item)
     return items_to_return
 
+
 def _validate_dir(path, schema_dict):
     '''
     Given a directory path, and a JSON schema as a dict,
     validate the directory structure against the schema.
     '''
-    #the Draft201909Validator check_schema gives a Python recursion error. Use Draft7Validator.
-    Draft7Validator.check_schema(schema_dict) 
-    
+    # the Draft201909Validator check_schema gives a Python recursion error. Use Draft7Validator.
+    Draft7Validator.check_schema(schema_dict)
+
     validator = Draft201909Validator(schema_dict)
     as_list = _dir_to_list(path)
     errors = list(validator.iter_errors(as_list))
 
     if errors:
-        raise DirectoryValidationErrors(errors)        
-        
-        
+        raise DirectoryValidationErrors(errors)
+
+
 def _to_dir_listing(dir_as_list, indent=''):
     next_indent = indent + '    '
     return ''.join([
@@ -129,7 +140,8 @@ def _to_dir_listing(dir_as_list, indent=''):
         )
         for item in dir_as_list
     ])
-    
+
+
 def _validation_error_to_string(error, indent):
     schema_string = ''.join([
         f'\n{indent}{line}' for line in
@@ -158,7 +170,8 @@ fails this "{error.validator}" check:
         '''
 
     raise Exception(f'Unrecognized type "{error_type}"')
-    
+
+
 class DirectoryValidationErrors(Exception):
     def __init__(self, errors):
         self.json_validation_errors = errors
@@ -171,6 +184,7 @@ class DirectoryValidationErrors(Exception):
 
     def _repr__(self):
         return self.json_validation_error.__repr__()
-    
+
+
 if __name__ == "__main__":
     sys.exit(main())
