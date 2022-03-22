@@ -1,0 +1,165 @@
+{
+    "item": {
+        "files": [
+            {
+                "id": 31672652,
+                "name": "FE-2021-00845-sup-Data.xlsx",
+                "size": 27440,
+                "is_link_only": false,
+                "download_url": "https://ndownloader.figshare.com/files/31672652",
+                "supplied_md5": "1925be321d6e088960c7696e22eb2f4b",
+                "computed_md5": "1925be321d6e088960c7696e22eb2f4b"
+            }
+        ],
+        "custom_fields": [],
+        "authors": [
+            {
+                "id": 11573662,
+                "full_name": "Fangyue Zhang",
+                "is_active": true,
+                "url_name": "Fangyue_Zhang",
+                "orcid_id": ""
+            },
+            {
+                "id": 11573663,
+                "full_name": "Joel A. Biederman",
+                "is_active": false,
+                "url_name": "_",
+                "orcid_id": "0000-0002-1831-461X"
+            },
+            {
+                "id": 11573666,
+                "full_name": "Nathan A. Pierce",
+                "is_active": false,
+                "url_name": "_",
+                "orcid_id": "0000-0003-2798-5455"
+            },
+            {
+                "id": 11573671,
+                "full_name": "Daniel A Potts",
+                "is_active": false,
+                "url_name": "_",
+                "orcid_id": ""
+            },
+            {
+                "id": 11573672,
+                "full_name": "Charles Devine",
+                "is_active": false,
+                "url_name": "_",
+                "orcid_id": ""
+            },
+            {
+                "id": 9919677,
+                "full_name": "Yanbin Hao",
+                "is_active": true,
+                "url_name": "Yanbin_Hao",
+                "orcid_id": ""
+            },
+            {
+                "id": 11573674,
+                "full_name": "William K. Smith",
+                "is_active": false,
+                "url_name": "_",
+                "orcid_id": "0000-0002-5785-6489"
+            }
+        ],
+        "figshare_url": "https://arizona.figshare.com/articles/dataset/Precipitation_temporal_repackaging_into_fewer_larger_storms_delayed_seasonal_timing_of_peak_photosynthesis_in_a_semi-arid_grassland/16823602",
+        "description": "The data includes 1) weekly plot-level flux, 2) <i>Digitaria californica </i>reproductive clum, 3) community structure.",
+        "funding": "The Strategic Environmental Research and Development Program (SERDP; project number RC18-1322), the United States Department of Agriculture (USDA; cooperative agreement numbers 58-3050-9-013 and 58-2022-8-010).",
+        "funding_list": [
+            {
+                "id": 21403592,
+                "title": "The Strategic Environmental Research and Development Program (SERDP; project number RC18-1322), the United States Department of Agriculture (USDA; cooperative agreement numbers 58-3050-9-013 and 58-2022-8-010).",
+                "grant_code": "",
+                "funder_name": null,
+                "is_user_defined": 1
+            }
+        ],
+        "version": 0,
+        "status": "private",
+        "size": 27440,
+        "created_date": "2021-10-18T00:44:28Z",
+        "modified_date": "2021-12-09T23:15:07Z",
+        "is_public": false,
+        "is_confidential": false,
+        "is_metadata_record": false,
+        "confidential_reason": "",
+        "metadata_reason": "",
+        "license": {
+            "value": 1,
+            "name": "CC BY 4.0",
+            "url": "https://creativecommons.org/licenses/by/4.0/"
+        },
+        "tags": [
+            "semi-arid grasslands",
+            "precipitation repackaging",
+            "maximum photosynthetic production",
+            "community composition"
+        ],
+        "categories": [
+            {
+                "id": 39,
+                "title": "Ecology",
+                "parent_id": 33,
+                "path": "",
+                "source_id": "",
+                "taxonomy_id": 10
+            },
+            {
+                "id": 252,
+                "title": "Ecological Impacts of Climate Change",
+                "parent_id": 33,
+                "path": "",
+                "source_id": "",
+                "taxonomy_id": 10
+            },
+            {
+                "id": 253,
+                "title": "Ecosystem Function",
+                "parent_id": 33,
+                "path": "",
+                "source_id": "",
+                "taxonomy_id": 10
+            }
+        ],
+        "references": [],
+        "has_linked_file": false,
+        "citation": "Zhang, Fangyue; Biederman, Joel A.; Pierce, Nathan A.; Potts, Daniel A; Devine, Charles; Hao, Yanbin; et al. (2021): Precipitation temporal repackaging into fewer, larger storms delayed seasonal timing of peak photosynthesis in a semi-arid grassland. University of Arizona Research Data Repository. Dataset. https://doi.org/10.25422/azu.data.16823602",
+        "is_embargoed": false,
+        "embargo_date": null,
+        "embargo_type": "file",
+        "embargo_title": "",
+        "embargo_reason": "",
+        "embargo_options": [],
+        "id": 16823602,
+        "title": "Precipitation temporal repackaging into fewer, larger storms delayed seasonal timing of peak photosynthesis in a semi-arid grassland",
+        "doi": "10.25422/azu.data.16823602",
+        "handle": "",
+        "url": "https://api.figshare.com/v2/account/articles/16823602",
+        "published_date": null,
+        "thumb": "",
+        "defined_type": 3,
+        "defined_type_name": "dataset",
+        "group_id": 29222,
+        "url_private_api": "https://api.figshare.com/v2/account/articles/16823602",
+        "url_public_api": "https://api.figshare.com/v2/articles/16823602",
+        "url_private_html": "https://figshare.com/account/articles/16823602",
+        "url_public_html": "https://arizona.figshare.com/articles/dataset/Precipitation_temporal_repackaging_into_fewer_larger_storms_delayed_seasonal_timing_of_peak_photosynthesis_in_a_semi-arid_grassland/16823602",
+        "timeline": {},
+        "resource_title": "Precipitation temporal repackaging into fewer, larger storms delayed seasonal timing of peak photosynthesis in a semi-arid grassland",
+        "resource_doi": "10.1111/1365-2435.13980"
+    },
+    "id": 736721,
+    "group_id": 29222,
+    "account_id": 2981674,
+    "article_id": 16823602,
+    "version": 0,
+    "review_date": null,
+    "status": "pending",
+    "assigned_to": 2283558,
+    "comments_count": 0,
+    "created_date": "2021-12-09T14:12:35Z",
+    "modified_date": "2021-12-09T23:15:07Z",
+    "request_number": 1,
+    "resolution_comment": ""
+}
