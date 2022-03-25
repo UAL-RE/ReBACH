@@ -1,0 +1,31 @@
+{
+    "figshare": {
+        "title": "Precipitation temporal repackaging into fewer, larger storms delayed seasonal timing of peak photosynthesis in a semi-arid grassland",
+        "preferred_citation": [
+            "Zhang, Fangyue; Biederman, Joel A.; Pierce, Nathan A.; Potts, Daniel A; Devine, Charles; Hao, Yanbin; et al. (2021).",
+            "Precipitation temporal repackaging into fewer, larger storms delayed seasonal timing of peak photosynthesis in a semi-arid grassland.",
+            "University of Arizona Research Data Repository.",
+            "Dataset. https://doi.org/10.25422/azu.data.16823602"
+        ],
+        "doi": "10.25422/azu.data.16823602",
+        "lastname": "Zhang",
+        "firstname": "Fangyue",
+        "email": "fangyuezhang@email.arizona.edu",
+        "license": "CC BY 4.0",
+        "first_author": "Fangyue Zhang",
+        "description": "The data includes 1) weekly plot-level flux, 2) _Digitaria californica_\nreproductive clum, 3) community structure.\n\n",
+        "references": []
+    },
+    "qualtrics": {
+        "index": 59,
+        "cite": "nan",
+        "summary": "nan",
+        "files": "nan",
+        "materials": "nan",
+        "contrib": "nan",
+        "notes": "nan",
+        "corr_author_fullname": "Fangyue Zhang",
+        "corr_author_email": "fangyuezhang@email.arizona.edu",
+        "corr_author_affil": "School of Natural Resources and the Environment"
+    }
+}

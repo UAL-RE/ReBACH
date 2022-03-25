@@ -1,0 +1,16 @@
+[
+    {
+        "upload_token": "f5f248c8-47cd-4863-bb8b-5ae4e0e27461",
+        "upload_url": "",
+        "status": "available",
+        "preview_state": "preview_available",
+        "viewer_type": "dataset",
+        "id": 31672652,
+        "name": "FE-2021-00845-sup-Data.xlsx",
+        "size": 27440,
+        "is_link_only": false,
+        "download_url": "https://ndownloader.figshare.com/files/31672652",
+        "supplied_md5": "1925be321d6e088960c7696e22eb2f4b",
+        "computed_md5": "1925be321d6e088960c7696e22eb2f4b"
+    }
+]
