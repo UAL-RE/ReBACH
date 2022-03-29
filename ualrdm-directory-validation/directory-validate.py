@@ -44,7 +44,8 @@ def dir_path(string):
 def main():
     if len(sys.argv) >= 2 and sys.argv[1] == '--test':
         schema = os.path.abspath("ualrdm-preservationdirectory-schema.json")
-        validate_path = os.path.abspath("tests/preservation/16823602_01_pass-Fangyue_Zhang_d41d8cd98f00b204e9800998ecf8427e")
+        validate_path = os.path.abspath(
+            "tests/preservation/16823602_01_pass-Fangyue_Zhang_d41d8cd98f00b204e9800998ecf8427e")
     else:
         parser = argparse.ArgumentParser()
         parser.add_argument('dir', metavar='DIRECTORY', type=dir_path,
@@ -88,7 +89,7 @@ def main():
     return(0)
 
 
-def _dir_to_list(path,i=0):
+def _dir_to_list(path, i=0):
     '''
     Walk the directory at `path`, and return a dict like that from `tree -J`:
     [
@@ -102,12 +103,12 @@ def _dir_to_list(path,i=0):
     ]
     '''
     items_to_return = []
-    
+
     if i == 0:
         item = {
             'type': 'directory',
             'name': Path(path).name,
-            'contents': _dir_to_list(path,i+1)
+            'contents': _dir_to_list(path, i + 1)
         }
         items_to_return.append(item)
     else:
@@ -119,9 +120,9 @@ def _dir_to_list(path,i=0):
                     'name': entry.name
                 }
                 if is_dir:
-                    item['contents'] = _dir_to_list(os.path.join(path, entry.name),i+1)
+                    item['contents'] = _dir_to_list(os.path.join(path, entry.name), i + 1)
                 items_to_return.append(item)
-            
+
     return items_to_return
 
 
