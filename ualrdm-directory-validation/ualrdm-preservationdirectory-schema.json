@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "$id": "http://github.com/UAL-RE/ReBACH/ualrdm-directory-validation/ualrdm-directory-schema.json",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "type": {
+        "pattern": "directory"
+      },
+      "name": {
+        "pattern": "^\\d{8}_\\d{2}_.+_([a-f\\d]{32}|[A-F\\d]{32})$"
+      },
+      "contents": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "pattern": "^directory$"
+            },
+            "name": {
+              "pattern": "^v\\d{2}$"
+            },
+            "contents": {
+              "type": "array",
+              "contains": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "pattern": "^directory$"
+                      },
+                      "name": {
+                        "pattern": "^METADATA$"
+                      },
+                      "contents": {
+                        "type": "array",
+                        "contains": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "pattern": "^file$"
+                                },
+                                "name": {
+                                  "pattern": "^preservation_final_\\d+.*\\.json$"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "minContains": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "pattern": "^directory$"
+                      },
+                      "name": {
+                        "pattern": "^DATA$"
+                      },
+                      "contents": {
+                        "type": "array",
+                        "minItems": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "pattern": "^directory$"
+                      },
+                      "name": {
+                        "pattern": "^UAL_RDM$"
+                      },
+                      "contents": {
+                        "type": "array",
+                        "contains": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "pattern": "^file$"
+                                },
+                                "name": {
+                                  "pattern": "^Deposit_Agreement.*\\.pdf$"
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "pattern": "^file$"
+                                },
+                                "name": {
+                                  "pattern": "Trello\\.pdf$"
+                                }
+                              }
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "pattern": "^file$"
+                                },
+                                "name": {
+                                  "pattern": "^ReDATA-DepositReview.*\\.pdf$"
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        "minContains": 3
+                      }
+                    }
+                  }
+                ]
+              },
+              "minContains": 3,
+              "maxContains": 3
+            }
+          }
+        }
+      }
+    }
+  }
+}
