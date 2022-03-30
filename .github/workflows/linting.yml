@@ -1,0 +1,8 @@
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: TrueBrain/actions-flake8@v2 #uses the config in .flake8
