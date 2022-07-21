@@ -9,7 +9,7 @@
         "pattern": "directory"
       },
       "name": {
-        "pattern": "\\d{8}$"
+        "pattern": "\\d{7,}$"
       },
       "contents": {
         "type": "array",
@@ -20,7 +20,7 @@
               "pattern": "^directory$"
             },
             "name": {
-              "pattern": "^v\\d{2}$"
+              "pattern": "^v\\d{2,3}$"
             },
             "contents": {
               "type": "array",
