@@ -9,7 +9,7 @@
         "pattern": "directory"
       },
       "name": {
-        "pattern": "^\\d{8}_\\d{2}_.+_([a-f\\d]{32}|[A-F\\d]{32})$"
+        "pattern": "^\\d{7,}_\\d{2,3}_.+_([a-f\\d]{32}|[A-F\\d]{32})$"
       },
       "contents": {
         "type": "array",
