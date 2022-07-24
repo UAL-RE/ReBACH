@@ -34,36 +34,6 @@
                       },
                       "name": {
                         "pattern": "^METADATA$"
-                      },
-                      "contents": {
-                        "type": "array",
-                        "contains": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "pattern": "^file$"
-                                },
-                                "name": {
-                                  "pattern": "^curation_original_\\d+.*\\.json$"
-                                }
-                              }
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "type": {
-                                  "pattern": "^file$"
-                                },
-                                "name": {
-                                  "pattern": "^file_list_original_\\d+.*\\.json$"
-                                }
-                              }
-                            }
-                          ]
-                        },
-                        "minContains": 2
                       }
                     }
                   },
@@ -75,10 +45,6 @@
                       },
                       "name": {
                         "pattern": "^DATA$"
-                      },
-                      "contents": {
-                        "type": "array",
-                        "minItems": 0
                       }
                     }
                   },
@@ -90,10 +56,6 @@
                       },
                       "name": {
                         "pattern": "^ORIGINAL_DATA$"
-                      },
-                      "contents": {
-                        "type": "array",
-                        "minItems": 0
                       }
                     }
                   },
@@ -117,7 +79,7 @@
                                   "pattern": "^file$"
                                 },
                                 "name": {
-                                  "pattern": "^Deposit_Agreement.*\\.pdf$"
+                                  "pattern": "^Deposit.Agreement.*\\.pdf$"
                                 }
                               }
                             },
