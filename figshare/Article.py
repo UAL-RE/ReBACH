@@ -1,4 +1,6 @@
 from asyncio import exceptions
+import sys
+import time
 from dotenv import load_dotenv
 import os
 import requests
@@ -13,30 +15,40 @@ class Article:
     def __init__(self):
         self.api_endpoint = os.getenv("FIGSHARE_ENDPOINT")
         self.api_token = os.getenv("FIGSHARE_TOKEN")
+        self.retries = os.getenv("FIGSHARE_RETRIES") if os.getenv("FIGSHARE_RETRIES") != None else 3
+        self.retry_wait = os.getenv("FIGSHARE_RETRY_WAIT") if os.getenv("FIGSHARE_RETRY_WAIT") != None else 10
         self.logs = Log()
 
     # this function send request to fetch articles from api
     def get_articles(self):
         articles_api = self.api_endpoint + 'account/institution/articles' if self.api_endpoint[-1] == "/" else self.api_endpoint + "/account/institution/articles"
         try:
-            get_response = requests.get(articles_api,
-            headers={'Authorization': 'token '+self.api_token})
-            if (get_response.status_code == 200):
-                articles = get_response.json()
-                article_data = []
-                for article in articles:
-                    article_data.append({str(article['id']): self.__get_article_versions(article)})
-                
-                logToFile = LogToFile()
-                logToFile.write_log_in_file("info", article_data)
-                return article_data
-            else:    
-                self.logs.show_log_in_terminal("error", f"Status code {get_response.status_code}")
-        except requests.exceptions.Timeout as e:
+            retries = 1
+            success = False
+            while not success and retries <= self.retries:
+                get_response = requests.get(articles_api,
+                headers={'Authorization': 'token '+self.api_token})
+                if (get_response.status_code == 200):
+                    articles = get_response.json()
+                    article_data = []
+                    for article in articles:
+                        article_data.append({str(article['id']): self.__get_article_versions(article)})
+                    
+                    logToFile = Log()
+                    logToFile.show_log_in_terminal("info", article_data)
+                    success = True
+                    return article_data
+                else:    
+                    self.logs.show_log_in_terminal("error", f"Status code {get_response.status_code}")
+                    raise
+        except Exception as e:
             self.logs.write_log_in_file("error", e)
-        except requests.exceptions.RequestException as e:
-            self.logs.write_log_in_file("error", e)
-
+            wait = self.retry_wait
+            print ('Error! Waiting %s secs and re-trying...' % wait)
+            sys.stdout.flush()
+            time.sleep(wait)
+            retries += 1
+            print (retries)
 
     # Private function - This function will send request to fetch article versions
     def __get_article_versions(self, article):
@@ -81,13 +93,13 @@ class Article:
 
                     # version_metadata = {str(article_id): {'article_id': article_id, 
                     # 'metadata': {
-                    #     'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'], 'md5': ''
+                    #     'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api']
                     #     }}}
                     version_metadata = {'article_id': article_id, 
                     'metadata': {
-                        'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'], 'md5': ''
+                        'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'files': version_data['files'], 'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api']
                         }}
-                    # self.logs.write_log_in_file("info", version_metadata)
+                    self.logs.write_log_in_file("info", version_metadata)
 
                     # metadata.append(version_metadata)
                     # print(metadata)
