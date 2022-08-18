@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 import os
+from time import asctime
 
 # Log class to handle log messages
 class Log:
@@ -9,6 +10,7 @@ class Log:
     @classmethod
     def log_config(self, in_terminal: bool = False):
         log_location = os.getenv("LOGS_LOCATION")
+
         file_name = "log-" + datetime.now().strftime("%Y-%m-%d") + ".log"
         if(log_location[-1] != "/"):
             log_location = log_location + '/'
@@ -16,7 +18,7 @@ class Log:
         if(in_terminal):
             file_path = ''
         logging.basicConfig(filename = file_path,
-                    format = '%(asctime)s:%(levelname)s:%(name)s: %(message)s')
+                    format = "%(asctime)s:%(levelname)s:%(name)s: %(message)s")
 
     # Show log in terminal
     @classmethod
@@ -26,8 +28,10 @@ class Log:
         
     # Show log in file
     @classmethod
-    def write_log_in_file(self, type, message):
+    def write_log_in_file(self, type, message, show_in_terminal = False):
         self.log_config(False)
+        if(show_in_terminal == True):
+            print(asctime() + ":" + type.upper() + ":Log - " + message)
         self.message(type, message)
     
     @classmethod
@@ -35,13 +39,11 @@ class Log:
         if(type == 'warning'):
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.WARNING)
-            logger.debug(message)
             logger.warning(message)
             del logger
         elif(type == 'info'):
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.INFO)
-            logger.debug(message)
             logger.info(message)
             del logger
         elif(type == 'debug'):
@@ -52,7 +54,6 @@ class Log:
         else:
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.ERROR)
-            logger.debug(message)
             logger.error(message)
             del logger
             exit()
