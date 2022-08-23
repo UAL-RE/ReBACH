@@ -2,22 +2,27 @@ from dotenv import load_dotenv
 import os
 from Log import Log
 from time import asctime
+from Config import Config
 
 load_dotenv()
 
 def main():
     log = Log()
     # Check .env file exist.
-    file_exists = os.path.exists(".env")
+    file_exists = os.path.exists(".env.ini")
 
     if(file_exists == False):
-        print(asctime() + ":ERROR: Log - " + "Please setup .env file from .env.sample file.")
+        print(asctime() + ":ERROR: Log - " + "Please setup .env.ini file from .env.sample.ini file.")
         exit()
 
-    figshare_api_url = os.getenv("FIGSHARE_ENDPOINT")
-    log_location = os.getenv("LOGS_LOCATION")
-    staging_storage_location = os.getenv("STAGING_STORAGE_LOCATION")
-    figshare_api_token = os.getenv("FIGSHARE_TOKEN")
+    config_obj = Config()
+    figshare_config = config_obj.figshare_config()
+    system_config = config_obj.system_config()
+
+    figshare_api_url = figshare_config["url"]
+    log_location = system_config["logs_location"]
+    staging_storage_location = system_config["staging_storage_location"]
+    figshare_api_token = figshare_config["token"]
     
     # Check required env variables exist.
     if(log_location == ""):
@@ -33,7 +38,7 @@ def main():
     #Check logs path exits, if not then create directory
     logs_path_exists = os.path.exists(log_location)
     if(logs_path_exists == False):
-        os.mkdir(logs_path_exists, 777)
+        os.mkdir(log_location, 777)
 
     #Check storage path exits, if not then create directory
     storage_path_exists = os.path.exists(staging_storage_location)
