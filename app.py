@@ -1,11 +1,8 @@
-from dotenv import load_dotenv
 import os
 from Log import Log
 from figshare.Article import Article
 from time import asctime
 from Config import Config
-
-load_dotenv()
 
 def main():
     log = Log()
@@ -27,7 +24,7 @@ def main():
     
     # Check required env variables exist.
     if(log_location == ""):
-        print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env file.")
+        print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env.ini file.")
         exit()
 
     if(figshare_api_url == "" or figshare_api_token == ""):

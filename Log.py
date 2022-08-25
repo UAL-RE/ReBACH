@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 import os
 from time import asctime
+from Config import Config
 
 # Log class to handle log messages
 class Log:
@@ -9,7 +10,9 @@ class Log:
     # Setup log configration 
     @classmethod
     def log_config(self, in_terminal: bool = False):
-        log_location = os.getenv("LOGS_LOCATION")
+        config_obj = Config()
+        system_config = config_obj.system_config()
+        log_location = system_config["logs_location"]
 
         file_name = "log-" + datetime.now().strftime("%Y-%m-%d") + ".log"
         if(log_location[-1] != "/"):

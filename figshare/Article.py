@@ -1,5 +1,3 @@
-from asyncio import exceptions
-from ensurepip import version
 import sys
 import time
 import requests
@@ -17,7 +15,7 @@ class Article:
         system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
-        self.retries = figshare_config["retries"] if figshare_config["retries"] != None else 3
+        self.retries = int(figshare_config["retries"]) if figshare_config["retries"] != None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] != None else 10
         self.logs = Log()
         self.errors = []
@@ -123,12 +121,10 @@ class Article:
                             version_metadata['errors'].append(error)
                         return version_metadata
                     else:
-                        # self.logs.write_log_in_file("warning", f"{article_id} - Status code {get_response.status_code}")
                         retries = self.__retries_if_error(f"{article_id} API not reachable. retries {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
             except requests.exceptions.RequestException as e:
-                # self.logs.write_log_in_file("error", e)
                 retries = self.__retries_if_error(f"{e}. retries {retries}", get_response.status_code, retries)
                 if(retries > self.retries):
                     break
@@ -142,11 +138,12 @@ class Article:
                 print(f"{file['download_url']}")
                 print(f"End file downloading....{time.asctime()}")
 
+    # retries function
     def __retries_if_error(self, msg, status_code, retries):
-        self.logs.show_log_in_terminal("error", f"{msg} - Status code {status_code}")
+        self.logs.write_log_in_file("error", f"{msg} - Status code {status_code}", True)
         wait = self.retry_wait
-        print ('Error! Waiting %s secs and re-trying...' % wait)
-        # sys.stdout.flush()
+        self.logs.write_log_in_file("error", 'Error! Waiting %s secs and re-trying...' % wait, True)
+        sys.stdout.flush()
         time.sleep(wait)
         retries = int(retries) + 1
         return retries
