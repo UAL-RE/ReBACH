@@ -16,7 +16,6 @@ def main():
     config_obj = Config()
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
-
     figshare_api_url = figshare_config["url"]
     log_location = system_config["logs_location"]
     staging_storage_location = system_config["staging_storage_location"]
@@ -28,10 +27,10 @@ def main():
         exit()
 
     if(figshare_api_url == "" or figshare_api_token == ""):
-        log.write_log_in_file('error', "Figshare API URL and Token is required.", True)
+        log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
     
     if(staging_storage_location == ""):
-        log.write_log_in_file('error', "Staging storage location path is required.", True)
+        log.write_log_in_file('error', "Staging storage location path is required.", True, True)
 
     #Check logs path exits, if not then create directory
     logs_path_exists = os.path.exists(log_location)

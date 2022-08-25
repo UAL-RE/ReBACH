@@ -25,17 +25,21 @@ class Log:
 
     # Show log in terminal
     @classmethod
-    def show_log_in_terminal(self, type, message):
+    def show_log_in_terminal(self, type, message, stop_script = False):
         self.log_config(True)
         self.message(type, message)
+        if(stop_script == True):
+            exit()
         
     # Show log in file
     @classmethod
-    def write_log_in_file(self, type, message, show_in_terminal = False):
+    def write_log_in_file(self, type, message, show_in_terminal = False, stop_script = False):
         self.log_config(False)
         if(show_in_terminal == True):
             print(asctime() + ":" + type.upper() + ":Log - " + message)
         self.message(type, message)
+        if(stop_script == True):
+            exit()
     
     @classmethod
     def message(self, type, message):
@@ -59,4 +63,3 @@ class Log:
             logger.setLevel(logging.ERROR)
             logger.error(message)
             del logger
-            # exit()
