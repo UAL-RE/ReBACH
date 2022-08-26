@@ -27,13 +27,11 @@ class Article:
         success = False
         while not success and retries <= int(self.retries):
             try:
-                print(time.asctime())
                 # pagination implemented. 
                 page = 1
                 page_size = 3
                 no_of_pages = 2
                 while(page <= no_of_pages):
-                    print(f"page no. {page}") # printing page no. to verify.
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                     headers={'Authorization': 'token '+self.api_token},
@@ -46,14 +44,17 @@ class Article:
                             article_data.append({str(article['id']): self.__get_article_versions(article)})
                         
                         success = True
-                        print(time.asctime())
                         # return article_data
                     else:    
                         retries = self.__retries_if_error(f"API is not reachable. retrie {retries}", get_response.status_code, retries)
+                        if(retries > self.retries):
+                            break
                     page += 1
                     
             except Exception as e:
                 retries = self.__retries_if_error(e, 500, retries)
+                if(retries > self.retries):
+                    break
                 
 
     # Private function - This function will send request to fetch article versions
