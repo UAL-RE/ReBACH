@@ -1,8 +1,10 @@
+import json
 import sys
 import time
 import requests
 from Log import Log
 from Config import Config
+import hashlib
 
 class Article:
     api_endpoint = ""
@@ -109,6 +111,7 @@ class Article:
                             file_len = 0
                             if (get_response.status_code == 200):
                                 version_data_private = get_response.json()
+                                # checking curation_status from article's private api
                                 if (version_data_private['curation_status'] == "approved"):
                                     file_len = len(version_data_private['files'])
                                     files = version_data_private['files']
@@ -122,17 +125,34 @@ class Article:
                         else:    
                             file_len = len(version_data['files'])
                             files = version_data['files']
+                        # item_subtype conditions
+                        sub_type = ''
+                        if(version_data['has_linked_file']):
+                            sub_type = 'linked'
+                        elif(version_data['is_metadata_record']):
+                            sub_type = 'metadata'
+                        else:
+                            sub_type = 'regular'
+                        
+                        version_md5 = ''
+                        json_data = json.dumps(version_data).encode("utf-8")
+                        version_md5 = hashlib.md5(json_data).hexdigest()
 
                         version_metadata = {'article_id': article_id, 
                         'metadata': {
-                            'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'files': files, 
-                            'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'],'private_version_no': private_version_no
+                            'item_type': 'article', 'item_subtype': sub_type,'id': version_data['id'], 'version': version['version'], 'first_author': version_data['authors'][0], 'files': files, 
+                            'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'],'private_version_no': private_version_no, 'md5': version_md5
                             }
                         }
-                        self.__download_files(files)
+                        if(file_len > 0):
+                            self.__download_files(files)
+
                         if(error): 
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
+                        
+                        self.logs.write_log_in_file("info", f"{version_metadata} ")
+
                         return version_metadata
                     else:
                         retries = self.__retries_if_error(f"{article_id} API not reachable. retries {retries}", get_response.status_code, retries)
