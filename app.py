@@ -20,7 +20,8 @@ def main():
     log_location = system_config["logs_location"]
     staging_storage_location = system_config["staging_storage_location"]
     figshare_api_token = figshare_config["token"]
-    
+    curation_storage_location = system_config["curation_storage_location"]
+
     # Check required env variables exist.
     if(log_location == ""):
         print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env.ini file.")
@@ -31,6 +32,9 @@ def main():
     
     if(staging_storage_location == ""):
         log.write_log_in_file('error', "Staging storage location path is required.", True, True)
+    
+    if(curation_storage_location == ""):
+        log.write_log_in_file('error', "Curation storage location path is required.", True, True)
 
     #Check logs path exits, if not then create directory
     logs_path_exists = os.path.exists(log_location)
@@ -41,15 +45,16 @@ def main():
     storage_path_exists = os.path.exists(staging_storage_location)
     if(storage_path_exists == False):
         os.mkdir(staging_storage_location, 777)
+    
+    #Check curation path exits, if not then create directory
+    curation_path_exists = os.path.exists(curation_storage_location)
+    if(curation_path_exists == False):
+        os.mkdir(curation_storage_location, 777)
 
 
 def get_articles():
     obj = Article()
     articles = obj.get_articles()
-    # log = Log()
-    # log.write_log_in_file("info", articles)
-    # print("articles")
-    # print(articles)
 
 if __name__ == "__main__":
     main()

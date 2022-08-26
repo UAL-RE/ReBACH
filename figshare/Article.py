@@ -28,22 +28,29 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 print(time.asctime())
-                params = {'page': 1, 'page_size': 5}
-                get_response = requests.get(articles_api,
-                headers={'Authorization': 'token '+self.api_token},
-                # params=params
-                )
-                if (get_response.status_code == 200):
-                    articles = get_response.json()
-                    article_data = []
-                    for article in articles:
-                        article_data.append({str(article['id']): self.__get_article_versions(article)})
-                    
-                    success = True
-                    print(time.asctime())
-                    # return article_data
-                else:    
-                    retries = self.__retries_if_error(f"API is not reachable. retrie {retries}", get_response.status_code, retries)
+                # pagination implemented. 
+                page = 1
+                page_size = 3
+                no_of_pages = 2
+                while(page <= no_of_pages):
+                    print(f"page no. {page}") # printing page no. to verify.
+                    params = {'page': page, 'page_size': page_size}
+                    get_response = requests.get(articles_api,
+                    headers={'Authorization': 'token '+self.api_token},
+                    params=params
+                    )
+                    if (get_response.status_code == 200):
+                        articles = get_response.json()
+                        article_data = []
+                        for article in articles:
+                            article_data.append({str(article['id']): self.__get_article_versions(article)})
+                        
+                        success = True
+                        print(time.asctime())
+                        # return article_data
+                    else:    
+                        retries = self.__retries_if_error(f"API is not reachable. retrie {retries}", get_response.status_code, retries)
+                    page += 1
                     
             except Exception as e:
                 retries = self.__retries_if_error(e, 500, retries)
@@ -63,11 +70,15 @@ class Article:
                     if (get_response.status_code == 200):
                         versions = get_response.json()
                         metadata = []
-                        for version in versions:
-                            version_data = self.__get_article_metadata_by_version(version, article['id'])
-                            metadata.append(version_data)
-                        success = True
-                        return metadata
+                        if(len(versions) > 0):
+                            for version in versions:
+                                version_data = self.__get_article_metadata_by_version(version, article['id'])
+                                metadata.append(version_data)
+                            success = True
+                            return metadata
+                        else:
+                            self.logs.write_log_in_file("info", f"{article['id']} - Entity not found: ArticleVersion")
+                            break
                     else:
                         retries = self.__retries_if_error(f"Public verion URL is not reachable. retries {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
@@ -102,8 +113,10 @@ class Article:
                                     files = version_data_private['files']
                                     private_version_no = version_data_private['version']
                                     error = f"This item had a file embargo. The files are from version {str(private_version_no)}."
+                                    self.logs.write_log_in_file("info", f"{error}", True)
                                 else:
                                     error = "This item’s curation_status was not approved"
+                                    self.logs.write_log_in_file("info", f"{error}", True)
 
                         else:    
                             file_len = len(version_data['files'])
