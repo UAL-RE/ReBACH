@@ -48,7 +48,7 @@ class Article:
                         success = True
                         # return article_data
                     else:    
-                        retries = self.__retries_if_error(f"API is not reachable. retrie {retries}", get_response.status_code, retries)
+                        retries = self.__retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
                     page += 1
@@ -83,7 +83,7 @@ class Article:
                             self.logs.write_log_in_file("info", f"{article['id']} - Entity not found: ArticleVersion")
                             break
                     else:
-                        retries = self.__retries_if_error(f"Public verion URL is not reachable. retries {retries}", get_response.status_code, retries)
+                        retries = self.__retries_if_error(f"Public verion URL is not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
             except requests.exceptions.RequestException as e:
@@ -155,11 +155,11 @@ class Article:
 
                         return version_metadata
                     else:
-                        retries = self.__retries_if_error(f"{article_id} API not reachable. retries {retries}", get_response.status_code, retries)
+                        retries = self.__retries_if_error(f"{article_id} API not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
             except requests.exceptions.RequestException as e:
-                retries = self.__retries_if_error(f"{e}. retries {retries}", get_response.status_code, retries)
+                retries = self.__retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
                 if(retries > self.retries):
                     break
 
