@@ -43,7 +43,8 @@ class Article:
                         articles = get_response.json()
                         article_data = []
                         for article in articles:
-                            article_data.append({str(article['id']): self.__get_article_versions(article)})
+                            if(article['published_date'] != None or article['published_date'] != ''):
+                                article_data.append({str(article['id']): self.__get_article_versions(article)})
                         
                         success = True
                         # return article_data
