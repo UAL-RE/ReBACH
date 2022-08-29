@@ -116,10 +116,10 @@ class Article:
                                     file_len = len(version_data_private['files'])
                                     files = version_data_private['files']
                                     private_version_no = version_data_private['version']
-                                    error = f"This item had a file embargo. The files are from version {str(private_version_no)}."
+                                    error = f"{version_data['id']} - This item had a file embargo. The files are from version {str(private_version_no)}."
                                     self.logs.write_log_in_file("info", f"{error}", True)
                                 else:
-                                    error = "This item’s curation_status was not approved"
+                                    error = f"{version_data['id']} - This item’s curation_status was not approved"
                                     self.logs.write_log_in_file("info", f"{error}", True)
 
                         else:    
