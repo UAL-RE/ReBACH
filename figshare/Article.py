@@ -10,7 +10,10 @@ class Article:
     api_endpoint = ""
     api_token = ""
 
-    # class constructor
+    """
+    Class constructor.
+    Defined requried variables that will be used in whole class.
+    """
     def __init__(self):
         self.config_obj = Config()
         figshare_config = self.config_obj.figshare_config()
@@ -22,7 +25,12 @@ class Article:
         self.logs = Log()
         self.errors = []
 
-    # this function send request to fetch articles from api
+    """
+    This function is sending requests to 'account/institution/articles api.
+    Static params given for pagination as page, page_size, no_of_pages.
+    On successful response from above mentioned API, __get_article_versions will be called with article param. 
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    """
     def get_articles(self):
         articles_api = self.api_endpoint + 'account/institution/articles' if self.api_endpoint[-1] == "/" else self.api_endpoint + "/account/institution/articles"
         retries = 1
@@ -60,7 +68,12 @@ class Article:
                     break
                 
 
-    # Private function - This function will send request to fetch article versions
+    """
+    This function will send request to fetch article versions. 
+    :param article object. 
+    On successful response from '/versions' API, __get_article_metadata_by_version will be called with version param. 
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    """
     def __get_article_versions(self, article):
         retries = 1
         success = False
@@ -92,7 +105,15 @@ class Article:
                 if(retries > self.retries):
                     break
 
-    # Private function - Fetch article metadata by version url.
+    """
+    Fetch article metadata by version url.
+    :param version object value. 
+    :param article_id int value. 
+    On successful response from url_public_api API, metadata array will be setup for response. 
+    If files doesn't found and size is > 0 in public API response then private api will be called for files.
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    If files > 0 then __download_files will be called 
+    """
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
@@ -145,12 +166,12 @@ class Article:
                             'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'],'private_version_no': private_version_no, 'md5': version_md5
                             }
                         }
-                        if(file_len > 0):
-                            self.__download_files(files)
-
                         if(error): 
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
+
+                        if(file_len > 0):
+                            self.__download_files(files, version_metadata)
                         
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
@@ -165,15 +186,24 @@ class Article:
                     break
 
 
-    # Download files if exists
-    def __download_files(self, files):
+    """
+    This function will download files and place them in directory, with version_metadata.
+    """
+    def __download_files(self, files, version_metadata):
         if(len(files) > 0):
             for file in files:
                 print(f"Start file downloading....{time.asctime()}")
                 print(f"{file['download_url']}")
                 print(f"End file downloading....{time.asctime()}")
 
-    # retries function
+
+    """
+    Retries function. 
+    :param msg 
+    :param status_code 
+    :param retries
+    :return retries
+    """
     def __retries_if_error(self, msg, status_code, retries):
         self.logs.write_log_in_file("error", f"{msg} - Status code {status_code}", True)
         wait = self.retry_wait
