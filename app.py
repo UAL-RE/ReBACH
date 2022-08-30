@@ -49,7 +49,7 @@ def main():
     #Check curation path exits, if not then create directory
     curation_path_exists = os.path.exists(curation_storage_location)
     if(curation_path_exists == False):
-        os.mkdir(curation_storage_location, 777)
+        log.write_log_in_file('error', "The curation staging storage location specified in the config file could not be reached or read.", True, True)
 
 
 def get_articles():
