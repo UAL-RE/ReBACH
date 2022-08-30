@@ -5,6 +5,10 @@ from time import asctime
 from Config import Config
 from figshare.Collection import Collection
 
+"""
+This function will be called first. 
+Setting up required variables and conditions.
+"""
 def main():
     log = Log()
     # Check .env file exist.
@@ -52,14 +56,20 @@ def main():
     if(curation_path_exists == False):
         log.write_log_in_file('error', "The curation staging storage location specified in the config file could not be reached or read.", True, True)
 
-
+"""
+Creating article class object and sending call to process articles, setup metadata and download files.
+"""
 def get_articles():
     obj = Article()
-    articles = obj.get_articles()
+    obj.get_articles()
 
+"""
+Creating collections class object and sending call to process collections and setup metadata.
+"""
 def get_collections():
     obj = Collection()
     obj.get_collections()
+
 
 if __name__ == "__main__":
     main()
