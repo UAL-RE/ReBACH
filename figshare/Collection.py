@@ -8,6 +8,10 @@ import hashlib
 
 class Collection:
 
+    """
+    Class constructor.
+    Defined variables that will be used in whole class
+    """
     def __init__(self) -> None:
         self.config_obj = Config()
         figshare_config = self.config_obj.figshare_config()
@@ -19,7 +23,12 @@ class Collection:
         self.logs = Log()
         self.errors = []
 
-    
+    """
+    API get request sent to '/collections'.
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    Static variables implemented for pagination. page, page_size, no_of_pages.
+    On successful response from above mentioned API, __get_collection_versions will be called with collection param. 
+    """
     def get_collections(self):
         collections_api_url = self.api_endpoint + '/collections' if self.api_endpoint[-1] == "/" else self.api_endpoint + "/collections"
         retries = 1
@@ -54,7 +63,12 @@ class Collection:
                 if(retries > self.retries):
                     break
 
-
+    """
+    This function will send request to fetch collection versions. 
+    :param collection object. 
+    On successful response from '/versions' API, __get_collection_metadata_by_version will be called with version and collection id param. 
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    """
     def __get_collection_versions(self, collection):
         retries = 1
         success = False
@@ -70,7 +84,7 @@ class Collection:
                         metadata = []
                         if(len(versions) > 0):
                             for version in versions:
-                                version_data = self.__get_article_metadata_by_version(version, collection['id'])
+                                version_data = self.__get_collection_metadata_by_version(version, collection['id'])
                                 metadata.append(version_data)
                             success = True
                             return metadata
@@ -86,8 +100,14 @@ class Collection:
                 if(retries > self.retries):
                     break
 
-
-    def __get_article_metadata_by_version(self, version, collection_id):
+    """
+    Fetch collection metadata by version url.
+    :param version object value. 
+    :param collection_id int value. 
+    On successful response from url API, metadata array will be setup for response. 
+    No. of tries implemented in while loop, loop will exit if API is not giving 200 response after no. of tries defined in config file. 
+    """
+    def __get_collection_metadata_by_version(self, version, collection_id):
         retries = 1
         success = False
         while not success and retries <= int(self.retries):
