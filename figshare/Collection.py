@@ -5,6 +5,7 @@ import requests
 from Log import Log
 from Config import Config
 import hashlib
+from figshare.Article import Article
 
 class Collection:
 
@@ -22,6 +23,7 @@ class Collection:
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] != None else 10
         self.logs = Log()
         self.errors = []
+        self.article_obj = Article()
 
     """
     API get request sent to '/collections'.
@@ -52,13 +54,13 @@ class Collection:
                         
                         success = True
                     else:    
-                        retries = self.__retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
+                        retries = self.article_obj.retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
                     page += 1
             
             except Exception as e:
-                retries = self.__retries_if_error(e, 500, retries)
+                retries = self.article_obj.retries_if_error(e, 500, retries)
                 if(retries > self.retries):
                     break
 
@@ -91,11 +93,11 @@ class Collection:
                             self.logs.write_log_in_file("info", f"{collection['id']} - Entity not found")
                             break
                     else:
-                        retries = self.__retries_if_error(f"Public verion URL is not reachable. Retry {retries}", get_response.status_code, retries)
+                        retries = self.article_obj.retries_if_error(f"Public verion URL is not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
             except requests.exceptions.RequestException as e:
-                retries = self.__retries_if_error(e, 500, retries)
+                retries = self.article_obj.retries_if_error(e, 500, retries)
                 if(retries > self.retries):
                     break
 
@@ -130,21 +132,11 @@ class Collection:
 
                         return version_metadata
                     else:
-                        retries = self.__retries_if_error(f"{collection_id} API not reachable. Retry {retries}", get_response.status_code, retries)
+                        retries = self.article_obj.retries_if_error(f"{collection_id} API not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
                             break
             except requests.exceptions.RequestException as e:
-                retries = self.__retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
+                retries = self.article_obj.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
                 if(retries > self.retries):
                     break
 
-
-    # retries function
-    def __retries_if_error(self, msg, status_code, retries):
-        self.logs.write_log_in_file("error", f"{msg} - Status code {status_code}", True)
-        wait = self.retry_wait
-        self.logs.write_log_in_file("error", 'Error! Waiting %s secs and re-trying...' % wait, True)
-        sys.stdout.flush()
-        time.sleep(wait)
-        retries = int(retries) + 1
-        return retries
