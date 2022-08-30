@@ -36,7 +36,6 @@ class Collection:
                         params=params
                     )
                     if (get_response.status_code == 200):
-                        print(get_response.status_code)
                         collections = get_response.json()
                         collection_data = []
                         for collection in collections:
