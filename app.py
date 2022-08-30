@@ -68,8 +68,8 @@ def main():
         memory = shutil.disk_usage(staging_storage_location)
         free_space_in_gb = memory.free/1000000000  # converting bytes to GBs
 
-        required_space = additional_percentage_required * 100
-        if(free_space_in_gb < required_space):
+        required_space = int(additional_percentage_required) * 100
+        if(free_space_in_gb >= required_space):
             log.write_log_in_file('error', "There isn't enough space in storage path.", True, True)
 
 """
@@ -89,8 +89,8 @@ def get_collections():
 
 if __name__ == "__main__":
     main()
-    print("try fetching articles....")
-    get_articles()
+    # print("try fetching articles....")
+    # get_articles()
 
     print("try fetching collections....")
     get_collections()

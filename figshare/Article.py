@@ -17,7 +17,7 @@ class Article:
     def __init__(self):
         self.config_obj = Config()
         figshare_config = self.config_obj.figshare_config()
-        system_config = self.config_obj.system_config()
+        self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] != None else 3
