@@ -3,6 +3,7 @@ from Log import Log
 from figshare.Article import Article
 from time import asctime
 from Config import Config
+from figshare.Collection import Collection
 
 def main():
     log = Log()
@@ -56,7 +57,14 @@ def get_articles():
     obj = Article()
     articles = obj.get_articles()
 
+def get_collections():
+    obj = Collection()
+    obj.get_collections()
+
 if __name__ == "__main__":
     main()
-    print("try fetching articles....")
-    get_articles()
+    # print("try fetching articles....")
+    # get_articles()
+
+    print("try fetching collections....")
+    get_collections()
