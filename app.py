@@ -49,11 +49,12 @@ def main():
     #Check logs path exits, if not then create directory
     logs_path_exists = os.path.exists(log_location)
     if(logs_path_exists == False):
-        os.mkdir(log_location, 777)
+        os.makedirs(log_location, exist_ok=True)
 
     #Check storage path exits, if not then give error and stop processing
     storage_path_exists = os.path.exists(staging_storage_location)
-    if(storage_path_exists == False):
+    access = os.access(staging_storage_location, os.W_OK)
+    if(storage_path_exists == False or access == False):
         log.write_log_in_file('error', "The staging storage location specified in the config file could not be reached or read.", True, True)
     
     #Check curation path exits, if not then give error and stop processing
