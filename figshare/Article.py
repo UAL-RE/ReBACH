@@ -54,6 +54,9 @@ class Article:
                     )
                     if (get_response.status_code == 200):
                         articles = get_response.json()
+                        if(len(articles) == 0):
+                            self.logs.write_log_in_file("info", f"API don't have more articles.", True, True)
+
                         article_data = []
                         for article in articles:
                             if(article['published_date'] != None or article['published_date'] != ''):
