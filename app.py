@@ -4,7 +4,6 @@ from figshare.Article import Article
 from time import asctime
 from Config import Config
 from figshare.Collection import Collection
-import shutil
 
 
 """
@@ -62,7 +61,7 @@ def main():
     if(curation_path_exists == False):
         log.write_log_in_file('error', "The curation staging storage location specified in the config file could not be reached or read.", True, True)
     
-    
+
 """
 Creating article class object and sending call to process articles, setup metadata and download files.
 """
@@ -83,5 +82,5 @@ if __name__ == "__main__":
     print("try fetching articles....")
     get_articles()
 
-    print("try fetching collections....")
-    get_collections()
+    # print("try fetching collections....")
+    # get_collections()
