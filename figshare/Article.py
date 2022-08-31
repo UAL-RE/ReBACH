@@ -1,5 +1,6 @@
 import json
 import math
+import shutil
 import sys
 import time
 import requests
@@ -173,6 +174,12 @@ class Article:
                             version_metadata['errors'].append(error)
 
                         if(file_len > 0):
+                            required_space = total_file_size * int(self.system_config["additional_percentage_required"])
+                            staging_storage_location = self.system_config["staging_storage_location"]
+                            memory = shutil.disk_usage(staging_storage_location)
+                            available_space = memory.free
+                            if(required_space > available_space):
+                                self.logs.write_log_in_file('error', f"{article_id} - There isn't enough space in storage path.", True, True)
                             self.__download_files(files, version_metadata)
                         
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
