@@ -41,15 +41,16 @@ class Collection:
                 # pagination implemented. 
                 page = 1
                 page_size = 3
-                total_articles = 5
-                no_of_pages = math.ceil(total_articles / page_size)
-                while(page <= no_of_pages):
+                page_empty = False
+                while(not page_empty):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url,
                         params=params
                     )
                     if (get_response.status_code == 200):
                         collections = get_response.json()
+                        if(len(collections) == 0):
+                            page_empty = True
                         collection_data = []
                         for collection in collections:
                             collection_data.append({str(collection['id']): self.__get_collection_versions(collection)})

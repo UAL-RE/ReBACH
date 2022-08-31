@@ -43,10 +43,9 @@ class Article:
             try:
                 # pagination implemented. 
                 page = 1
-                page_size = 3
-                total_articles = 5
-                no_of_pages = math.ceil(total_articles / page_size)
-                while(page <= no_of_pages):
+                page_size = 100
+                page_empty = False
+                while(not page_empty):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                     headers={'Authorization': 'token '+self.api_token},
@@ -55,7 +54,7 @@ class Article:
                     if (get_response.status_code == 200):
                         articles = get_response.json()
                         if(len(articles) == 0):
-                            self.logs.write_log_in_file("info", f"API don't have more articles.", True, True)
+                            page_empty = True
 
                         article_data = []
                         for article in articles:
