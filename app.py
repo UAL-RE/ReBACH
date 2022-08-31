@@ -60,17 +60,7 @@ def main():
     curation_path_exists = os.path.exists(curation_storage_location)
     if(curation_path_exists == False):
         log.write_log_in_file('error', "The curation staging storage location specified in the config file could not be reached or read.", True, True)
-    
-    #Check storage space before processing.
-    if(storage_path_exists == True):
-        # Get the disk usage statistics
-        # about the given path
-        memory = shutil.disk_usage(staging_storage_location)
-        free_space_in_gb = memory.free/1000000000  # converting bytes to GBs
 
-        required_space = additional_percentage_required * 100
-        if(free_space_in_gb < required_space):
-            log.write_log_in_file('error', "There isn't enough space in storage path.", True, True)
 
 """
 Creating article class object and sending call to process articles, setup metadata and download files.
@@ -92,5 +82,5 @@ if __name__ == "__main__":
     print("try fetching articles....")
     get_articles()
 
-    print("try fetching collections....")
-    get_collections()
+    # print("try fetching collections....")
+    # get_collections()

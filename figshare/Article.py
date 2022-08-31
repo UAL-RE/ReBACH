@@ -1,10 +1,13 @@
 import json
+import os
 import sys
 import time
+from traceback import print_tb
 import requests
 from Log import Log
 from Config import Config
 import hashlib
+import shutil
 
 class Article:
     api_endpoint = ""
@@ -17,13 +20,14 @@ class Article:
     def __init__(self):
         self.config_obj = Config()
         figshare_config = self.config_obj.figshare_config()
-        system_config = self.config_obj.system_config()
+        self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] != None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] != None else 10
         self.logs = Log()
         self.errors = []
+        self.exclude_dirs = [".DS_Store"]
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -39,8 +43,8 @@ class Article:
             try:
                 # pagination implemented. 
                 page = 1
-                page_size = 3
-                no_of_pages = 2
+                page_size = 1
+                no_of_pages = 1
                 while(page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
@@ -171,6 +175,13 @@ class Article:
                             version_metadata['errors'].append(error)
 
                         if(file_len > 0):
+                            required_space = total_file_size * int(self.system_config["additional_percentage_required"])
+                            staging_storage_location = self.system_config["staging_storage_location"]
+                            memory = shutil.disk_usage(staging_storage_location)
+                            available_space = memory.free
+                            if(required_space > available_space):
+                                self.logs.write_log_in_file('error', f"{article_id} - There isn't enough space in storage path.", True, True)
+                            self.__check_curation_dir(version_data, files)
                             self.__download_files(files, version_metadata)
                         
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
@@ -212,3 +223,58 @@ class Article:
         time.sleep(wait)
         retries = int(retries) + 1
         return retries
+
+    
+    def __check_curation_dir(self, version_data, files):
+        curation_storage_location = self.system_config["curation_storage_location"]
+        dirs = os.listdir(curation_storage_location)
+        version_no = "v" + str(version_data["version"]).zfill(2)
+        deposit_agrement_file = False
+        redata_deposit_review_file = False
+        print("--version_no---")
+        print(version_no)
+        for dir in dirs:
+            if(dir not in self.exclude_dirs):
+                print(dir)
+                author_name = version_data['authors'][0]["url_name"]
+                print("auther name...")
+                print(author_name)
+                check_dir_name = author_name + "_" + str(version_data['id'])
+                # check auther name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
+                if(check_dir_name == dir):
+                    print("equal...")
+                    article_dir_in_curation = curation_storage_location + dir 
+                    read_dirs = os.listdir(article_dir_in_curation) # read auther dir
+
+                    for dir in read_dirs:
+                        if dir not in self.exclude_dirs:
+                            if (dir == version_no):
+                                version_dir = article_dir_in_curation + "/" + dir 
+                                read_version_dirs = os.listdir(version_dir) # read version dir
+                                print("---version----dir---")
+                                print(read_version_dirs)
+                                if "UAL_RDM" not in read_version_dirs: # check if UAL_RDM dir not exists...
+                                    self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory missing in curation storage. Path is {version_dir}", True)
+                                    break
+                                else:
+                                    for dir in read_version_dirs:
+                                        if dir not in self.exclude_dirs:
+                                            if dir == "UAL_RDM":
+                                                ual_rdm_path = version_dir + "/" + dir
+                                                ual_dir = os.listdir(ual_rdm_path)
+                                                print("---ual_dir----dir---")
+                                                print(ual_dir)
+                                                for ual_file in ual_dir:
+                                                    if (ual_file == "Deposit Agreement.pdf" or ual_file == "Deposit_Agreement.pdf"):
+                                                        deposit_agrement_file = True
+
+                                                    if (ual_file.startswith("ReDATA-DepositReview")):
+                                                        redata_deposit_review_file = True
+                                    
+                                    if(deposit_agrement_file == False or redata_deposit_review_file == False):
+                                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage. Path is {ual_rdm_path}", True)
+                                        break
+
+
+
+
