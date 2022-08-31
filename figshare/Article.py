@@ -261,10 +261,10 @@ class Article:
                 author_name = version_data['authors'][0]["url_name"]
                 
                 check_dir_name = author_name + "_" + str(version_data['id'])
-                # check auther name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
+                # check author name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
                 if(check_dir_name == dir):
                     article_dir_in_curation = curation_storage_location + dir 
-                    read_dirs = os.listdir(article_dir_in_curation) # read auther dir
+                    read_dirs = os.listdir(article_dir_in_curation) # read author dir
 
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
