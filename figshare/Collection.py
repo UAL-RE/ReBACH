@@ -1,4 +1,5 @@
 import json
+import math
 import sys
 import time
 import requests
@@ -40,7 +41,8 @@ class Collection:
                 # pagination implemented. 
                 page = 1
                 page_size = 3
-                no_of_pages = 2
+                total_articles = 5
+                no_of_pages = math.ceil(total_articles / page_size)
                 while(page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url,
