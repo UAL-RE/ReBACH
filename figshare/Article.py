@@ -1,3 +1,4 @@
+from ensurepip import version
 import json
 import os
 import sys
@@ -173,17 +174,25 @@ class Article:
                         if(error): 
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
+                        
+                        version_no = "v" + str(version_data["version"]).zfill(2)
+                        #folder name to store data in it.
+                        folder_name = str(version_data["id"]) + "_" + version_no + "_" + version_data['authors'][0]['url_name'] + "_" + version_md5
 
                         if(file_len > 0):
-                            required_space = total_file_size * int(self.system_config["additional_percentage_required"])
-                            staging_storage_location = self.system_config["staging_storage_location"]
-                            memory = shutil.disk_usage(staging_storage_location)
-                            available_space = memory.free
-                            if(required_space > available_space):
-                                self.logs.write_log_in_file('error', f"{article_id} - There isn't enough space in storage path.", True, True)
-                            self.__check_curation_dir(version_data, files)
-                            self.__download_files(files, version_metadata)
+                            required_space = total_file_size
+                            self.__check_required_space(required_space, version_data["id"])
+                            self.__check_curation_dir(version_data)
+                            check_files = self.__check_file_hash(files, version_data, folder_name)
+                            if(check_files == True):
+                                self.__download_files(files, version_data, folder_name)
                         
+                        # save json in metadata folder for each version
+                        self.__save_json_in_metadata(version_data, folder_name)
+
+                        # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                        self.__copy_files_ual_rdm(version_data, folder_name)
+
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
                         return version_metadata
@@ -200,13 +209,23 @@ class Article:
     """
     This function will download files and place them in directory, with version_metadata.
     """
-    def __download_files(self, files, version_metadata):
+    def __download_files(self, files, version_data, folder_name):
         if(len(files) > 0):
             for file in files:
-                print(f"Start file downloading....{time.asctime()}")
-                print(f"{file['download_url']}")
-                print(f"End file downloading....{time.asctime()}")
-
+                if(file['is_link_only'] == False):
+                    version_no = "v" + str(version_data["version"]).zfill(2)
+                    # first_author_name = version_data["authors"][0]['url_name']
+                    article_files_folder =  folder_name + "/" + version_no + "/DATA"
+                    staging_storage_location = self.system_config["staging_storage_location"]
+                    article_folder_path = staging_storage_location + article_files_folder
+                    article_files_path_exists = os.path.exists(article_folder_path)
+                    if(article_files_path_exists == False):
+                        os.makedirs(article_folder_path, exist_ok=True)
+                    
+                    file_name_with_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']   
+                    filecontent = requests.get(file['download_url'], allow_redirects=True)
+                    if(filecontent.status_code == 200):
+                        open(file_name_with_path, 'wb').write(filecontent.content)
 
     """
     Retries function. 
@@ -224,25 +243,24 @@ class Article:
         retries = int(retries) + 1
         return retries
 
-    
-    def __check_curation_dir(self, version_data, files):
+    """
+    Checking curation directory, if require files found copying all files to temp directory on root of the script
+    :param version_data dictionary
+    """
+    def __check_curation_dir(self, version_data):
         curation_storage_location = self.system_config["curation_storage_location"]
         dirs = os.listdir(curation_storage_location)
         version_no = "v" + str(version_data["version"]).zfill(2)
         deposit_agrement_file = False
         redata_deposit_review_file = False
-        print("--version_no---")
-        print(version_no)
+        
         for dir in dirs:
             if(dir not in self.exclude_dirs):
-                print(dir)
                 author_name = version_data['authors'][0]["url_name"]
-                print("auther name...")
-                print(author_name)
+                
                 check_dir_name = author_name + "_" + str(version_data['id'])
                 # check auther name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
                 if(check_dir_name == dir):
-                    print("equal...")
                     article_dir_in_curation = curation_storage_location + dir 
                     read_dirs = os.listdir(article_dir_in_curation) # read auther dir
 
@@ -251,8 +269,7 @@ class Article:
                             if (dir == version_no):
                                 version_dir = article_dir_in_curation + "/" + dir 
                                 read_version_dirs = os.listdir(version_dir) # read version dir
-                                print("---version----dir---")
-                                print(read_version_dirs)
+                                
                                 if "UAL_RDM" not in read_version_dirs: # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory missing in curation storage. Path is {version_dir}", True)
                                     break
@@ -262,19 +279,153 @@ class Article:
                                             if dir == "UAL_RDM":
                                                 ual_rdm_path = version_dir + "/" + dir
                                                 ual_dir = os.listdir(ual_rdm_path)
-                                                print("---ual_dir----dir---")
-                                                print(ual_dir)
+                                                
                                                 for ual_file in ual_dir:
                                                     if (ual_file == "Deposit Agreement.pdf" or ual_file == "Deposit_Agreement.pdf"):
                                                         deposit_agrement_file = True
 
                                                     if (ual_file.startswith("ReDATA-DepositReview")):
                                                         redata_deposit_review_file = True
-                                    
+                                                    
+                                                    
                                     if(deposit_agrement_file == False or redata_deposit_review_file == False):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage. Path is {ual_rdm_path}", True)
                                         break
+                                    else:
+                                        #Check temp path exits, if not then create directory
+                                        temp_path = "./temp"
+                                        temp_path_exists = os.path.exists(temp_path)
+                                        if(temp_path_exists == False):
+                                            os.makedirs(temp_path, exist_ok=True)
+                                        
+                                        temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
+                                        temp_ual_path_exists = os.path.exists(temp_ual_path)
+                                        if(temp_ual_path_exists == False):
+                                            os.makedirs(temp_ual_path, exist_ok=True)
+
+                                        ual_dir = version_dir + "/" + "UAL_RDM/"
+                                        shutil.copytree(ual_dir, temp_ual_path, dirs_exist_ok=True)
+
+                                        temp_ual_size = self.__get_file_size_of_given_path(temp_ual_path)
+                                        required_space = temp_ual_size + version_data['size']
+                                        self.__check_required_space(required_space, version_data['id'])
 
 
+    """
+    Get size of files of the given directory path
+    :param dir_path string  path of dir where file size require to calculate.
+    :return size integer 
+    """   
+    def __get_file_size_of_given_path(self, dir_path):
+        size = 0
+        for path, dirs, files in os.walk(dir_path):
+            for f in files:
+                fp = os.path.join(path, f)
+                size += os.path.getsize(fp)
+        
+        return size
+                                        
+
+    """
+    Compare the required space with available space 
+    :param required_space integer
+    :param article_id integer
+    :return log error and terminate script if required_space greater.
+    """
+    def __check_required_space(self, required_space, article_id):
+        req_space = required_space * int(self.system_config["additional_percentage_required"])
+        staging_storage_location = self.system_config["staging_storage_location"]
+        memory = shutil.disk_usage(staging_storage_location)
+        available_space = memory.free
+        if(req_space > available_space):
+            self.logs.write_log_in_file('error', f"{article_id} - There isn't enough space in storage path.", True, True)
+
+    
+    """
+    Checking file hash 
+    :param files dictionary
+    :param version_data dictionary
+    :param folder_path string
+    :return boolean
+    """
+    def __check_file_hash(self, files, version_data, folder_path):
+        version_no = "v" + str(version_data["version"]).zfill(2)
+        article_files_folder =  folder_path + "/" + version_no + "/DATA"
+        staging_storage_location = self.system_config["staging_storage_location"]
+        article_folder_path = staging_storage_location + article_files_folder
+        article_files_path_exists = os.path.exists(article_folder_path)
+        process_article = False
+        if(article_files_path_exists == True):
+            get_files = os.listdir(article_folder_path)
+            if(len(get_files) > 0):
+                for file in files:
+                    file_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
+                    file_exists = os.path.exists(file_path)
+                    compare_hash = file['supplied_md5']
+                    if(compare_hash == ""):
+                        compare_hash = file['computed_md5']
+                    
+                    if(file_exists == True):
+                        existing_file_hash = hashlib.md5(open(file_path,'rb').read()).hexdigest()
+                        if(existing_file_hash != compare_hash):
+                            process_article = False
+                            self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
+                            break
+                    else:
+                        self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
+                        process_article = False
+                        break
+            else:
+                process_article = True
+            
+        else:
+            process_article = True
+        
+        return process_article
 
 
+    """
+    Save json data for each article in related directory
+    :param version_data dictionary
+    :param folder_name string
+    """
+    def __save_json_in_metadata(self, version_data, folder_name):
+        version_no = "v" + str(version_data["version"]).zfill(2)
+        json_folder_path = folder_name + "/" + version_no + "/METADATA"
+        staging_storage_location = self.system_config["staging_storage_location"]
+        complete_path = staging_storage_location + json_folder_path
+        check_path_exists = os.path.exists(complete_path)
+        if(check_path_exists == False):
+            os.makedirs(complete_path, exist_ok=True)
+        json_data = json.dumps(version_data, indent=4)
+        filename_path = complete_path + "/" + str(version_data['id']) + ".json"
+        # Writing to json file
+        with open(filename_path, "w") as outfile:
+            outfile.write(json_data)
+    
+    """
+    Copying UAL_RDM folder files to storage directory in related article version folder
+    :param version_data dictionary
+    :param folder_name string
+    """
+    def __copy_files_ual_rdm(self, version_data, folder_name):
+        version_no = "v" + str(version_data["version"]).zfill(2)
+        temp_path = "./temp"
+        temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
+        comp_temp_path = os.path.abspath(temp_ual_path)
+        check_temp_folder = os.path.exists(comp_temp_path)
+        
+        if(check_temp_folder == True):
+            staging_storage_location = self.system_config["staging_storage_location"]
+            complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+            
+            try:
+                check_path_exists = os.path.exists(complete_folder_name)
+                if(check_path_exists == False):
+                    os.makedirs(complete_folder_name, exist_ok=True)
+                #copying files to storage version folder 
+                shutil.copytree(temp_ual_path, complete_folder_name, dirs_exist_ok=True)
+                #delete temp folder of related version
+                shutil.rmtree(temp_ual_path)
+            except Exception as e:
+                self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} err while coping file.", True)
