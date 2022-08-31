@@ -1,4 +1,5 @@
 import json
+import math
 import sys
 import time
 import requests
@@ -40,7 +41,8 @@ class Article:
                 # pagination implemented. 
                 page = 1
                 page_size = 3
-                no_of_pages = 2
+                total_articles = 5
+                no_of_pages = math.ceil(total_articles / page_size)
                 while(page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
@@ -141,7 +143,7 @@ class Article:
                                     error = f"{version_data['id']} - This item had a file embargo. The files are from version {str(private_version_no)}."
                                     self.logs.write_log_in_file("info", f"{error}", True)
                                 else:
-                                    error = f"{version_data['id']} - This item’s curation_status was not approved"
+                                    error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
                                     self.logs.write_log_in_file("info", f"{error}", True)
 
                         else:    
