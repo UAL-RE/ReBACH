@@ -279,6 +279,7 @@ class Article:
         version_no = "v" + str(version_data["version"]).zfill(2)
         deposit_agrement_file = False
         redata_deposit_review_file = False
+        required_file_check = False
         version_data["matched"] = False
         for dir in dirs:
             if(dir not in self.exclude_dirs):
@@ -318,35 +319,14 @@ class Article:
                                                 ual_dir = os.listdir(ual_rdm_path)
                                                 
                                                 for ual_file in ual_dir:
-                                                    if (ual_file == "Deposit Agreement.pdf" or ual_file == "Deposit_Agreement.pdf"):
+                                                    if (ual_file.startswith("Deposit Agreement.pdf") or ual_file.startswith("Deposit_Agreement.pdf")):
                                                         deposit_agrement_file = True
 
                                                     if (ual_file.startswith("ReDATA-DepositReview")):
                                                         redata_deposit_review_file = True
                                                     
-                                                    
-                                    if(deposit_agrement_file == False or redata_deposit_review_file == False):
-                                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage. Path is {ual_rdm_path}", True)
-                                        break
-                                    else:
-                                        print("")
-                                        #Check temp path exits, if not then create directory
-                                        # temp_path = "./temp"
-                                        # temp_path_exists = os.path.exists(temp_path)
-                                        # if(temp_path_exists == False):
-                                        #     os.makedirs(temp_path, exist_ok=True)
-                                        
-                                        # temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
-                                        # temp_ual_path_exists = os.path.exists(temp_ual_path)
-                                        # if(temp_ual_path_exists == False):
-                                        #     os.makedirs(temp_ual_path, exist_ok=True)
-
-                                        # ual_dir = version_dir + "/" + "UAL_RDM/"
-                                        # shutil.copytree(ual_dir, temp_ual_path, dirs_exist_ok=True)
-
-                                        # temp_ual_size = self.__get_file_size_of_given_path(temp_ual_path)
-                                        # required_space = temp_ual_size + version_data['size']
-                                        # self.__check_required_space(required_space, version_data['id'])
+                                    version_data["deposit_agrement_file"] = deposit_agrement_file
+                                    version_data["redata_deposit_review_file"] = redata_deposit_review_file
         
         return version_data
 
@@ -372,12 +352,12 @@ class Article:
     :return log error and terminate script if required_space greater.
     """
     def __check_required_space(self, required_space):
-        req_space = required_space * int(self.system_config["additional_percentage_required"])
+        req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"])/100))
         staging_storage_location = self.system_config["staging_storage_location"]
         memory = shutil.disk_usage(staging_storage_location)
         available_space = memory.free
         if(req_space > available_space):
-            self.logs.write_log_in_file('error', f"There isn't enough space in storage path.", True, True)
+            self.logs.write_log_in_file('error', f"There isn't enough space on the preservation storage path.", True, True)
 
     
     """
@@ -449,6 +429,10 @@ class Article:
             del(version_data["file_size_sum"])
         if("version_md5" in version_data):
             del(version_data["version_md5"])
+        if("redata_deposit_review_file" in version_data):
+            del(version_data["redata_deposit_review_file"])
+        if("deposit_agrement_file" in version_data):
+            del(version_data["deposit_agrement_file"])
        
         json_data = json.dumps(version_data, indent=4)
         filename_path = complete_path + "/" + str(version_data['id']) + ".json"
@@ -484,7 +468,8 @@ class Article:
 
     def process_articles(self, articles, total_file_size):
         #check required space after Figshare API process, it will stop process if space is less.
-        # self.__check_required_space(total_file_size)
+
+        self.__check_required_space(total_file_size)
         article_data = {}
         for article in articles:
             print("article in process=====")
@@ -522,8 +507,12 @@ class Article:
                         if(check_files == True):
                             # download all files and veriy hash with downloaded file.
                             self.__download_files(version_data['files'], version_data, folder_name)
-                            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                            self.__copy_files_ual_rdm(version_data, folder_name)
+                            if(version_data["deposit_agrement_file"] == False or version_data["redata_deposit_review_file"] == False):
+                                self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage.", True)
+                                # break
+                            else:
+                                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                                self.__copy_files_ual_rdm(version_data, folder_name)
 
                 # save json in metadata folder for each version
                 self.__save_json_in_metadata(version_data, folder_name)
