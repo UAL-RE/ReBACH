@@ -28,6 +28,7 @@ class Article:
         self.logs = Log()
         self.errors = []
         self.exclude_dirs = [".DS_Store"]
+        self.total_all_articles_file_size = 0
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -39,13 +40,19 @@ class Article:
         articles_api = self.api_endpoint + 'account/institution/articles' if self.api_endpoint[-1] == "/" else self.api_endpoint + "/account/institution/articles"
         retries = 1
         success = False
+        article_data = {}
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented. 
+                # page = 1
+                # page_size = 100
+                # page_empty = False
+                # while(not page_empty):
                 page = 1
-                page_size = 100
-                page_empty = False
-                while(not page_empty):
+                page_size = 3
+                total_articles = 5
+                no_of_pages = math.ceil(total_articles / page_size)
+                while(page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                     headers={'Authorization': 'token '+self.api_token},
@@ -55,14 +62,13 @@ class Article:
                         articles = get_response.json()
                         if(len(articles) == 0):
                             page_empty = True
+                            break
 
-                        article_data = []
                         for article in articles:
                             if(article['published_date'] != None or article['published_date'] != ''):
-                                article_data.append({str(article['id']): self.__get_article_versions(article)})
+                                article_data[article['id']] = self.__get_article_versions(article)
                         
                         success = True
-                        # return article_data
                     else:    
                         retries = self.retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
@@ -73,6 +79,8 @@ class Article:
                 retries = self.retries_if_error(e, 500, retries)
                 if(retries > self.retries):
                     break
+        
+        return article_data
                 
 
     """
@@ -84,6 +92,7 @@ class Article:
     def __get_article_versions(self, article):
         retries = 1
         success = False
+        
         while not success and retries <= int(self.retries):
             try:
                 if(article):
@@ -124,6 +133,7 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
+        
         while not success and retries <= int(self.retries):
             try:
                 if(version):
@@ -173,6 +183,9 @@ class Article:
                             'total_num_files': file_len, 'file_size_sum': total_file_size, 'public_url': version_data['url_public_api'],'private_version_no': private_version_no, 'md5': version_md5
                             }
                         }
+                        version_data['total_num_files'] = file_len
+                        version_data['file_size_sum'] = total_file_size
+                        version_data['version_md5'] = version_md5
                         if(error): 
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
@@ -180,24 +193,24 @@ class Article:
                         version_no = "v" + str(version_data["version"]).zfill(2)
                         #folder name to store data in it.
                         folder_name = str(version_data["id"]) + "_" + version_no + "_" + version_data['authors'][0]['url_name'] + "_" + version_md5
-
+                        self.total_all_articles_file_size += total_file_size
                         if(file_len > 0):
                             required_space = total_file_size
-                            self.__check_required_space(required_space, version_data["id"])
-                            self.__check_curation_dir(version_data)
-                            check_files = self.__check_file_hash(files, version_data, folder_name)
-                            if(check_files == True):
-                                self.__download_files(files, version_data, folder_name)
+                            # self.__check_required_space(required_space, version_data["id"])
+                            # self.__check_curation_dir(version_data)
+                            # check_files = self.__check_file_hash(files, version_data, folder_name)
+                            # if(check_files == True):
+                            #     self.__download_files(files, version_data, folder_name)
                         
                         # save json in metadata folder for each version
-                        self.__save_json_in_metadata(version_data, folder_name)
+                        # self.__save_json_in_metadata(version_data, folder_name)
 
                         # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                        self.__copy_files_ual_rdm(version_data, folder_name)
+                        # self.__copy_files_ual_rdm(version_data, folder_name)
 
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
-                        return version_metadata
+                        return version_data
                     else:
                         retries = self.retries_if_error(f"{article_id} API not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
@@ -228,6 +241,17 @@ class Article:
                     filecontent = requests.get(file['download_url'], allow_redirects=True)
                     if(filecontent.status_code == 200):
                         open(file_name_with_path, 'wb').write(filecontent.content)
+                        existing_file_hash = hashlib.md5(open(file_name_with_path,'rb').read()).hexdigest()
+                        compare_hash = file['supplied_md5']
+                        if(compare_hash == ""):
+                            compare_hash = file['computed_md5']
+
+                        if(existing_file_hash != compare_hash):
+                            self.logs.write_log_in_file("error", f"{version_data['id']} - Hash didn't matched after downloading. Path {file_name_with_path}", True)
+                            shutil.rmtree(file_name_with_path)
+                            break
+                            
+
 
     """
     Retries function. 
@@ -255,7 +279,7 @@ class Article:
         version_no = "v" + str(version_data["version"]).zfill(2)
         deposit_agrement_file = False
         redata_deposit_review_file = False
-        
+        version_data["matched"] = False
         for dir in dirs:
             if(dir not in self.exclude_dirs):
                 author_name = version_data['authors'][0]["url_name"]
@@ -265,13 +289,24 @@ class Article:
                 if(check_dir_name == dir):
                     article_dir_in_curation = curation_storage_location + dir 
                     read_dirs = os.listdir(article_dir_in_curation) # read author dir
-
+                    version_data["curation_info"] = {}
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
                             if (dir == version_no):
                                 version_dir = article_dir_in_curation + "/" + dir 
                                 read_version_dirs = os.listdir(version_dir) # read version dir
-                                
+                                version_data["matched"] = True
+                                # item_subtype conditions
+                                sub_type = ''
+                                if(version_data['has_linked_file']):
+                                    sub_type = 'linked'
+                                elif(version_data['is_metadata_record']):
+                                    sub_type = 'metadata'
+                                else:
+                                    sub_type = 'regular'
+                                version_data["curation_info"] = {'item_type': 'article', 'item_subtype': sub_type,'id': version_data['id'], 'version': version_data['version'], 'first_author': version_data['authors'][0]['full_name'], 
+                            'url': version_data['url'], 'md5': version_data['version_md5'], 'path': version_dir, 'total_files': version_data['total_num_files'], 'total_files_size': version_data['file_size_sum']}
+
                                 if "UAL_RDM" not in read_version_dirs: # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory missing in curation storage. Path is {version_dir}", True)
                                     break
@@ -294,23 +329,26 @@ class Article:
                                         self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage. Path is {ual_rdm_path}", True)
                                         break
                                     else:
+                                        print("")
                                         #Check temp path exits, if not then create directory
-                                        temp_path = "./temp"
-                                        temp_path_exists = os.path.exists(temp_path)
-                                        if(temp_path_exists == False):
-                                            os.makedirs(temp_path, exist_ok=True)
+                                        # temp_path = "./temp"
+                                        # temp_path_exists = os.path.exists(temp_path)
+                                        # if(temp_path_exists == False):
+                                        #     os.makedirs(temp_path, exist_ok=True)
                                         
-                                        temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
-                                        temp_ual_path_exists = os.path.exists(temp_ual_path)
-                                        if(temp_ual_path_exists == False):
-                                            os.makedirs(temp_ual_path, exist_ok=True)
+                                        # temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
+                                        # temp_ual_path_exists = os.path.exists(temp_ual_path)
+                                        # if(temp_ual_path_exists == False):
+                                        #     os.makedirs(temp_ual_path, exist_ok=True)
 
-                                        ual_dir = version_dir + "/" + "UAL_RDM/"
-                                        shutil.copytree(ual_dir, temp_ual_path, dirs_exist_ok=True)
+                                        # ual_dir = version_dir + "/" + "UAL_RDM/"
+                                        # shutil.copytree(ual_dir, temp_ual_path, dirs_exist_ok=True)
 
-                                        temp_ual_size = self.__get_file_size_of_given_path(temp_ual_path)
-                                        required_space = temp_ual_size + version_data['size']
-                                        self.__check_required_space(required_space, version_data['id'])
+                                        # temp_ual_size = self.__get_file_size_of_given_path(temp_ual_path)
+                                        # required_space = temp_ual_size + version_data['size']
+                                        # self.__check_required_space(required_space, version_data['id'])
+        
+        return version_data
 
 
     """
@@ -331,16 +369,15 @@ class Article:
     """
     Compare the required space with available space 
     :param required_space integer
-    :param article_id integer
     :return log error and terminate script if required_space greater.
     """
-    def __check_required_space(self, required_space, article_id):
+    def __check_required_space(self, required_space):
         req_space = required_space * int(self.system_config["additional_percentage_required"])
         staging_storage_location = self.system_config["staging_storage_location"]
         memory = shutil.disk_usage(staging_storage_location)
         available_space = memory.free
         if(req_space > available_space):
-            self.logs.write_log_in_file('error', f"{article_id} - There isn't enough space in storage path.", True, True)
+            self.logs.write_log_in_file('error', f"There isn't enough space in storage path.", True, True)
 
     
     """
@@ -370,9 +407,12 @@ class Article:
                     if(file_exists == True):
                         existing_file_hash = hashlib.md5(open(file_path,'rb').read()).hexdigest()
                         if(existing_file_hash != compare_hash):
-                            process_article = False
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
-                            break
+                        else:
+                            self.logs.write_log_in_file('info', f"{file_path} hash matched, files already exists.", True)
+                        
+                        process_article = False
+                        break
                     else:
                         self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
                         process_article = False
@@ -399,6 +439,17 @@ class Article:
         check_path_exists = os.path.exists(complete_path)
         if(check_path_exists == False):
             os.makedirs(complete_path, exist_ok=True)
+        if("matched" in version_data):
+            del(version_data["matched"])
+        if("curation_info" in version_data):
+            del(version_data["curation_info"])
+        if("total_num_files" in version_data):
+            del(version_data["total_num_files"])
+        if("file_size_sum" in version_data):
+            del(version_data["file_size_sum"])
+        if("version_md5" in version_data):
+            del(version_data["version_md5"])
+       
         json_data = json.dumps(version_data, indent=4)
         filename_path = complete_path + "/" + str(version_data['id']) + ".json"
         # Writing to json file
@@ -412,12 +463,12 @@ class Article:
     """
     def __copy_files_ual_rdm(self, version_data, folder_name):
         version_no = "v" + str(version_data["version"]).zfill(2)
-        temp_path = "./temp"
-        temp_ual_path = temp_path + "/" + "temp_" + str(version_data['id']) + "_" + version_no
-        comp_temp_path = os.path.abspath(temp_ual_path)
-        check_temp_folder = os.path.exists(comp_temp_path)
         
-        if(check_temp_folder == True):
+        curation_storage_location = self.system_config["curation_storage_location"]
+        author_name = version_data['authors'][0]["url_name"]
+        curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
+        check_folder = os.path.exists(curation_dir_name)
+        if(check_folder == True):
             staging_storage_location = self.system_config["staging_storage_location"]
             complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
             
@@ -426,8 +477,56 @@ class Article:
                 if(check_path_exists == False):
                     os.makedirs(complete_folder_name, exist_ok=True)
                 #copying files to storage version folder 
-                shutil.copytree(temp_ual_path, complete_folder_name, dirs_exist_ok=True)
-                #delete temp folder of related version
-                shutil.rmtree(temp_ual_path)
+                shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
             except Exception as e:
                 self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} err while coping file.", True)
+    
+
+    def process_articles(self, articles, total_file_size):
+        #check required space after Figshare API process, it will stop process if space is less.
+        # self.__check_required_space(total_file_size)
+        article_data = {}
+        for article in articles:
+            print("article in process=====")
+            if(articles[article] != None):
+                article_versions_list = articles[article]
+                article_data[article] = []
+                for version_data in article_versions_list:
+                    data = self.__check_curation_dir(version_data)
+                    article_data[article].append(data)
+                
+
+        # get directory path to calculate space.
+        curation_storage_location = self.system_config["curation_storage_location"]
+        # calcualte space for given path.
+        curation_folder_size = self.__get_file_size_of_given_path(curation_storage_location)
+        required_space = curation_folder_size + self.total_all_articles_file_size
+        #check required space after curation process, it will stop process if space is less.
+        self.__check_required_space(required_space)
+
+        for article in article_data:
+            print("article in preserv process=====")
+            print(article)
+            article_versions_list = articles[article]
+            article_data[article] = []
+            for version_data in article_versions_list:
+                version_no = "v" + str(version_data["version"]).zfill(2)
+                folder_name = str(version_data["id"]) + "_" + version_no + "_" + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
+                
+                if(version_data["matched"] == True):
+                    curation_info = version_data["curation_info"]
+                    if(curation_info["total_files"] > 0):
+                        check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
+                        print(version_data["version"])
+                        print(check_files)
+                        if(check_files == True):
+                            # download all files and veriy hash with downloaded file.
+                            self.__download_files(version_data['files'], version_data, folder_name)
+                            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                            self.__copy_files_ual_rdm(version_data, folder_name)
+
+                # save json in metadata folder for each version
+                self.__save_json_in_metadata(version_data, folder_name)
+
+        print("process ended....")
+        exit()

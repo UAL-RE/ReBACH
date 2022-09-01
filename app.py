@@ -67,20 +67,30 @@ Creating article class object and sending call to process articles, setup metada
 """
 def get_articles():
     obj = Article()
-    obj.get_articles()
+    article_data = obj.get_articles()
+    return article_data
+    # print("article_data=====")
+    # print(article_data)
+    # obj.process_articles(article_data)
 
 """
 Creating collections class object and sending call to process collections and setup metadata.
 """
 def get_collections():
     obj = Collection()
-    obj.get_collections()
+    collection_data = obj.get_collections()
+    return collection_data
 
 
 if __name__ == "__main__":
     main()
     print("try fetching articles....")
-    get_articles()
+    article_obj = Article()
+    article_data = article_obj.get_articles()
+    print("file size....")
+    print(article_obj.total_all_articles_file_size)
+    # print("try fetching collections....")
+    # collection_obj = Collection()
+    # collection_data = collection_obj.get_collections()
 
-    print("try fetching collections....")
-    get_collections()
+    article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
