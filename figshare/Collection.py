@@ -36,6 +36,7 @@ class Collection:
         collections_api_url = self.api_endpoint + '/collections' if self.api_endpoint[-1] == "/" else self.api_endpoint + "/collections"
         retries = 1
         success = False
+        collection_data = {}
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented. 
@@ -43,6 +44,7 @@ class Collection:
                 page_size = 3
                 page_empty = False
                 while(not page_empty):
+                    print(f"page--{str(page)}" )
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url,
                         params=params
@@ -51,9 +53,11 @@ class Collection:
                         collections = get_response.json()
                         if(len(collections) == 0):
                             page_empty = True
-                        collection_data = []
+
                         for collection in collections:
-                            collection_data.append({str(collection['id']): self.__get_collection_versions(collection)})
+                            coll_versions = self.__get_collection_versions(collection)
+                            coll_articles = self.__get_collection_articles(collection)
+                            collection_data[collection['id']] = [{"versions": coll_versions, "articles": coll_articles}]
                         
                         success = True
                     else:    
@@ -61,11 +65,14 @@ class Collection:
                         if(retries > self.retries):
                             break
                     page += 1
-            
+
             except Exception as e:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if(retries > self.retries):
                     break
+
+        return collection_data                
+        
 
     """
     This function will send request to fetch collection versions. 
@@ -143,3 +150,37 @@ class Collection:
                 if(retries > self.retries):
                     break
 
+    def __get_collection_articles(self, collection):
+        page = 1
+        page_size = 100
+        page_empty = False
+        api_url = f"collections/{collection['id']}/articles"
+        coll_articles_api = self.api_endpoint + api_url if self.api_endpoint[-1] == "/" else self.api_endpoint + f"/{api_url}"
+        retries = 1
+        success = False
+        articles_list = {}
+        while not success and retries <= int(self.retries):
+            try:
+                while(not page_empty):
+                    params = {'page': page, 'page_size': page_size}
+                    get_response = requests.get(coll_articles_api, params=params)
+                    if (get_response.status_code == 200):
+                        articles = get_response.json()
+                        if(len(articles) == 0):
+                            page_empty = True
+                            break
+                        
+                        articles_list[page] = articles
+                        
+                        success = True
+                    else:    
+                        retries = self.article_obj.retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
+                        if(retries > self.retries):
+                            break
+                    page += 1
+            except Exception as e:
+                retries = self.article_obj.retries_if_error(e, 500, retries)
+                if(retries > self.retries):
+                    break
+        
+        return articles_list

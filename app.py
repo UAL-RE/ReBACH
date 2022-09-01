@@ -82,5 +82,5 @@ if __name__ == "__main__":
     print("try fetching articles....")
     get_articles()
 
-    # print("try fetching collections....")
-    # get_collections()
+    print("try fetching collections....")
+    get_collections()
