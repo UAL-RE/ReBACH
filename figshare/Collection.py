@@ -1,5 +1,6 @@
 import json
 import math
+import os
 import sys
 import time
 import requests
@@ -17,7 +18,7 @@ class Collection:
     def __init__(self) -> None:
         self.config_obj = Config()
         figshare_config = self.config_obj.figshare_config()
-        system_config = self.config_obj.system_config()
+        self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] != None else 3
@@ -40,10 +41,15 @@ class Collection:
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented. 
+                # page = 1
+                # page_size = 3
+                # page_empty = False
+                # while(not page_empty):
                 page = 1
                 page_size = 3
-                page_empty = False
-                while(not page_empty):
+                total_articles = 5
+                no_of_pages = math.ceil(total_articles / page_size)
+                while(page <= no_of_pages):
                     print(f"page--{str(page)}" )
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url,
@@ -57,7 +63,7 @@ class Collection:
                         for collection in collections:
                             coll_versions = self.__get_collection_versions(collection)
                             coll_articles = self.__get_collection_articles(collection)
-                            collection_data[collection['id']] = [{"versions": coll_versions, "articles": coll_articles}]
+                            collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
                         
                         success = True
                     else:    
@@ -128,19 +134,12 @@ class Collection:
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
-                        
-                        version_md5 = ''
-                        json_data = json.dumps(version_data).encode("utf-8")
-                        version_md5 = hashlib.md5(json_data).hexdigest()
 
-                        version_metadata = {'collection_id': collection_id, 
-                        'metadata':version_data,
-                        'md5': version_md5     
-                        }
+                        version_metadata = version_data
                         
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
-                        return version_metadata
+                        return version_data
                     else:
                         retries = self.article_obj.retries_if_error(f"{collection_id} API not reachable. Retry {retries}", get_response.status_code, retries)
                         if(retries > self.retries):
@@ -151,6 +150,11 @@ class Collection:
                     break
 
     def __get_collection_articles(self, collection):
+        """
+        Function to fetch articles from collection API
+        :param collection object
+        :return articles object
+        """
         page = 1
         page_size = 100
         page_empty = False
@@ -158,7 +162,7 @@ class Collection:
         coll_articles_api = self.api_endpoint + api_url if self.api_endpoint[-1] == "/" else self.api_endpoint + f"/{api_url}"
         retries = 1
         success = False
-        articles_list = {}
+        articles_list = []
         while not success and retries <= int(self.retries):
             try:
                 while(not page_empty):
@@ -170,7 +174,7 @@ class Collection:
                             page_empty = True
                             break
                         
-                        articles_list[page] = articles
+                        articles_list = articles
                         
                         success = True
                     else:    
@@ -184,3 +188,44 @@ class Collection:
                     break
         
         return articles_list
+
+    """
+    Function to process collections and it's articles with collection versions.
+    :param collections object
+    """
+    def process_collections(self, collections):
+        storage_folder = self.system_config["staging_storage_location"]
+        existing_space = self.article_obj.get_file_size_of_given_path(storage_folder)
+        self.article_obj.check_required_space(existing_space)
+
+        for collection in collections:
+            
+            data = collections[collection]
+            articles = data["articles"]
+            versions = data['versions']
+            for version in versions:
+                json_data = json.dumps(version).encode("utf-8")
+                version_md5 = hashlib.md5(json_data).hexdigest()
+                version_no = f"v{str(version['version']).zfill(2)}" 
+                folder_name = str(collection) + "_" + version_no + "_" + version_md5 + "/" + version_no + "/METADATA"
+                version["articles"] = articles
+                self.__save_json_in_metadata(collection, version, folder_name)
+
+    
+    """
+    Save json data for each collection version in related directory
+    :param version_data dictionary
+    :param folder_name string
+    """
+    def __save_json_in_metadata(self, collection_id, version_data, folder_name):
+        staging_storage_location = self.system_config["staging_storage_location"]
+        complete_path = staging_storage_location + folder_name
+        check_path_exists = os.path.exists(complete_path)
+        if(check_path_exists == False):
+            os.makedirs(complete_path, exist_ok=True)
+            json_data = json.dumps(version_data, indent=4)
+            filename_path = complete_path + "/" + str(collection_id) + ".json"
+            # Writing to json file
+            with open(filename_path, "w") as outfile:
+                outfile.write(json_data)
+            

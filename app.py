@@ -89,8 +89,10 @@ if __name__ == "__main__":
     article_data = article_obj.get_articles()
     print("file size....")
     print(article_obj.total_all_articles_file_size)
-    # print("try fetching collections....")
-    # collection_obj = Collection()
-    # collection_data = collection_obj.get_collections()
+
+    print("try fetching collections....")
+    collection_obj = Collection()
+    collection_data = collection_obj.get_collections()
 
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
+    collection_obj.process_collections(collection_data)

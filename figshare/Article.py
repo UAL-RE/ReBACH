@@ -196,7 +196,7 @@ class Article:
                         self.total_all_articles_file_size += total_file_size
                         if(file_len > 0):
                             required_space = total_file_size
-                            # self.__check_required_space(required_space, version_data["id"])
+                            # self.check_required_space(required_space, version_data["id"])
                             # self.__check_curation_dir(version_data)
                             # check_files = self.__check_file_hash(files, version_data, folder_name)
                             # if(check_files == True):
@@ -339,7 +339,7 @@ class Article:
     :param dir_path string  path of dir where file size require to calculate.
     :return size integer 
     """   
-    def __get_file_size_of_given_path(self, dir_path):
+    def get_file_size_of_given_path(self, dir_path):
         size = 0
         for path, dirs, files in os.walk(dir_path):
             for f in files:
@@ -354,7 +354,7 @@ class Article:
     :param required_space integer
     :return log error and terminate script if required_space greater.
     """
-    def __check_required_space(self, required_space):
+    def check_required_space(self, required_space):
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"])/100))
         staging_storage_location = self.system_config["staging_storage_location"]
         memory = shutil.disk_usage(staging_storage_location)
@@ -477,7 +477,7 @@ class Article:
     def process_articles(self, articles, total_file_size):
         #check required space after Figshare API process, it will stop process if space is less.
 
-        self.__check_required_space(total_file_size)
+        self.check_required_space(total_file_size)
         article_data = {}
         for article in articles:
             print("article in process=====")
@@ -492,10 +492,10 @@ class Article:
         # get directory path to calculate space.
         curation_storage_location = self.system_config["curation_storage_location"]
         # calcualte space for given path.
-        curation_folder_size = self.__get_file_size_of_given_path(curation_storage_location)
+        curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
         #check required space after curation process, it will stop process if space is less.
-        self.__check_required_space(required_space)
+        self.check_required_space(required_space)
 
         for article in article_data:
             print("article in preserv process=====")
@@ -522,5 +522,3 @@ class Article:
                 # save json in metadata folder for each version
                 self.__save_json_in_metadata(version_data, folder_name)
 
-        print("process ended....")
-        exit()
