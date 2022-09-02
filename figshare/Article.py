@@ -308,6 +308,9 @@ class Article:
                                 version_data["curation_info"] = {'item_type': 'article', 'item_subtype': sub_type,'id': version_data['id'], 'version': version_data['version'], 'first_author': version_data['authors'][0]['full_name'], 
                             'url': version_data['url'], 'md5': version_data['version_md5'], 'path': version_dir, 'total_files': version_data['total_num_files'], 'total_files_size': version_data['file_size_sum']}
 
+                                # article version data with curation info saved in logs.
+                                self.logs.write_log_in_file("info", f"{version_data} ")
+
                                 if "UAL_RDM" not in read_version_dirs: # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory missing in curation storage. Path is {version_dir}", True)
                                     break
@@ -388,6 +391,7 @@ class Article:
                         compare_hash = file['computed_md5']
                     
                     if(file_exists == True):
+                        # checking md5 values to check existing file is same or not. 
                         existing_file_hash = hashlib.md5(open(file_path,'rb').read()).hexdigest()
                         if(existing_file_hash != compare_hash):
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
@@ -422,6 +426,8 @@ class Article:
         check_path_exists = os.path.exists(complete_path)
         if(check_path_exists == False):
             os.makedirs(complete_path, exist_ok=True)
+        # Remove extra indexes from version data before getting save in json file
+        # these indexes created in code while fetching data from APIs for further processing 
         if("matched" in version_data):
             del(version_data["matched"])
         if("curation_info" in version_data):
@@ -480,7 +486,7 @@ class Article:
         self.check_required_space(total_file_size)
         article_data = {}
         for article in articles:
-            print("article in process=====")
+            print(f"{article} article in process=====")
             if(articles[article] != None):
                 article_versions_list = articles[article]
                 article_data[article] = []
@@ -498,8 +504,6 @@ class Article:
         self.check_required_space(required_space)
 
         for article in article_data:
-            print("article in preserv process=====")
-            print(article)
             article_versions_list = articles[article]
             article_data[article] = []
             for version_data in article_versions_list:

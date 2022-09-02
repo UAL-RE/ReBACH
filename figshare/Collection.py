@@ -228,4 +228,9 @@ class Collection:
             # Writing to json file
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
-            
+        else:
+            storage_collection_version_dir = os.listdir(complete_path)
+            file_name = f"{str(collection_id)}.json"
+            if(len(storage_collection_version_dir) == 0 or file_name not in storage_collection_version_dir):
+                self.logs.write_log_in_file("info", f"{complete_path} path already exists but missing {file_name} file.")
+
