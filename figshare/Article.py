@@ -229,7 +229,6 @@ class Article:
             for file in files:
                 if(file['is_link_only'] == False):
                     version_no = "v" + str(version_data["version"]).zfill(2)
-                    # first_author_name = version_data["authors"][0]['url_name']
                     article_files_folder =  folder_name + "/" + version_no + "/DATA"
                     staging_storage_location = self.system_config["staging_storage_location"]
                     article_folder_path = staging_storage_location + article_files_folder
@@ -462,7 +461,6 @@ class Article:
     """
     def __copy_files_ual_rdm(self, version_data, folder_name):
         version_no = "v" + str(version_data["version"]).zfill(2)
-        
         curation_storage_location = self.system_config["curation_storage_location"]
         author_name = version_data['authors'][0]["url_name"]
         curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
@@ -470,9 +468,9 @@ class Article:
         # check curation dir is reachable
         self.check_access_of_directries(curation_storage_location, "curation")
 
+        staging_storage_location = self.system_config["staging_storage_location"]
+        complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
         if(check_folder == True):
-            staging_storage_location = self.system_config["staging_storage_location"]
-            complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
             # check preservation dir is reachable
             self.check_access_of_directries(staging_storage_location, "preservation")
             try:
@@ -495,7 +493,7 @@ class Article:
         # curation dir is reachable
         self.check_access_of_directries(curation_storage_location, "curation")
         
-        #check required space after Figshare API process, it will stop process if space is less.
+        # check required space after Figshare API process, it will stop process if space is less.
         self.check_required_space(total_file_size)
         article_data = {}
         for article in articles:
@@ -504,13 +502,14 @@ class Article:
                 article_versions_list = articles[article]
                 article_data[article] = []
                 for version_data in article_versions_list:
+                    # check curation folder for required files and setup data for further processing.
                     data = self.__check_curation_dir(version_data)
                     article_data[article].append(data)
 
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
-        #check required space after curation process, it will stop process if space is less.
+        # check required space after curation process, it will stop process if space is less.
         self.check_required_space(required_space)
 
         for article in article_data:
@@ -527,11 +526,13 @@ class Article:
                         if(check_files == True):
                             # download all files and veriy hash with downloaded file.
                             self.__download_files(version_data['files'], version_data, folder_name)
-                        if(version_data["deposit_agrement_file"] == False or version_data["redata_deposit_review_file"] == False or version_data["trello_file"] == False):
-                            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage.", True)
-                        else:
-                            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                            self.__copy_files_ual_rdm(version_data, folder_name)
+                    if(version_data["deposit_agrement_file"] == False or version_data["redata_deposit_review_file"] == False or version_data["trello_file"] == False):
+                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage.", True)
+                    else:
+                        # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                        self.__copy_files_ual_rdm(version_data, folder_name)
+                # check and create empty directories for each version
+                self.create_required_folders(version_data, folder_name)
 
                 # save json in metadata folder for each version
                 self.__save_json_in_metadata(version_data, folder_name)
@@ -557,3 +558,22 @@ class Article:
                     exit()
             else:
                 success = True
+
+    def create_required_folders(self, version_data, folder_name):
+        staging_storage_location = self.system_config["staging_storage_location"]
+        version_no = "v" + str(version_data["version"]).zfill(2)
+        # setup UAL_RDM directory 
+        ual_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        ual_path_exists = os.path.exists(ual_folder_name)
+        if(ual_path_exists == False):
+            # create UAL_RDM directory if not exist
+            os.makedirs(ual_folder_name, exist_ok=True)
+
+        # setup DATA directory 
+        data_folder_name = staging_storage_location + folder_name + "/" + version_no + "/DATA"
+        data_path_exists = os.path.exists(data_folder_name)
+        if(data_path_exists == False):
+            # create DATA directory if not exist
+            os.makedirs(data_folder_name, exist_ok=True)
+        
+
