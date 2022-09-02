@@ -456,7 +456,6 @@ class Article:
         curation_storage_location = self.system_config["curation_storage_location"]
         author_name = version_data['authors'][0]["url_name"]
         curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
-        print(curation_dir_name)
         check_folder = os.path.exists(curation_dir_name)
         if(check_folder == True):
             staging_storage_location = self.system_config["staging_storage_location"]
