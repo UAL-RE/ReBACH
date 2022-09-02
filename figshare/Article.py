@@ -279,7 +279,7 @@ class Article:
         version_no = "v" + str(version_data["version"]).zfill(2)
         deposit_agrement_file = False
         redata_deposit_review_file = False
-        required_file_check = False
+        trello_file = False
         version_data["matched"] = False
         for dir in dirs:
             if(dir not in self.exclude_dirs):
@@ -317,16 +317,19 @@ class Article:
                                             if dir == "UAL_RDM":
                                                 ual_rdm_path = version_dir + "/" + dir
                                                 ual_dir = os.listdir(ual_rdm_path)
-                                                
                                                 for ual_file in ual_dir:
-                                                    if (ual_file.startswith("Deposit Agreement.pdf") or ual_file.startswith("Deposit_Agreement.pdf")):
+                                                    if (ual_file.startswith("Deposit Agreement") or ual_file.startswith("Deposit_Agreement")):
                                                         deposit_agrement_file = True
 
                                                     if (ual_file.startswith("ReDATA-DepositReview")):
                                                         redata_deposit_review_file = True
                                                     
+                                                    if (ual_file.endswith("Trello.pdf")):
+                                                        trello_file = True
+                                                    
                                     version_data["deposit_agrement_file"] = deposit_agrement_file
                                     version_data["redata_deposit_review_file"] = redata_deposit_review_file
+                                    version_data["trello_file"] = trello_file
         
         return version_data
 
@@ -433,6 +436,8 @@ class Article:
             del(version_data["redata_deposit_review_file"])
         if("deposit_agrement_file" in version_data):
             del(version_data["deposit_agrement_file"])
+        if("trello_file" in version_data):
+            del(version_data["trello_file"])
        
         json_data = json.dumps(version_data, indent=4)
         filename_path = complete_path + "/" + str(version_data['id']) + ".json"
@@ -451,6 +456,7 @@ class Article:
         curation_storage_location = self.system_config["curation_storage_location"]
         author_name = version_data['authors'][0]["url_name"]
         curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
+        print(curation_dir_name)
         check_folder = os.path.exists(curation_dir_name)
         if(check_folder == True):
             staging_storage_location = self.system_config["staging_storage_location"]
@@ -466,6 +472,9 @@ class Article:
                 self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} err while coping file.", True)
     
 
+    """
+    Process all articles after fetching from API.
+    """
     def process_articles(self, articles, total_file_size):
         #check required space after Figshare API process, it will stop process if space is less.
 
@@ -502,17 +511,14 @@ class Article:
                     curation_info = version_data["curation_info"]
                     if(curation_info["total_files"] > 0):
                         check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
-                        print(version_data["version"])
-                        print(check_files)
                         if(check_files == True):
                             # download all files and veriy hash with downloaded file.
                             self.__download_files(version_data['files'], version_data, folder_name)
-                            if(version_data["deposit_agrement_file"] == False or version_data["redata_deposit_review_file"] == False):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage.", True)
-                                # break
-                            else:
-                                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                                self.__copy_files_ual_rdm(version_data, folder_name)
+                        if(version_data["deposit_agrement_file"] == False or version_data["redata_deposit_review_file"] == False or version_data["trello_file"] == False):
+                            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required files in curation storage.", True)
+                        else:
+                            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                            self.__copy_files_ual_rdm(version_data, folder_name)
 
                 # save json in metadata folder for each version
                 self.__save_json_in_metadata(version_data, folder_name)
