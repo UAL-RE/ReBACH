@@ -219,6 +219,9 @@ class Collection:
     """
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
         staging_storage_location = self.system_config["staging_storage_location"]
+
+        self.article_obj.check_access_of_directries(staging_storage_location, "preservation")
+
         complete_path = staging_storage_location + folder_name
         check_path_exists = os.path.exists(complete_path)
         if(check_path_exists == False):

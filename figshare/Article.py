@@ -380,6 +380,10 @@ class Article:
         article_folder_path = staging_storage_location + article_files_folder
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
+
+        # check preservation dir is reachable
+        self.check_access_of_directries(staging_storage_location, "preservation")
+
         if(article_files_path_exists == True):
             get_files = os.listdir(article_folder_path)
             if(len(get_files) > 0):
@@ -463,10 +467,14 @@ class Article:
         author_name = version_data['authors'][0]["url_name"]
         curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
         check_folder = os.path.exists(curation_dir_name)
+        # check curation dir is reachable
+        self.check_access_of_directries(curation_storage_location, "curation")
+
         if(check_folder == True):
             staging_storage_location = self.system_config["staging_storage_location"]
             complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
-            
+            # check preservation dir is reachable
+            self.check_access_of_directries(staging_storage_location, "preservation")
             try:
                 check_path_exists = os.path.exists(complete_folder_name)
                 if(check_path_exists == False):
@@ -481,8 +489,13 @@ class Article:
     Process all articles after fetching from API.
     """
     def process_articles(self, articles, total_file_size):
-        #check required space after Figshare API process, it will stop process if space is less.
+        # get curration directory path 
+        curation_storage_location = self.system_config["curation_storage_location"]
 
+        # curation dir is reachable
+        self.check_access_of_directries(curation_storage_location, "curation")
+        
+        #check required space after Figshare API process, it will stop process if space is less.
         self.check_required_space(total_file_size)
         article_data = {}
         for article in articles:
@@ -493,10 +506,7 @@ class Article:
                 for version_data in article_versions_list:
                     data = self.__check_curation_dir(version_data)
                     article_data[article].append(data)
-                
 
-        # get directory path to calculate space.
-        curation_storage_location = self.system_config["curation_storage_location"]
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
@@ -526,3 +536,24 @@ class Article:
                 # save json in metadata folder for each version
                 self.__save_json_in_metadata(version_data, folder_name)
 
+    """
+    Preservation and Curation directory access check while processing.
+    Retries also implemented.
+    :param directory_path string
+    :param process_name string
+    """
+    def check_access_of_directries(self, directory_path, process_name="preservation"):
+        success = False
+        retries = 1
+        while not success and retries <= int(self.retries):
+            path_exists = os.path.exists(directory_path)
+            folder_access = os.access(directory_path, os.R_OK)
+            text = "curation staging storage"
+            if(process_name == "preservation"):
+                text = "preservation storage"
+            if(path_exists is False or folder_access is False):
+                retries = self.retries_if_error(f"The {text} location specified in the config file could not be reached or read.. Retry {retries}", 500, retries)
+                if(retries > self.retries):
+                    exit()
+            else:
+                success = True

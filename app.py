@@ -56,9 +56,10 @@ def main():
     if(storage_path_exists == False or access == False):
         log.write_log_in_file('error', "The staging storage location specified in the config file could not be reached or read.", True, True)
     
-    #Check curation path exits, if not then give error and stop processing
+    # Check curation path exits, if not then give error and stop processing
     curation_path_exists = os.path.exists(curation_storage_location)
-    if(curation_path_exists == False):
+    curation_folder_access = os.access(curation_storage_location, os.R_OK)
+    if(curation_path_exists == False or curation_folder_access is False):
         log.write_log_in_file('error', "The curation staging storage location specified in the config file could not be reached or read.", True, True)
     
 
@@ -69,9 +70,6 @@ def get_articles():
     obj = Article()
     article_data = obj.get_articles()
     return article_data
-    # print("article_data=====")
-    # print(article_data)
-    # obj.process_articles(article_data)
 
 """
 Creating collections class object and sending call to process collections and setup metadata.
@@ -87,12 +85,13 @@ if __name__ == "__main__":
     print("try fetching articles....")
     article_obj = Article()
     article_data = article_obj.get_articles()
-    print("file size....")
-    print(article_obj.total_all_articles_file_size)
 
     print("try fetching collections....")
     collection_obj = Collection()
     collection_data = collection_obj.get_collections()
 
+    # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
+
+    # Start collections processing after completing fetcing data from API and articles processing.
     collection_obj.process_collections(collection_data)
