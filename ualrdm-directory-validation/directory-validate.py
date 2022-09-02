@@ -72,10 +72,10 @@ def main():
         schema_dict = load_yaml(data)
     except Exception as e:
         print("Could not load schema file: {0}".format(e))
-        return(1)
+        return (1)
     except SchemaError:
         print("Provided document is not valid JSON or YAML Schema")
-        return(2)
+        return (2)
 
     print()
     print("Validation Results")
@@ -86,7 +86,7 @@ def main():
     except Exception as e:
         print("Error: {0}".format(e))
 
-    return(0)
+    return (0)
 
 
 def _dir_to_list(path, i=0):
