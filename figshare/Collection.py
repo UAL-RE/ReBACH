@@ -60,7 +60,8 @@ class Collection:
 
                         success = True
                     else:
-                        retries = self.article_obj.retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
+                        retries = self.article_obj.retries_if_error(
+                            f"API is not reachable. Retry {retries}", get_response.status_code, retries)
                         if (retries > self.retries):
                             break
                     page += 1
@@ -70,8 +71,7 @@ class Collection:
                 if (retries > self.retries):
                     break
 
-        return collection_data                
-        
+        return collection_data
 
     """
     This function will send request to fetch collection versions.
@@ -136,7 +136,8 @@ class Collection:
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
 
-                        version_metadata = {'collection_id': collection_id, 'metadata': version_data, 'md5': version_md5}
+                        version_metadata = {'collection_id': collection_id,
+                                            'metadata': version_data, 'md5': version_md5}
 
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
@@ -156,7 +157,9 @@ class Collection:
         page_size = 100
         page_empty = False
         api_url = f"collections/{collection['id']}/articles"
-        coll_articles_api = self.api_endpoint + api_url if self.api_endpoint[-1] == "/" else self.api_endpoint + f"/{api_url}"
+        coll_articles_api = self.api_endpoint + api_url
+        if self.api_endpoint[-1] != "/":
+            coll_articles_api = f"{self.api_endpoint}/{api_url}"
         retries = 1
         success = False
         articles_list = {}
@@ -167,21 +170,22 @@ class Collection:
                     get_response = requests.get(coll_articles_api, params=params)
                     if (get_response.status_code == 200):
                         articles = get_response.json()
-                        if(len(articles) == 0):
+                        if (len(articles) == 0):
                             page_empty = True
                             break
-                        
+
                         articles_list[page] = articles
-                        
+
                         success = True
-                    else:    
-                        retries = self.article_obj.retries_if_error(f"API is not reachable. Retry {retries}", get_response.status_code, retries)
-                        if(retries > self.retries):
+                    else:
+                        retries = self.article_obj.retries_if_error(
+                            f"API is not reachable. Retry {retries}", get_response.status_code, retries)
+                        if (retries > self.retries):
                             break
                     page += 1
             except Exception as e:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
-        
+
         return articles_list
