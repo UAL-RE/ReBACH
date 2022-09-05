@@ -45,8 +45,20 @@ def main():
 
     # Check logs path exits, if not then create directory
     logs_path_exists = os.path.exists(log_location)
-    if (logs_path_exists is False):
-        os.makedirs(log_location, exist_ok=True)
+
+    try:
+        if (logs_path_exists is False):
+            os.makedirs(log_location, mode=777, exist_ok=True)
+        
+        logs_access = os.access(staging_storage_location, os.W_OK)
+        if (logs_access is False):
+            print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+            exit()
+    
+    except OSError as error:
+        print(error)
+        print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+        exit()
 
     # Check storage path exits, if not then give error and stop processing
     storage_path_exists = os.path.exists(staging_storage_location)
@@ -90,12 +102,12 @@ if __name__ == "__main__":
     article_obj = Article()
     article_data = article_obj.get_articles()
 
-    print("try fetching collections....")
-    collection_obj = Collection()
-    collection_data = collection_obj.get_collections()
+    # print("try fetching collections....")
+    # collection_obj = Collection()
+    # collection_data = collection_obj.get_collections()
 
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 
     # Start collections processing after completing fetcing data from API and articles processing.
-    collection_obj.process_collections(collection_data)
+    # collection_obj.process_collections(collection_data)
