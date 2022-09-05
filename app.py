@@ -6,6 +6,32 @@ from Config import Config
 from figshare.Collection import Collection
 
 
+def check_logs_path_access():
+    """
+    Checking logs path access
+    """
+    config_obj = Config()
+    system_config = config_obj.system_config()
+    log_location = system_config["logs_location"]
+
+    # Check logs path exits, if not then create directory
+    logs_path_exists = os.path.exists(log_location)
+
+    try:
+        if (logs_path_exists is False):
+            os.makedirs(log_location, mode=777, exist_ok=True)
+
+        logs_access = os.access(log_location, os.W_OK)
+        if (logs_access is False):
+            print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+            exit()
+
+    except OSError as error:
+        print(error)
+        print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+        exit()
+
+
 def main():
     """
     This function will be called first.
@@ -25,7 +51,7 @@ def main():
     figshare_api_url = figshare_config["url"]
 
     log_location = system_config["logs_location"]
-    staging_storage_location = system_config["staging_storage_location"]
+    preservation_storage_location = system_config["preservation_storage_location"]
     figshare_api_token = figshare_config["token"]
     curation_storage_location = system_config["curation_storage_location"]
 
@@ -37,35 +63,19 @@ def main():
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
 
-    if (staging_storage_location == ""):
-        log.write_log_in_file('error', "Staging storage location path is required.", True, True)
+    if (preservation_storage_location == ""):
+        log.write_log_in_file('error', "Preservation storage location path is required.", True, True)
 
     if (curation_storage_location == ""):
         log.write_log_in_file('error', "Curation storage location path is required.", True, True)
 
-    # Check logs path exits, if not then create directory
-    logs_path_exists = os.path.exists(log_location)
-
-    try:
-        if (logs_path_exists is False):
-            os.makedirs(log_location, mode=777, exist_ok=True)
-        
-        logs_access = os.access(staging_storage_location, os.W_OK)
-        if (logs_access is False):
-            print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
-            exit()
-    
-    except OSError as error:
-        print(error)
-        print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
-        exit()
-
+    check_logs_path_access()
     # Check storage path exits, if not then give error and stop processing
-    storage_path_exists = os.path.exists(staging_storage_location)
-    access = os.access(staging_storage_location, os.W_OK)
+    storage_path_exists = os.path.exists(preservation_storage_location)
+    access = os.access(preservation_storage_location, os.W_OK)
     if (storage_path_exists is False or access is False):
         log.write_log_in_file('error',
-                              "The staging storage location specified in the config file could not be reached or read.",
+                              "The preservation storage location specified in the config file could not be reached or read.",
                               True, True)
 
     # Check curation path exits, if not then give error and stop processing
@@ -73,7 +83,7 @@ def main():
     curation_folder_access = os.access(curation_storage_location, os.W_OK)
     if (curation_path_exists is False or curation_folder_access is False):
         log.write_log_in_file('error',
-                              "The curation staging storage location specified in the config file could"
+                              "The curation storage location specified in the config file could"
                               + "not be reached or read.",
                               True, True)
 
@@ -102,12 +112,12 @@ if __name__ == "__main__":
     article_obj = Article()
     article_data = article_obj.get_articles()
 
-    # print("try fetching collections....")
-    # collection_obj = Collection()
-    # collection_data = collection_obj.get_collections()
+    print("try fetching collections....")
+    collection_obj = Collection()
+    collection_data = collection_obj.get_collections()
 
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 
     # Start collections processing after completing fetcing data from API and articles processing.
-    # collection_obj.process_collections(collection_data)
+    collection_obj.process_collections(collection_data)

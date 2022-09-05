@@ -1,5 +1,5 @@
 import json
-import math
+# import math
 import os
 import requests
 from Log import Log
@@ -47,12 +47,12 @@ class Collection:
                 page = 1
                 page_size = 3
                 page_empty = False
-                while(not page_empty):
-                # page = 1
-                # page_size = 3
-                # total_articles = 5
-                # no_of_pages = math.ceil(total_articles / page_size)
-                # while (page <= no_of_pages):
+                while (not page_empty):
+                    # page = 1
+                    # page_size = 3
+                    # total_articles = 5
+                    # no_of_pages = math.ceil(total_articles / page_size)
+                    # while (page <= no_of_pages):
                     print(f"page--{str(page)}")
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url, params=params)
@@ -141,7 +141,7 @@ class Collection:
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
                         version_metadata = version_data
-                        self.logs.write_log_in_file("info", f"{version_metadata} ")
+                        self.logs.write_log_in_file("info", f"Collection id - {collection_id} - {version_metadata} ")
 
                         return version_data
                     else:
@@ -201,7 +201,7 @@ class Collection:
     :param collections object
     """
     def process_collections(self, collections):
-        storage_folder = self.system_config["staging_storage_location"]
+        storage_folder = self.system_config["preservation_storage_location"]
         existing_space = self.article_obj.get_file_size_of_given_path(storage_folder)
         self.article_obj.check_required_space(existing_space)
 
@@ -223,11 +223,11 @@ class Collection:
     :param folder_name string
     """
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
-        staging_storage_location = self.system_config["staging_storage_location"]
+        preservation_storage_location = self.system_config["preservation_storage_location"]
 
-        self.article_obj.check_access_of_directries(staging_storage_location, "preservation")
+        self.article_obj.check_access_of_directries(preservation_storage_location, "preservation")
 
-        complete_path = staging_storage_location + folder_name
+        complete_path = preservation_storage_location + folder_name
         check_path_exists = os.path.exists(complete_path)
         if (check_path_exists is False):
             os.makedirs(complete_path, exist_ok=True)

@@ -1,5 +1,5 @@
 import json
-import math
+# import math
 import shutil
 import os
 import sys
@@ -49,15 +49,15 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented.
-                # page = 1
-                # page_size = 100
-                # page_empty = False
-                # while(not page_empty):
                 page = 1
-                page_size = 3
-                total_articles = 5
-                no_of_pages = math.ceil(total_articles / page_size)
-                while (page <= no_of_pages):
+                page_size = 100
+                page_empty = False
+                while (not page_empty):
+                    # page = 1
+                    # page_size = 3
+                    # total_articles = 5
+                    # no_of_pages = math.ceil(total_articles / page_size)
+                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -168,7 +168,7 @@ class Article:
                                     files = version_data_private['files']
                                     private_version_no = version_data_private['version']
                                     error = f"{version_data['id']} - This item had a file embargo." \
-                                    + f" The files are from version {str(private_version_no)}."
+                                            + f" The files are from version {str(private_version_no)}."
                                     self.logs.write_log_in_file("info", f"{error}", True)
                                 else:
                                     error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
@@ -232,8 +232,8 @@ class Article:
                 if (file['is_link_only'] is False):
                     version_no = "v" + str(version_data["version"]).zfill(2)
                     article_files_folder = folder_name + "/" + version_no + "/DATA"
-                    staging_storage_location = self.system_config["staging_storage_location"]
-                    article_folder_path = staging_storage_location + article_files_folder
+                    preservation_storage_location = self.system_config["preservation_storage_location"]
+                    article_folder_path = preservation_storage_location + article_files_folder
                     article_files_path_exists = os.path.exists(article_folder_path)
                     if (article_files_path_exists is False):
                         os.makedirs(article_folder_path, exist_ok=True)
@@ -367,8 +367,8 @@ class Article:
     """
     def check_required_space(self, required_space):
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"]) / 100))
-        staging_storage_location = self.system_config["staging_storage_location"]
-        memory = shutil.disk_usage(staging_storage_location)
+        preservation_storage_location = self.system_config["preservation_storage_location"]
+        memory = shutil.disk_usage(preservation_storage_location)
         available_space = memory.free
         if (req_space > available_space):
             self.logs.write_log_in_file('error', "There isn't enough space in storage path.", True, True)
@@ -383,13 +383,13 @@ class Article:
     def __check_file_hash(self, files, version_data, folder_path):
         version_no = "v" + str(version_data["version"]).zfill(2)
         article_files_folder = folder_path + "/" + version_no + "/DATA"
-        staging_storage_location = self.system_config["staging_storage_location"]
-        article_folder_path = staging_storage_location + article_files_folder
+        preservation_storage_location = self.system_config["preservation_storage_location"]
+        article_folder_path = preservation_storage_location + article_files_folder
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
 
         # check preservation dir is reachable
-        self.check_access_of_directries(staging_storage_location, "preservation")
+        self.check_access_of_directries(preservation_storage_location, "preservation")
 
         if (article_files_path_exists is True):
             get_files = os.listdir(article_folder_path)
@@ -431,8 +431,8 @@ class Article:
     def __save_json_in_metadata(self, version_data, folder_name):
         version_no = "v" + str(version_data["version"]).zfill(2)
         json_folder_path = folder_name + "/" + version_no + "/METADATA"
-        staging_storage_location = self.system_config["staging_storage_location"]
-        complete_path = staging_storage_location + json_folder_path
+        preservation_storage_location = self.system_config["preservation_storage_location"]
+        complete_path = preservation_storage_location + json_folder_path
         check_path_exists = os.path.exists(complete_path)
         if (check_path_exists is False):
             os.makedirs(complete_path, exist_ok=True)
@@ -475,11 +475,11 @@ class Article:
         # check curation dir is reachable
         self.check_access_of_directries(curation_storage_location, "curation")
 
-        staging_storage_location = self.system_config["staging_storage_location"]
-        complete_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        preservation_storage_location = self.system_config["preservation_storage_location"]
+        complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
         if (check_folder is True):
             # check preservation dir is reachable
-            self.check_access_of_directries(staging_storage_location, "preservation")
+            self.check_access_of_directries(preservation_storage_location, "preservation")
             try:
                 check_path_exists = os.path.exists(complete_folder_name)
                 if (check_path_exists is False):
@@ -524,7 +524,7 @@ class Article:
             for version_data in article_versions_list:
                 version_no = "v" + str(version_data["version"]).zfill(2)
                 folder_name = str(version_data["id"]) + "_" + version_no + "_" \
-                + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
+                    + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
 
                 if (version_data["matched"] is True):
                     curation_info = version_data["curation_info"]
@@ -559,7 +559,7 @@ class Article:
         while not success and retries <= int(self.retries):
             path_exists = os.path.exists(directory_path)
             folder_access = os.access(directory_path, os.R_OK)
-            text = "curation staging storage"
+            text = "curation storage"
             if (process_name == "preservation"):
                 text = "preservation storage"
             if (path_exists is False or folder_access is False):
@@ -571,18 +571,34 @@ class Article:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
-        staging_storage_location = self.system_config["staging_storage_location"]
+        preservation_storage_location = self.system_config["preservation_storage_location"]
         version_no = "v" + str(version_data["version"]).zfill(2)
         # setup UAL_RDM directory
-        ual_folder_name = staging_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        ual_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
         ual_path_exists = os.path.exists(ual_folder_name)
         if (ual_path_exists is False):
             # create UAL_RDM directory if not exist
             os.makedirs(ual_folder_name, exist_ok=True)
 
         # setup DATA directory
-        data_folder_name = staging_storage_location + folder_name + "/" + version_no + "/DATA"
+        data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
         data_path_exists = os.path.exists(data_folder_name)
         if (data_path_exists is False):
             # create DATA directory if not exist
             os.makedirs(data_folder_name, exist_ok=True)
+
+    """
+    Preprocess script command function.
+    """
+    def pre_process_script_function(self):
+        pre_process_script_command = self.system_config["pre_process_script_command"]
+        if (pre_process_script_command != ""):
+            print(f"Processing....{pre_process_script_command}")
+
+    """
+    Postprocess script command function.
+    """
+    def post_process_script_function(self):
+        post_process_script_command = self.system_config["post_process_script_command"]
+        if (post_process_script_command != ""):
+            print(f"Processing....{post_process_script_command}")
