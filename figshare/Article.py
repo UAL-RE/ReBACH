@@ -330,8 +330,8 @@ class Article:
                                                 ual_rdm_path = version_dir + "/" + dir
                                                 ual_dir = os.listdir(ual_rdm_path)
                                                 for ual_file in ual_dir:
-                                                    if (ual_file.startswith("Deposit Agreement.pdf")
-                                                            or ual_file.startswith("Deposit_Agreement.pdf")):
+                                                    if (ual_file.startswith("Deposit Agreement")
+                                                            or ual_file.startswith("Deposit_Agreement")):
                                                         deposit_agrement_file = True
 
                                                     if (ual_file.startswith("ReDATA-DepositReview")):
@@ -536,7 +536,7 @@ class Article:
                     if (version_data["deposit_agrement_file"] is False
                         or version_data["redata_deposit_review_file"] is False
                             or version_data["trello_file"] is False):
-                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory don't have required"
+                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
                                                              + "files in curation storage.", True)
                     else:
                         # copy curation UAL_RDM files in storage UAL_RDM folder for each version
