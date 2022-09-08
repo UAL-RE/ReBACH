@@ -428,7 +428,7 @@ class Article:
 
         # delete directory if validation failed.
         if (delete_folder is True):
-            shutil.rmtree(preservation_storage_location + folder_path)
+            self.delete_folder(preservation_storage_location + folder_path)
 
         return process_article
 
@@ -552,6 +552,7 @@ class Article:
                         check_dir = preservation_storage_location + folder_name
                         check_main_folder = os.path.exists(check_dir)
                         check_files = True
+                        copy_files = True
                         if (check_main_folder == True):
                             get_dirs = os.listdir(check_dir)
                             if (len(get_dirs) > 0):
@@ -570,20 +571,21 @@ class Article:
                                     self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
                                 break
                         # end check main folder exists in preservation storage.
-                        # curation_info = version_data["curation_info"]
-                        # if (curation_info["total_files"] > 0):
-                        # check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
-                        if (check_files is True):
-                            # download all files and veriy hash with downloaded file.
-                            self.__download_files(version_data['files'], version_data, folder_name)
-                            if (version_data["deposit_agrement_file"] is False
+                        # check require files exists in curation UAL_RDM folder
+                        if (version_data["deposit_agrement_file"] is False
                                 or version_data["redata_deposit_review_file"] is False
                                     or version_data["trello_file"] is False):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
                                                                     + "files in curation storage.", True)
-                            else:
-                                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                                self.__copy_files_ual_rdm(version_data, folder_name)
+                                copy_files = False
+                        else:
+                            copy_files = True
+                            
+                        if (check_files is True and copy_files is True):
+                            # download all files and veriy hash with downloaded file.
+                            self.__download_files(version_data['files'], version_data, folder_name)
+                            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                            self.__copy_files_ual_rdm(version_data, folder_name)
                             # check and create empty directories for each version
                             self.create_required_folders(version_data, folder_name)
                             # save json in metadata folder for each version
@@ -662,3 +664,11 @@ class Article:
             print(f"Processing....{post_process_script_command}")
         else:
             return 0
+
+    """
+    Delete folder
+    """
+    def delete_folder(self, folder_path):
+        check_exsits = os.path.exists(folder_path)
+        if (check_exsits is True):
+            shutil.rmtree(folder_path)
