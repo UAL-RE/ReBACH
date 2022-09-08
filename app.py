@@ -111,6 +111,8 @@ if __name__ == "__main__":
     print("try fetching articles....")
     article_obj = Article()
     article_data = article_obj.get_articles()
+    # print("articles....")
+    # print(article_data)
 
     print("try fetching collections....")
     collection_obj = Collection()

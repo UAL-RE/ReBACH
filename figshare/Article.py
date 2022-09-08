@@ -343,6 +343,8 @@ class Article:
                                     version_data["deposit_agrement_file"] = deposit_agrement_file
                                     version_data["redata_deposit_review_file"] = redata_deposit_review_file
                                     version_data["trello_file"] = trello_file
+                else:
+                    self.logs.write_log_in_file('error', f"{version_data['id']} not exists in curration storage location.")
 
         return version_data
 
@@ -382,12 +384,13 @@ class Article:
     """
     def __check_file_hash(self, files, version_data, folder_path):
         version_no = "v" + str(version_data["version"]).zfill(2)
-        article_files_folder = folder_path + "/" + version_no + "/DATA"
+        article_version_folder = folder_path + "/" + version_no
+        article_files_folder = article_version_folder + "/DATA"
         preservation_storage_location = self.system_config["preservation_storage_location"]
         article_folder_path = preservation_storage_location + article_files_folder
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
-
+        delete_folder = False
         # check preservation dir is reachable
         self.check_access_of_directries(preservation_storage_location, "preservation")
 
@@ -405,6 +408,7 @@ class Article:
                         # checking md5 values to check existing file is same or not.
                         existing_file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
                         if (existing_file_hash != compare_hash):
+                            delete_folder = True
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
                         else:
                             self.logs.write_log_in_file('info', f"{file_path} hash matched, files already exists.", True)
@@ -413,6 +417,7 @@ class Article:
                         break
                     else:
                         self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
+                        delete_folder = True
                         process_article = False
                         break
             else:
@@ -420,6 +425,10 @@ class Article:
 
         else:
             process_article = True
+
+        # delete directory if validation failed.
+        if (delete_folder is True):
+            shutil.rmtree(preservation_storage_location + folder_path)
 
         return process_article
 
@@ -503,15 +512,20 @@ class Article:
         self.check_required_space(total_file_size)
         article_data = {}
         for article in articles:
-            print(f"{article} article in process=====")
             if (articles[article] is not None):
                 article_versions_list = articles[article]
                 article_data[article] = []
                 for version_data in article_versions_list:
                     # check curation folder for required files and setup data for further processing.
                     data = self.__check_curation_dir(version_data)
-                    article_data[article].append(data)
+                    # print("data====")
+                    # print(data)
+                    if (data["matched"] == True):
+                        article_data[article].append(data)
 
+        # print("data====")
+        # print(article_data[7873476][1])
+        # exit()
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
@@ -525,27 +539,69 @@ class Article:
                 version_no = "v" + str(version_data["version"]).zfill(2)
                 folder_name = str(version_data["id"]) + "_" + version_no + "_" \
                     + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
-
+                # print("folder_name====")
+                # print(folder_name)
+                # print(f'{version_data["matched"]} - {version_data["id"]}')
                 if (version_data["matched"] is True):
-                    curation_info = version_data["curation_info"]
-                    if (curation_info["total_files"] > 0):
-                        check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
+                    # call pre process script function for each match item.
+                    value_pre_process = self.pre_process_script_function()
+                    print(value_pre_process)
+                    if (value_pre_process == 0):
+                        # check main folder exists in preservation storage.
+                        preservation_storage_location = self.system_config["preservation_storage_location"]
+                        check_dir = preservation_storage_location + folder_name
+                        check_main_folder = os.path.exists(check_dir)
+                        check_files = True
+                        if (check_main_folder == True):
+                            get_dirs = os.listdir(check_dir)
+                            if (len(get_dirs) > 0):
+                                check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
+                                print("...check files if found in folder...")
+                                print(check_files)
+                            else:
+                                check_files = False
+                                # print("...if folder is empty...")
+                                # print(check_files)
+                                # delete folder if validation fails
+                                shutil.rmtree(check_dir)
+                                # call pre process script function for each match item.
+                                value_post_process = self.post_process_script_function()
+                                if (value_post_process != 0):
+                                    self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
+                                break
+                        # end check main folder exists in preservation storage.
+                        # curation_info = version_data["curation_info"]
+                        # if (curation_info["total_files"] > 0):
+                        # check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
                         if (check_files is True):
                             # download all files and veriy hash with downloaded file.
                             self.__download_files(version_data['files'], version_data, folder_name)
-                    if (version_data["deposit_agrement_file"] is False
-                        or version_data["redata_deposit_review_file"] is False
-                            or version_data["trello_file"] is False):
-                        self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
-                                                             + "files in curation storage.", True)
+                            if (version_data["deposit_agrement_file"] is False
+                                or version_data["redata_deposit_review_file"] is False
+                                    or version_data["trello_file"] is False):
+                                self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
+                                                                    + "files in curation storage.", True)
+                            else:
+                                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                                self.__copy_files_ual_rdm(version_data, folder_name)
+                            # check and create empty directories for each version
+                            self.create_required_folders(version_data, folder_name)
+                            # save json in metadata folder for each version
+                            self.__save_json_in_metadata(version_data, folder_name)
+                        else:
+                            # call pre process script function for each match item.
+                            value_post_process = self.post_process_script_function()
+                            if (value_post_process != 0):
+                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                            # break
                     else:
-                        # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                        self.__copy_files_ual_rdm(version_data, folder_name)
-                # check and create empty directories for each version
-                self.create_required_folders(version_data, folder_name)
-
-                # save json in metadata folder for each version
-                self.__save_json_in_metadata(version_data, folder_name)
+                        # print("pre_process_script_function value none 0====")
+                        # print(version_data['id'])
+                        # call pre process script function for each match item.
+                        value_post_process = self.post_process_script_function()
+                        if (value_post_process != 0):
+                            self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                        # break
 
     """
     Preservation and Curation directory access check while processing.
@@ -594,6 +650,8 @@ class Article:
         pre_process_script_command = self.system_config["pre_process_script_command"]
         if (pre_process_script_command != ""):
             print(f"Processing....{pre_process_script_command}")
+        else:
+            return 0
 
     """
     Postprocess script command function.
@@ -602,3 +660,5 @@ class Article:
         post_process_script_command = self.system_config["post_process_script_command"]
         if (post_process_script_command != ""):
             print(f"Processing....{post_process_script_command}")
+        else:
+            return 0
