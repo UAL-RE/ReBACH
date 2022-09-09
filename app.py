@@ -1,3 +1,4 @@
+import ast
 import os
 from Log import Log
 from figshare.Article import Article
@@ -71,9 +72,9 @@ def main():
 
     check_logs_path_access()
     # Check storage path exits, if not then give error and stop processing
-    storage_path_exists = os.path.exists(preservation_storage_location)
+    preservation_path_exists = os.path.exists(preservation_storage_location)
     access = os.access(preservation_storage_location, os.W_OK)
-    if (storage_path_exists is False or access is False):
+    if (preservation_path_exists is False or access is False):
         log.write_log_in_file('error',
                               "The preservation storage location specified in the config file could not be reached or read.",
                               True, True)

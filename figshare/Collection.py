@@ -25,6 +25,9 @@ class Collection:
         self.logs = Log()
         self.errors = []
         self.article_obj = Article()
+        self.preservation_storage_location = self.system_config["preservation_storage_location"]
+        if self.preservation_storage_location[-1] != "/":
+            self.preservation_storage_location =  self.preservation_storage_location + "/"
 
     """
     API get request sent to '/collections'.
@@ -201,7 +204,7 @@ class Collection:
     :param collections object
     """
     def process_collections(self, collections):
-        storage_folder = self.system_config["preservation_storage_location"]
+        storage_folder = self.preservation_storage_location
         existing_space = self.article_obj.get_file_size_of_given_path(storage_folder)
         self.article_obj.check_required_space(existing_space)
 
@@ -223,7 +226,7 @@ class Collection:
     :param folder_name string
     """
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
-        preservation_storage_location = self.system_config["preservation_storage_location"]
+        preservation_storage_location = self.preservation_storage_location
 
         self.article_obj.check_access_of_directries(preservation_storage_location, "preservation")
 
