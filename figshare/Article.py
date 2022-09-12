@@ -596,10 +596,10 @@ class Article:
                         # check require files exists in curation UAL_RDM folder
                         if (version_data["deposit_agrement_file"] is False
                                 or version_data["redata_deposit_review_file"] is False
-                                    or version_data["trello_file"] is False):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
-                                 + "files in curation storage.", True)
-                                copy_files = False
+                                or version_data["trello_file"] is False):
+                            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
+                                                        + "files in curation storage.", True)
+                            copy_files = False
                         else:
                             copy_files = True
 
