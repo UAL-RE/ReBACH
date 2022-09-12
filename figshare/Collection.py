@@ -27,7 +27,7 @@ class Collection:
         self.article_obj = Article()
         self.preservation_storage_location = self.system_config["preservation_storage_location"]
         if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location =  self.preservation_storage_location + "/"
+            self.preservation_storage_location = self.preservation_storage_location + "/"
 
     """
     API get request sent to '/collections'.

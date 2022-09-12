@@ -32,10 +32,10 @@ class Article:
         self.total_all_articles_file_size = 0
         self.preservation_storage_location = self.system_config["preservation_storage_location"]
         if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location =  self.preservation_storage_location + "/"
+            self.preservation_storage_location = self.preservation_storage_location + "/"
         self.curation_storage_location = self.system_config["curation_storage_location"]
         if self.curation_storage_location[-1] != "/":
-            self.curation_storage_location =  self.curation_storage_location + "/"
+            self.curation_storage_location = self.curation_storage_location + "/"
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -59,11 +59,11 @@ class Article:
                 page_size = 100
                 page_empty = False
                 while (not page_empty):
-                # page = 1
-                # page_size = 3
-                # total_articles = 5
-                # no_of_pages = math.ceil(total_articles / page_size)
-                # while (page <= no_of_pages):
+                    # page = 1
+                    # page_size = 3
+                    # total_articles = 5
+                    # no_of_pages = math.ceil(total_articles / page_size)
+                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -263,12 +263,12 @@ class Article:
                             break
                     else:
                         self.logs.write_log_in_file("error",
-                                                        f"{version_data['id']} - File doesn't download. Status code {filecontent.status_code}."
-                                                        + f"Path {file_name_with_path}", True)
+                                                    f"{version_data['id']} - File doesn't download. Status code {filecontent.status_code}."
+                                                    + f"Path {file_name_with_path}", True)
                         delete_folder = True
                         break
 
-        return delete_folder              
+        return delete_folder
 
     """
     Retries function.
@@ -300,8 +300,6 @@ class Article:
         version_data["matched"] = False
         for dir in dirs:
             if (dir not in self.exclude_dirs):
-                author_name = version_data['authors'][0]["url_name"]
-                check_dir_name = author_name + "_" + str(version_data['id'])
                 dir_array = dir.split("_")
                 # check author name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
                 if (str(version_data['id']) in dir_array):
@@ -505,7 +503,7 @@ class Article:
 
         preservation_storage_location = self.system_config["preservation_storage_location"]
         complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
-        
+
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -554,7 +552,7 @@ class Article:
                 for version_data in article_versions_list:
                     # check curation folder for required files and setup data for further processing.
                     data = self.__check_curation_dir(version_data)
-                    if (data["matched"] == True):
+                    if (data["matched"] is True):
                         article_data[article].append(data)
 
         # calcualte space for given path.
@@ -581,7 +579,7 @@ class Article:
                         check_main_folder = os.path.exists(check_dir)
                         check_files = True
                         copy_files = True
-                        if (check_main_folder == True):
+                        if (check_main_folder is True):
                             get_dirs = os.listdir(check_dir)
                             if (len(get_dirs) > 0):
                                 check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
@@ -600,11 +598,11 @@ class Article:
                                 or version_data["redata_deposit_review_file"] is False
                                     or version_data["trello_file"] is False):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
-                                                                    + "files in curation storage.", True)
+                                 + "files in curation storage.", True)
                                 copy_files = False
                         else:
                             copy_files = True
-                            
+
                         if (check_files is True and copy_files is True):
                             # download all files and veriy hash with downloaded file.
                             delete_now = self.__download_files(version_data['files'], version_data, folder_name)

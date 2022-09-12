@@ -1,4 +1,3 @@
-import ast
 import os
 from Log import Log
 from figshare.Article import Article
