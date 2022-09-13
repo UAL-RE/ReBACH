@@ -48,7 +48,7 @@ class Collection:
             try:
                 # pagination implemented.
                 page = 1
-                page_size = 3
+                page_size = 100
                 page_empty = False
                 while (not page_empty):
                     # page = 1
@@ -58,7 +58,8 @@ class Collection:
                     # while (page <= no_of_pages):
                     print(f"page--{str(page)}")
                     params = {'page': page, 'page_size': page_size}
-                    get_response = requests.get(collections_api_url, params=params)
+                    get_response = requests.get(collections_api_url, params=params,
+                                                timeout=self.retry_wait)
                     if (get_response.status_code == 200):
                         collections = get_response.json()
                         if (len(collections) == 0):
@@ -69,9 +70,9 @@ class Collection:
                             coll_versions = self.__get_collection_versions(collection)
                             coll_articles = self.__get_collection_articles(collection)
                             collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
-
                         success = True
                     else:
+                        success = False
                         retries = self.article_obj.retries_if_error(
                             f"API is not reachable. Retry {retries}", get_response.status_code, retries)
                         if (retries > self.retries):
@@ -79,6 +80,7 @@ class Collection:
                     page += 1
 
             except Exception as e:
+                success = False
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
@@ -102,7 +104,7 @@ class Collection:
                     print(collection['id'])
                     public_url = collection['url']
                     version_url = public_url + "/versions"
-                    get_response = requests.get(version_url)
+                    get_response = requests.get(version_url, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
                         versions = get_response.json()
                         metadata = []
@@ -118,9 +120,11 @@ class Collection:
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"Public verion URL is not reachable. Retry {retries}", get_response.status_code, retries)
+                        success = False
                         if (retries > self.retries):
                             break
-            except requests.exceptions.RequestException as e:
+            except Exception as e:
+                success = False
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
@@ -140,19 +144,21 @@ class Collection:
             try:
                 if (version):
                     public_url = version['url']
-                    get_response = requests.get(public_url)
+                    get_response = requests.get(public_url, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
                         version_metadata = version_data
                         self.logs.write_log_in_file("info", f"Collection id - {collection_id} - {version_metadata} ")
-
+                        success = True
                         return version_data
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"{collection_id} API not reachable. Retry {retries}", get_response.status_code, retries)
+                        success = False
                         if (retries > self.retries):
                             break
-            except requests.exceptions.RequestException as e:
+            except Exception as e:
+                success = False
                 retries = self.article_obj.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
                 if (retries > self.retries):
                     break
@@ -163,9 +169,6 @@ class Collection:
         :param collection object
         :return articles object
         """
-        page = 1
-        page_size = 100
-        page_empty = False
         api_url = f"collections/{collection['id']}/articles"
         coll_articles_api = self.api_endpoint + api_url
         if self.api_endpoint[-1] != "/":
@@ -173,26 +176,34 @@ class Collection:
         retries = 1
         success = False
         articles_list = []
-        while not success and retries <= int(self.retries):
+        page_empty = False
+        while not success and retries <= int(self.retries) and not page_empty:
             try:
+                page = 1
+                page_size = 100
                 while (not page_empty):
                     params = {'page': page, 'page_size': page_size}
-                    get_response = requests.get(coll_articles_api, params=params)
+                    get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
                         articles = get_response.json()
                         if (len(articles) == 0):
                             page_empty = True
                             break
-
                         articles_list = articles
                         success = True
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"API is not reachable. Retry {retries}", get_response.status_code, retries)
+                        success = False
                         if (retries > self.retries):
                             break
                     page += 1
+                    if (page_empty is True):
+                        success = False
+                        break
+
             except Exception as e:
+                success = False
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break

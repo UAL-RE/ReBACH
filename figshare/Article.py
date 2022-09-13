@@ -67,7 +67,8 @@ class Article:
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
-                                                params=params
+                                                params=params,
+                                                timeout=self.retry_wait
                                                 )
                     if (get_response.status_code == 200):
                         articles = get_response.json()
@@ -164,7 +165,8 @@ class Article:
                         private_version_no = 0
                         if (total_file_size > 0 and 'files' not in version_data):
                             get_response = requests.get(version_data['url_private_api'],
-                                                        headers={'Authorization': 'token ' + self.api_token})
+                                                        headers={'Authorization': 'token ' + self.api_token},
+                                                        timeout=self.retry_wait)
                             file_len = 0
                             if (get_response.status_code == 200):
                                 version_data_private = get_response.json()
