@@ -108,16 +108,16 @@ def get_collections():
 
 if __name__ == "__main__":
     main()
-    print("try fetching articles....")
+    print("Try fetching articles....")
     article_obj = Article()
     article_data = article_obj.get_articles()
-    # print("articles....")
-    # print(article_data)
-
-    print("try fetching collections....")
+    print(f"Total articles fetched: {len(article_data)}")
+    print(" ")
+    print("Try fetching collections....")
     collection_obj = Collection()
     collection_data = collection_obj.get_collections()
-
+    print(f"Total collections fetched: {len(collection_data)}")
+    print(" ")
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 

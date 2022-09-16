@@ -56,7 +56,6 @@ class Collection:
                     # total_articles = 5
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
-                    print(f"page--{str(page)}")
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(collections_api_url, params=params,
                                                 timeout=self.retry_wait)
@@ -66,7 +65,10 @@ class Collection:
                             page_empty = True
                             break
 
+                        no_of_col = 0
                         for collection in collections:
+                            no_of_col = no_of_col + 1
+                            print(f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}")
                             coll_versions = self.__get_collection_versions(collection)
                             coll_articles = self.__get_collection_articles(collection)
                             collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
@@ -101,7 +103,6 @@ class Collection:
         while not success and retries <= int(self.retries):
             try:
                 if (collection):
-                    print(collection['id'])
                     public_url = collection['url']
                     version_url = public_url + "/versions"
                     get_response = requests.get(version_url, timeout=self.retry_wait)
@@ -110,6 +111,7 @@ class Collection:
                         metadata = []
                         if (len(versions) > 0):
                             for version in versions:
+                                print(f"Fetching collection {collection['id']} version {version['version']}.")
                                 version_data = self.__get_collection_metadata_by_version(version, collection['id'])
                                 metadata.append(version_data)
                             success = True
@@ -191,6 +193,7 @@ class Collection:
                             break
                         articles_list = articles
                         success = True
+                        print(f"Fetching collection {len(articles_list)} articles of Page {page}. ID: {collection['id']}")
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"API is not reachable. Retry {retries}", get_response.status_code, retries)
@@ -229,6 +232,7 @@ class Collection:
                 version_no = f"v{str(version['version']).zfill(2)}"
                 folder_name = str(collection) + "_" + version_no + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
+                print(f"Processing collection {collection} version {version['version']}")
                 self.__save_json_in_metadata(collection, version, folder_name)
 
     """

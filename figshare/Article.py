@@ -75,9 +75,11 @@ class Article:
                         if (len(articles) == 0):
                             page_empty = True
                             break
-
+                        no_of_article = 0
                         for article in articles:
                             if (article['published_date'] is not None or article['published_date'] != ''):
+                                no_of_article = no_of_article + 1 
+                                print(f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}")
                                 article_data[article['id']] = self.__get_article_versions(article)
 
                         success = True
@@ -110,7 +112,6 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 if (article):
-                    print(article['id'])
                     public_url = article['url_public_api']
                     version_url = public_url + "/versions"
                     get_response = requests.get(version_url)
@@ -119,6 +120,7 @@ class Article:
                         metadata = []
                         if (len(versions) > 0):
                             for version in versions:
+                                print(f"Fetching article {article['id']} version {version['version']}.")
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
                             success = True
@@ -239,6 +241,7 @@ class Article:
         if (len(files) > 0):
             version_no = "v" + str(version_data["version"]).zfill(2)
             article_folder = folder_name + "/" + version_no
+            file_no = 0
             for file in files:
                 if (file['is_link_only'] is False):
                     article_files_folder = article_folder + "/DATA"
@@ -251,6 +254,8 @@ class Article:
                     file_name_with_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
                     filecontent = requests.get(file['download_url'], allow_redirects=True)
                     if (filecontent.status_code == 200):
+                        file_no = file_no + 1
+                        print(f"Downloaded file {file_no} for article {version_data['id']} - version {version_data['version']}")
                         open(file_name_with_path, 'wb').write(filecontent.content)
                         existing_file_hash = hashlib.md5(open(file_name_with_path, 'rb').read()).hexdigest()
                         compare_hash = file['supplied_md5']
@@ -567,6 +572,7 @@ class Article:
             article_versions_list = articles[article]
             article_data[article] = []
             for version_data in article_versions_list:
+                print(f"Processing article {article} version {version_data['version']}")
                 version_no = "v" + str(version_data["version"]).zfill(2)
                 folder_name = str(version_data["id"]) + "_" + version_no + "_" \
                     + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
