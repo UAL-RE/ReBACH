@@ -73,15 +73,9 @@ class Article:
                     if (get_response.status_code == 200):
                         articles = get_response.json()
                         if (len(articles) == 0):
-                            page_empty = True
+                            # page_empty = True
                             break
-                        no_of_article = 0
-                        for article in articles:
-                            if (article['published_date'] is not None or article['published_date'] != ''):
-                                no_of_article = no_of_article + 1 
-                                print(f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}")
-                                article_data[article['id']] = self.__get_article_versions(article)
-
+                        article_data = self.article_loop(articles, page_size, page, article_data)
                         success = True
                     else:
                         retries = self.retries_if_error(
@@ -94,6 +88,16 @@ class Article:
                 retries = self.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
+
+        return article_data
+
+    def article_loop(self, articles, page_size, page, article_data):
+        no_of_article = 0
+        for article in articles:
+            if (article['published_date'] is not None or article['published_date'] != ''):
+                no_of_article = no_of_article + 1
+                print(f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}")
+                article_data[article['id']] = self.__get_article_versions(article)
 
         return article_data
 
@@ -166,51 +170,19 @@ class Article:
                         error = ""
                         private_version_no = 0
                         if (total_file_size > 0 and 'files' not in version_data):
-                            get_response = requests.get(version_data['url_private_api'],
-                                                        headers={'Authorization': 'token ' + self.api_token},
-                                                        timeout=self.retry_wait)
-                            file_len = 0
-                            if (get_response.status_code == 200):
-                                version_data_private = get_response.json()
-                                # checking curation_status from article's private api
-                                if (version_data_private['curation_status'] == "approved"):
-                                    file_len = len(version_data_private['files'])
-                                    files = version_data_private['files']
-                                    private_version_no = version_data_private['version']
-                                    error = f"{version_data['id']} - This item had a file embargo." \
-                                            + f" The files are from version {str(private_version_no)}."
-                                    self.logs.write_log_in_file("info", f"{error}", True)
-                                else:
-                                    error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
-                                    self.logs.write_log_in_file("info", f"{error}", True)
-
+                            private_data = self.private_article(version_data)
+                            files = private_data['files']
+                            private_version_no = private_data['private_version_no']
+                            file_len = private_data['file_len']
                         else:
                             file_len = len(version_data['files'])
                             files = version_data['files']
-                        # item_subtype conditions
-                        sub_type = ''
-                        if (version_data['has_linked_file']):
-                            sub_type = 'linked'
-                        elif (version_data['is_metadata_record']):
-                            sub_type = 'metadata'
-                        else:
-                            sub_type = 'regular'
 
                         version_md5 = ''
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
 
-                        version_metadata = {'article_id': article_id,
-                                            'metadata': {
-                                                'item_type': 'article', 'item_subtype': sub_type,
-                                                'id': version_data['id'], 'version': version['version'],
-                                                'first_author': version_data['authors'][0], 'files': files,
-                                                'total_num_files': file_len, 'file_size_sum': total_file_size,
-                                                'public_url': version_data['url_public_api'],
-                                                'private_version_no': private_version_no,
-                                                'md5': version_md5
-                                                }
-                                            }
+                        version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
                         version_data['file_size_sum'] = total_file_size
                         version_data['version_md5'] = version_md5
@@ -232,6 +204,50 @@ class Article:
                 retries = self.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
                 if (retries > self.retries):
                     break
+
+    def set_version_metadata(self, version_data, files, private_version_no, version_md5, total_file_size):
+        # item_subtype conditions
+        sub_type = ''
+        if (version_data['has_linked_file']):
+            sub_type = 'linked'
+        elif (version_data['is_metadata_record']):
+            sub_type = 'metadata'
+        else:
+            sub_type = 'regular'
+        return {'article_id': version_data['id'],
+                'metadata': {
+                    'item_type': 'article', 'item_subtype': sub_type,
+                    'id': version_data['id'], 'version': version_data['version'],
+                    'first_author': version_data['authors'][0], 'files': files,
+                    'total_num_files': len(files), 'file_size_sum': total_file_size,
+                    'public_url': version_data['url_public_api'],
+                    'private_version_no': private_version_no,
+                    'md5': version_md5
+                    }
+                }
+
+    def private_article(self, version_data):
+        get_response = requests.get(version_data['url_private_api'],
+                                    headers={'Authorization': 'token ' + self.api_token},
+                                    timeout=self.retry_wait)
+        file_len = 0
+        files = []
+        private_version_no = 0
+        if (get_response.status_code == 200):
+            version_data_private = get_response.json()
+            # checking curation_status from article's private api
+            if (version_data_private['curation_status'] == "approved"):
+                file_len = len(version_data_private['files'])
+                files = version_data_private['files']
+                private_version_no = version_data_private['version']
+                error = f"{version_data['id']} - This item had a file embargo." \
+                        + f" The files are from version {str(private_version_no)}."
+                self.logs.write_log_in_file("info", f"{error}", True)
+            else:
+                error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
+                self.logs.write_log_in_file("info", f"{error}", True)
+
+        return {"files": files, "private_version_no": private_version_no, "file_len": file_len}
 
     """
     This function will download files and place them in directory, with version_metadata.
@@ -301,9 +317,6 @@ class Article:
         curation_storage_location = self.curation_storage_location
         dirs = os.listdir(curation_storage_location)
         version_no = "v" + str(version_data["version"]).zfill(2)
-        deposit_agrement_file = False
-        redata_deposit_review_file = False
-        trello_file = False
         version_data["matched"] = False
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -346,27 +359,35 @@ class Article:
                                                                 + "Path is {version_dir}", True)
                                     break
                                 else:
-                                    for dir in read_version_dirs:
-                                        if dir not in self.exclude_dirs:
-                                            if dir == "UAL_RDM":
-                                                ual_rdm_path = version_dir + "/" + dir
-                                                ual_dir = os.listdir(ual_rdm_path)
-                                                for ual_file in ual_dir:
-                                                    if (ual_file.startswith("Deposit Agreement")
-                                                            or ual_file.startswith("Deposit_Agreement")):
-                                                        deposit_agrement_file = True
-
-                                                    if (ual_file.startswith("ReDATA-DepositReview")):
-                                                        redata_deposit_review_file = True
-
-                                                    if (ual_file.endswith("Trello.pdf")):
-                                                        trello_file = True
-
-                                    version_data["deposit_agrement_file"] = deposit_agrement_file
-                                    version_data["redata_deposit_review_file"] = redata_deposit_review_file
-                                    version_data["trello_file"] = trello_file
+                                    version_data = self.read_version_dirs_fun(read_version_dirs, version_dir, version_data)
                 else:
                     self.logs.write_log_in_file('error', f"{version_data['id']} not exists in curration storage location.")
+
+        return version_data
+
+    def read_version_dirs_fun(self, read_version_dirs, version_dir, version_data):
+        deposit_agrement_file = False
+        redata_deposit_review_file = False
+        trello_file = False
+        for dir in read_version_dirs:
+            if dir not in self.exclude_dirs:
+                if dir == "UAL_RDM":
+                    ual_rdm_path = version_dir + "/" + dir
+                    ual_dir = os.listdir(ual_rdm_path)
+                    for ual_file in ual_dir:
+                        if (ual_file.startswith("Deposit Agreement")
+                                or ual_file.startswith("Deposit_Agreement")):
+                            deposit_agrement_file = True
+
+                        if (ual_file.startswith("ReDATA-DepositReview")):
+                            redata_deposit_review_file = True
+
+                        if (ual_file.endswith("Trello.pdf")):
+                            trello_file = True
+
+        version_data["deposit_agrement_file"] = deposit_agrement_file
+        version_data["redata_deposit_review_file"] = redata_deposit_review_file
+        version_data["trello_file"] = trello_file
 
         return version_data
 
@@ -536,9 +557,65 @@ class Article:
                                     self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} err while coping file.", True)
 
     """
-    Process all articles after fetching from API.
+    Find matched articles from the fetched data and curation dir
     """
-    def process_articles(self, articles, total_file_size):
+    def find_matched_articles(self, articles):
+        article_data = {}
+        for article in articles:
+            if (articles[article] is not None):
+                article_versions_list = articles[article]
+                article_data[article] = []
+                for version_data in article_versions_list:
+                    # check curation folder for required files and setup data for further processing.
+                    data = self.__check_curation_dir(version_data)
+                    if (data["matched"] is True):
+                        article_data[article].append(data)
+
+        return article_data
+
+    """
+    Check files are copyable or not
+    """
+    def __can_copy_files(self, version_data):
+        if (version_data["deposit_agrement_file"] is False
+                or version_data["redata_deposit_review_file"] is False
+                or version_data["trello_file"] is False):
+            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
+                                        + "files in curation storage.", True)
+            copy_files = False
+        else:
+            copy_files = True
+
+        return copy_files
+
+    """
+    Final process for matched articles.
+    """
+    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
+        if (check_files is True and copy_files is True):
+            # download all files and veriy hash with downloaded file.
+            delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+            # check download process has error or not.
+            if (delete_now is False):
+                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                self.__copy_files_ual_rdm(version_data, folder_name)
+                # check and create empty directories for each version
+                self.create_required_folders(version_data, folder_name)
+                # save json in metadata folder for each version
+                self.__save_json_in_metadata(version_data, folder_name)
+            else:
+                # if download process has any error than delete complete folder
+                self.delete_folder(check_dir)
+        else:
+            # call post process script function for each match item.
+            value_post_process = self.post_process_script_function()
+            if (value_post_process != 0):
+                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+
+    """
+    Called before articles processing.
+    """
+    def __initial_process(self, total_file_size):
         # get curration directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
@@ -551,17 +628,15 @@ class Article:
 
         # check required space after Figshare API process, it will stop process if space is less.
         self.check_required_space(total_file_size)
-        article_data = {}
-        for article in articles:
-            if (articles[article] is not None):
-                article_versions_list = articles[article]
-                article_data[article] = []
-                for version_data in article_versions_list:
-                    # check curation folder for required files and setup data for further processing.
-                    data = self.__check_curation_dir(version_data)
-                    if (data["matched"] is True):
-                        article_data[article].append(data)
 
+        return curation_storage_location
+
+    """
+    Process all articles after fetching from API.
+    """
+    def process_articles(self, articles, total_file_size):
+        curation_storage_location = self.__initial_process(total_file_size)
+        article_data = self.find_matched_articles(articles)
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
@@ -602,34 +677,15 @@ class Article:
                                 break
                         # end check main folder exists in preservation storage.
                         # check require files exists in curation UAL_RDM folder
-                        if (version_data["deposit_agrement_file"] is False
-                                or version_data["redata_deposit_review_file"] is False
-                                or version_data["trello_file"] is False):
-                            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
-                                                        + "files in curation storage.", True)
-                            copy_files = False
-                        else:
-                            copy_files = True
-
-                        if (check_files is True and copy_files is True):
-                            # download all files and veriy hash with downloaded file.
-                            delete_now = self.__download_files(version_data['files'], version_data, folder_name)
-                            # check download process has error or not.
-                            if (delete_now is False):
-                                # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                                self.__copy_files_ual_rdm(version_data, folder_name)
-                                # check and create empty directories for each version
-                                self.create_required_folders(version_data, folder_name)
-                                # save json in metadata folder for each version
-                                self.__save_json_in_metadata(version_data, folder_name)
-                            else:
-                                # if download process has any error than delete complete folder
-                                self.delete_folder(check_dir)
-                        else:
-                            # call post process script function for each match item.
-                            value_post_process = self.post_process_script_function()
-                            if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                        copy_files = self.__can_copy_files(version_data)
+                        self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
+                        # if (check_files is True and copy_files is True):
+                        #     self.__final_process(check_dir, version_data, folder_name)
+                        # else:
+                        #     # call post process script function for each match item.
+                        #     value_post_process = self.post_process_script_function()
+                        #     if (value_post_process != 0):
+                        #         self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
                     else:
                         # call post process script function for each match item.
                         value_post_process = self.post_process_script_function()

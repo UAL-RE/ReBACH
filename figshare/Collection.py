@@ -53,7 +53,7 @@ class Collection:
                 while (not page_empty):
                     # page = 1
                     # page_size = 3
-                    # total_articles = 5
+                    # total_articles = 10
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size}
@@ -65,13 +65,7 @@ class Collection:
                             page_empty = True
                             break
 
-                        no_of_col = 0
-                        for collection in collections:
-                            no_of_col = no_of_col + 1
-                            print(f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}")
-                            coll_versions = self.__get_collection_versions(collection)
-                            coll_articles = self.__get_collection_articles(collection)
-                            collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
+                        collection_data = self.collections_loop(collections, page_size, page, collection_data)
                         success = True
                     else:
                         success = False
@@ -86,6 +80,17 @@ class Collection:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
+
+        return collection_data
+
+    def collections_loop(self, collections, page_size, page, collection_data):
+        no_of_col = 0
+        for collection in collections:
+            no_of_col = no_of_col + 1
+            print(f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}")
+            coll_versions = self.__get_collection_versions(collection)
+            coll_articles = self.__get_collection_articles(collection)
+            collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
 
         return collection_data
 
@@ -171,10 +176,7 @@ class Collection:
         :param collection object
         :return articles object
         """
-        api_url = f"collections/{collection['id']}/articles"
-        coll_articles_api = self.api_endpoint + api_url
-        if self.api_endpoint[-1] != "/":
-            coll_articles_api = f"{self.api_endpoint}/{api_url}"
+        coll_articles_api = self.get_article_api_url(self, collection)
         retries = 1
         success = False
         articles_list = []
@@ -187,11 +189,10 @@ class Collection:
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
-                        articles = get_response.json()
-                        if (len(articles) == 0):
+                        articles_list = get_response.json()
+                        if (len(articles_list) == 0):
                             page_empty = True
                             break
-                        articles_list = articles
                         success = True
                         print(f"Fetching collection {len(articles_list)} articles of Page {page}. ID: {collection['id']}")
                     else:
@@ -212,6 +213,14 @@ class Collection:
                     break
 
         return articles_list
+
+    def get_article_api_url(self, collection):
+        api_url = f"collections/{collection['id']}/articles"
+        coll_articles_api = self.api_endpoint + api_url
+        if self.api_endpoint[-1] != "/":
+            coll_articles_api = f"{self.api_endpoint}/{api_url}"
+
+        return coll_articles_api
 
     """
     Function to process collections and it's articles with collection versions.

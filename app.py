@@ -116,6 +116,8 @@ if __name__ == "__main__":
     print("Try fetching collections....")
     collection_obj = Collection()
     collection_data = collection_obj.get_collections()
+
+    # print(collection_data)
     print(f"Total collections fetched: {len(collection_data)}")
     print(" ")
     # Start articles processing after completing fetching data from API
