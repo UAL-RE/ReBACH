@@ -48,7 +48,7 @@ class Article:
     def get_articles(self):
         articles_api = self.api_endpoint + '/account/institution/articles'
         if self.api_endpoint[-1] == "/":
-            self.api_endpoint + "account/institution/articles"
+            articles_api = self.api_endpoint + "account/institution/articles"
         retries = 1
         success = False
         article_data = {}
@@ -73,7 +73,7 @@ class Article:
                     if (get_response.status_code == 200):
                         articles = get_response.json()
                         if (len(articles) == 0):
-                            # page_empty = True
+                            page_empty = True
                             break
                         article_data = self.article_loop(articles, page_size, page, article_data)
                         success = True
@@ -529,9 +529,8 @@ class Article:
         # check curation dir is reachable
         self.check_access_of_directries(curation_storage_location, "curation")
 
-        preservation_storage_location = self.system_config["preservation_storage_location"]
+        preservation_storage_location = self.preservation_storage_location
         complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
-
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
