@@ -1,18 +1,16 @@
-import json
-import sys
+import sys, os, json
 from subprocess import Popen, PIPE
 
 class Job:
 
-#     Replace with .env value
 #     Also replace Wasabi credentials with .env value
-    dart_command = '/home/jnr/redata/dart-runner'
 
-    def __init__(self, workflow, package_name, output_dir, delete):
+    def __init__(self, workflow, package_name, output_dir, delete, dart_command):
         self.workflow = workflow
         self.package_name = package_name
         self.output_dir = output_dir
         self.delete = delete
+        self.dart_command = dart_command
         self.files = []
         self.tags = []
 
@@ -38,7 +36,7 @@ class Job:
         json_string = self.to_json()
         print(json_string)
         print("Starting job")
-        cmd = "%s --workflow=%s --output-dir=%s --delete=%s" % (Job.dart_command, self.workflow, self.output_dir, self.delete)
+        cmd = f"{self.dart_command} --workflow={self.workflow} --output-dir={self.output_dir} --delete={self.delete}"
         child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True, text=True)
         stdout_data, stderr_data = child.communicate(json_string + "\n")
         if stdout_data is not None:
