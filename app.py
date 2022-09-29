@@ -108,17 +108,23 @@ def get_collections():
 
 if __name__ == "__main__":
     main()
-    print("Try fetching articles....")
+    log = Log()
     article_obj = Article()
     article_data = article_obj.get_articles()
-    print(f"Total articles fetched: {len(article_data)}")
+    log.write_log_in_file('info',
+                          f"Total articles fetched: {len(article_data)}",
+                          True)
     print(" ")
-    print("Try fetching collections....")
+    log.write_log_in_file('info',
+                          "Try fetching collections....",
+                          True)
     collection_obj = Collection()
     collection_data = collection_obj.get_collections()
 
     # print(collection_data)
-    print(f"Total collections fetched: {len(collection_data)}")
+    log.write_log_in_file('info',
+                          f"Total collections fetched: {len(collection_data)}",
+                          True)
     print(" ")
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)

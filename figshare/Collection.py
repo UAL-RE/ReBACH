@@ -176,7 +176,7 @@ class Collection:
         :param collection object
         :return articles object
         """
-        coll_articles_api = self.get_article_api_url(self, collection)
+        coll_articles_api = self.get_article_api_url(collection)
         retries = 1
         success = False
         articles_list = []
