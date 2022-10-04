@@ -117,6 +117,7 @@ class Article:
             try:
                 if (article):
                     public_url = article['url_public_api']
+                    private_url = article['url_private_api']
                     version_url = public_url + "/versions"
                     get_response = requests.get(version_url)
                     if (get_response.status_code == 200):
@@ -127,12 +128,13 @@ class Article:
                                 print(f"Fetching article {article['id']} version {version['version']}.")
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
-                            success = True
-                            return metadata
                         else:
-                            self.logs.write_log_in_file("info",
-                                                        f"{article['id']} - Entity not found: ArticleVersion")
-                            break
+                            version_data = self.private_article_for_data(private_url, article['id'])
+                            if(version_data is not None and len(version_data) > 0):
+                                metadata.append(version_data)
+                        
+                        success = True
+                        return metadata
                     else:
                         retries = self.retries_if_error(f"Public verion URL is not reachable. Retry {retries}",
                                                         get_response.status_code, retries)
@@ -143,6 +145,62 @@ class Article:
                 if (retries > self.retries):
                     break
 
+    def private_article_for_data(self, private_url, article_id):
+        retries = 1
+        success = False
+
+        while not success and retries <= int(self.retries):
+            try:
+                if (private_url):
+                    get_response = requests.get(private_url,
+                                                headers={'Authorization': 'token ' + self.api_token},
+                                                timeout=self.retry_wait)
+                    if (get_response.status_code == 200):
+                        version_data = get_response.json()
+                        total_file_size = version_data['size']
+                        files = []
+                        error = ""
+                        private_version_no = 0
+                        if (version_data['curation_status'] == 'approved'):
+                            version_md5 = ''
+                            json_data = json.dumps(version_data).encode("utf-8")
+                            version_md5 = hashlib.md5(json_data).hexdigest()
+                            files = version_data['files']
+                            private_version_no = version_data['version']
+                            version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
+                            version_data['total_num_files'] = len(version_data['files'])
+                            version_data['file_size_sum'] = total_file_size
+                            version_data['version_md5'] = version_md5
+                            if (error):
+                                version_metadata['errors'] = []
+                                version_metadata['errors'].append(error)
+
+                            self.total_all_articles_file_size += total_file_size
+
+                            self.logs.write_log_in_file("info", f"{version_metadata} ")
+
+                            error = f"{version_data['id']} - This item had a total embargo. The files are from version {version_data['version']}."
+                            self.logs.write_log_in_file("info", f"{error}", True)
+                            return version_data
+                        else:
+                            error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
+                            self.logs.write_log_in_file("info", f"{error}", True)
+                            break
+                    elif (get_response.status_code == 404):
+                        res = get_response.json()
+                        self.logs.write_log_in_file("info",
+                                                   f"{article_id} - {res['message']}")
+                        break
+                    else:
+                        retries = self.retries_if_error(f"{article_id} Private API not reachable {private_url}. Retry {retries}",
+                                                        get_response.status_code, retries)
+                        if (retries > self.retries):
+                            break
+            except requests.exceptions.RequestException as e:
+                retries = self.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
+                if (retries > self.retries):
+                    break
+    
     """
     Fetch article metadata by version url.
     :param version object value.
@@ -170,7 +228,7 @@ class Article:
                         error = ""
                         private_version_no = 0
                         if (total_file_size > 0 and 'files' not in version_data):
-                            private_data = self.private_article(version_data)
+                            private_data = self.private_article_for_files(version_data)
                             files = private_data['files']
                             private_version_no = private_data['private_version_no']
                             file_len = private_data['file_len']
@@ -196,7 +254,7 @@ class Article:
 
                         return version_data
                     else:
-                        retries = self.retries_if_error(f"{article_id} API not reachable. Retry {retries}",
+                        retries = self.retries_if_error(f"{article_id} Public API not reachable. Retry {retries}",
                                                         get_response.status_code, retries)
                         if (retries > self.retries):
                             break
@@ -226,7 +284,7 @@ class Article:
                     }
                 }
 
-    def private_article(self, version_data):
+    def private_article_for_files(self, version_data):
         get_response = requests.get(version_data['url_private_api'],
                                     headers={'Authorization': 'token ' + self.api_token},
                                     timeout=self.retry_wait)
@@ -318,6 +376,9 @@ class Article:
         dirs = os.listdir(curation_storage_location)
         version_no = "v" + str(version_data["version"]).zfill(2)
         version_data["matched"] = False
+        print("---curation---")
+        print(version_data['id'])
+        print(version_data)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
                 dir_array = dir.split("_")
@@ -566,9 +627,11 @@ class Article:
                 article_data[article] = []
                 for version_data in article_versions_list:
                     # check curation folder for required files and setup data for further processing.
-                    data = self.__check_curation_dir(version_data)
-                    if (data["matched"] is True):
-                        article_data[article].append(data)
+                    if (version_data is not None and len(version_data) > 0):
+                        print(version_data['id'])
+                        data = self.__check_curation_dir(version_data)
+                        if (data["matched"] is True):
+                            article_data[version_data['id']].append(data)
 
         return article_data
 
