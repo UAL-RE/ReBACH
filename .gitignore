@@ -1,4 +1,5 @@
-batchdir/
+redata-preservation/batchdir/
+redata-preservation/config/arizona*
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
