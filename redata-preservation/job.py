@@ -1,3 +1,5 @@
+# Class for implementing main interactions with dart-runner
+
 import sys, os, json
 from subprocess import Popen, PIPE
 
