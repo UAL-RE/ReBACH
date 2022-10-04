@@ -1,7 +1,11 @@
-import os
+#!/usr/bin/python3
+
 import argparse
 import configparser
+import os
+
 from job import Job
+
 
 def run_dart(path: str,
              bag_title: str,
@@ -27,20 +31,27 @@ def run_dart(path: str,
     else:
         print("Job failed. Check the DART log for details.")
 
-def run_batch(batch_path: str,
-             bag_title: str,
-             workflow: str,
-             output_dir: str,
-             delete: str,
-             dart_command: str
-             ):
+
+def run_batch(batch_path: str, **kwargs):
     for path in next(os.walk(batch_path))[1]:
-        run_dart(os.path.join(batch_path, path), bag_title, workflow, output_dir, delete, dart_command)
+        run_dart(os.path.join(batch_path, path), **kwargs)
+
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Command-line interface for ReDATA Preservation workflow.')
-    parser.add_argument('--config', required=True, help='Path to configuration file.')
-    parser.add_argument('--batch', help='Process a batch directory instead of a single package.', default=True)
+    parser = argparse.ArgumentParser(
+        description='Command-line interface for ReDATA Preservation workflow.'
+    )
+    parser.add_argument(
+        '--config',
+        required=True,
+        help='Path to configuration file.'
+    )
+    parser.add_argument(
+        '--batch',
+        type=bool,
+        help='Process a batch directory instead of a single package.',
+        default=True
+    )
     parser.add_argument('--workflow', help="Path to workflow file.")
     parser.add_argument('--output_dir', help="Output directory for bags.")
     parser.add_argument('--delete', help='Delete bags after upload.')
@@ -57,27 +68,31 @@ if __name__ == '__main__':
     os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['password']
 
     # Dart-runner only accepts env variables for 'login' and 'password'
-    #os.environ['WASABI_HOST'] = config['Wasabi']['host']
-
+    # os.environ['WASABI_HOST'] = config['Wasabi']['host']
 
     if args.batch:
         run_batch(
             args.path,
-            "Bag " + args.path,
-            args.workflow,
-            args.output_dir,
-            args.delete,
-            os.path.join(os.getcwd(), 'redata-preservation', 'dart-runner')
+            bag_title="Bag " + args.path,
+            workflow=args.workflow,
+            output_dir=args.output_dir,
+            delete=args.delete,
+            dart_command=os.path.join(
+                os.getcwd(),
+                'redata-preservation',
+                'dart-runner'
+            )
         )
     else:
         run_dart(
             args.path,
-            "Bag " + args.path,
-            args.workflow,
-            args.output_dir,
-            args.delete,
-            os.path.join(os.getcwd(), 'dart-runner')
+            bag_title="Bag " + args.path,
+            workflow=args.workflow,
+            output_dir=args.output_dir,
+            delete=args.delete,
+            dart_command=os.path.join(
+                os.getcwd(),
+                'redata-preservation',
+                'dart-runner'
+            )
         )
-
-
-

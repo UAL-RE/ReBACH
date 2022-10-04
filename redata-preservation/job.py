@@ -1,13 +1,14 @@
 # Class for implementing main interactions with dart-runner
 
-import sys, os, json
+import json
+import sys
 from subprocess import Popen, PIPE
+
 
 class Job:
 
-#     Also replace Wasabi credentials with .env value
-
-    def __init__(self, workflow, package_name, output_dir, delete, dart_command):
+    def __init__(self, workflow, package_name, output_dir, delete,
+                 dart_command):
         self.workflow = workflow
         self.package_name = package_name
         self.output_dir = output_dir
@@ -39,7 +40,8 @@ class Job:
         print(json_string)
         print("Starting job")
         cmd = f"{self.dart_command} --workflow={self.workflow} --output-dir={self.output_dir} --delete={self.delete}"
-        child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True, text=True)
+        child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True,
+                      text=True)
         stdout_data, stderr_data = child.communicate(json_string + "\n")
         if stdout_data is not None:
             print(stdout_data)
