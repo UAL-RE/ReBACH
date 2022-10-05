@@ -376,9 +376,6 @@ class Article:
         dirs = os.listdir(curation_storage_location)
         version_no = "v" + str(version_data["version"]).zfill(2)
         version_data["matched"] = False
-        print("---curation---")
-        print(version_data['id'])
-        print(version_data)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
                 dir_array = dir.split("_")
@@ -628,7 +625,6 @@ class Article:
                 for version_data in article_versions_list:
                     # check curation folder for required files and setup data for further processing.
                     if (version_data is not None and len(version_data) > 0):
-                        print(version_data['id'])
                         data = self.__check_curation_dir(version_data)
                         if (data["matched"] is True):
                             article_data[version_data['id']].append(data)
