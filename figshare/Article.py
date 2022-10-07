@@ -161,7 +161,7 @@ class Article:
                         files = []
                         error = ""
                         private_version_no = 0
-                        if (version_data['curation_status'] == 'approved'):
+                        if ('curation_status' in version_data and version_data['curation_status'] == 'approved'):
                             version_md5 = ''
                             json_data = json.dumps(version_data).encode("utf-8")
                             version_md5 = hashlib.md5(json_data).hexdigest()
@@ -294,7 +294,7 @@ class Article:
         if (get_response.status_code == 200):
             version_data_private = get_response.json()
             # checking curation_status from article's private api
-            if (version_data_private['curation_status'] == "approved"):
+            if ('curation_status' in version_data_private and version_data_private['curation_status'] == "approved"):
                 file_len = len(version_data_private['files'])
                 files = version_data_private['files']
                 private_version_no = version_data_private['version']
