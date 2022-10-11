@@ -654,7 +654,6 @@ class Article:
     def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
         if (check_files is True and copy_files is True):
             # download all files and veriy hash with downloaded file.
-            print(version_data)
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
             # check download process has error or not.
             if (delete_now is False):
