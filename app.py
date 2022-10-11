@@ -115,19 +115,19 @@ if __name__ == "__main__":
                           f"Total articles fetched: {len(article_data)}",
                           True)
     print(" ")
-    log.write_log_in_file('info',
-                          "Try fetching collections....",
-                          True)
-    collection_obj = Collection()
-    collection_data = collection_obj.get_collections()
+    # log.write_log_in_file('info',
+    #                       "Try fetching collections....",
+                        #   True)
+    # collection_obj = Collection()
+    # collection_data = collection_obj.get_collections()
 
     # print(collection_data)
-    log.write_log_in_file('info',
-                          f"Total collections fetched: {len(collection_data)}",
-                          True)
+    # log.write_log_in_file('info',
+    #                       f"Total collections fetched: {len(collection_data)}",
+    #                       True)
     print(" ")
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 
     # Start collections processing after completing fetcing data from API and articles processing.
-    collection_obj.process_collections(collection_data)
+    # collection_obj.process_collections(collection_data)
