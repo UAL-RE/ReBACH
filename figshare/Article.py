@@ -126,10 +126,7 @@ class Article:
                         if (len(versions) > 0):
                             for version in versions:
                                 print(f"Fetching article {article['id']} version {version['version']}.")
-                                if ('files' not in version):
-                                    version_data = self.private_article_for_data(private_url, article['id'])    
-                                else:
-                                    version_data = self.__get_article_metadata_by_version(version, article['id'])
+                                version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
                         else:
                             version_data = self.private_article_for_data(private_url, article['id'])
@@ -234,6 +231,7 @@ class Article:
                             files = private_data['files']
                             private_version_no = private_data['private_version_no']
                             file_len = private_data['file_len']
+                            version_data['files'] = files
                         else:
                             file_len = len(version_data['files'])
                             files = version_data['files']
@@ -710,50 +708,44 @@ class Article:
             article_versions_list = articles[article]
             article_data[article] = []
             for version_data in article_versions_list:
-                print(f"Processing article {article} version {version_data['version']}")
-                version_no = "v" + str(version_data["version"]).zfill(2)
-                folder_name = str(version_data["id"]) + "_" + version_no + "_" \
-                    + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
+                if version_data is not None or len(version_data) > 0:
+                    print(f"Processing article {article} version {version_data['version']}")
+                    version_no = "v" + str(version_data["version"]).zfill(2)
+                    folder_name = str(version_data["id"]) + "_" + version_no + "_" \
+                        + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
 
-                if (version_data["matched"] is True):
-                    # call pre process script function for each match item.
-                    value_pre_process = self.pre_process_script_function()
-                    if (value_pre_process == 0):
-                        # check main folder exists in preservation storage.
-                        preservation_storage_location = self.preservation_storage_location
-                        check_dir = preservation_storage_location + folder_name
-                        check_main_folder = os.path.exists(check_dir)
-                        check_files = True
-                        copy_files = True
-                        if (check_main_folder is True):
-                            get_dirs = os.listdir(check_dir)
-                            if (len(get_dirs) > 0):
-                                check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
-                            else:
-                                check_files = False
-                                # delete folder if validation fails
-                                self.delete_folder(check_dir)
-                                # call pre process script function for each match item.
-                                value_post_process = self.post_process_script_function()
-                                if (value_post_process != 0):
-                                    self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
-                                break
-                        # end check main folder exists in preservation storage.
-                        # check require files exists in curation UAL_RDM folder
-                        copy_files = self.__can_copy_files(version_data)
-                        self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
-                        # if (check_files is True and copy_files is True):
-                        #     self.__final_process(check_dir, version_data, folder_name)
-                        # else:
-                        #     # call post process script function for each match item.
-                        #     value_post_process = self.post_process_script_function()
-                        #     if (value_post_process != 0):
-                        #         self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
-                    else:
-                        # call post process script function for each match item.
-                        value_post_process = self.post_process_script_function()
-                        if (value_post_process != 0):
-                            self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                    if (version_data["matched"] is True):
+                        # call pre process script function for each match item.
+                        value_pre_process = self.pre_process_script_function()
+                        if (value_pre_process == 0):
+                            # check main folder exists in preservation storage.
+                            preservation_storage_location = self.preservation_storage_location
+                            check_dir = preservation_storage_location + folder_name
+                            check_main_folder = os.path.exists(check_dir)
+                            check_files = True
+                            copy_files = True
+                            if (check_main_folder is True):
+                                get_dirs = os.listdir(check_dir)
+                                if (len(get_dirs) > 0):
+                                    check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
+                                else:
+                                    check_files = False
+                                    # delete folder if validation fails
+                                    self.delete_folder(check_dir)
+                                    # call pre process script function for each match item.
+                                    value_post_process = self.post_process_script_function()
+                                    if (value_post_process != 0):
+                                        self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
+                                    break
+                            # end check main folder exists in preservation storage.
+                            # check require files exists in curation UAL_RDM folder
+                            copy_files = self.__can_copy_files(version_data)
+                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
+                        else:
+                            # call post process script function for each match item.
+                            value_post_process = self.post_process_script_function()
+                            if (value_post_process != 0):
+                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
 
     """
     Preservation and Curation directory access check while processing.
