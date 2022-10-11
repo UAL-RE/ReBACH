@@ -131,3 +131,5 @@ dmypy.json
 /temp
 /curation
 /storage
+
+.DS_Store

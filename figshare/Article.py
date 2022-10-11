@@ -130,9 +130,8 @@ class Article:
                                 metadata.append(version_data)
                         else:
                             version_data = self.private_article_for_data(private_url, article['id'])
-                            if(version_data is not None and len(version_data) > 0):
+                            if (version_data is not None and len(version_data) > 0):
                                 metadata.append(version_data)
-                        
                         success = True
                         return metadata
                     else:
@@ -189,7 +188,7 @@ class Article:
                     elif (get_response.status_code == 404):
                         res = get_response.json()
                         self.logs.write_log_in_file("info",
-                                                   f"{article_id} - {res['message']}")
+                                                    f"{article_id} - {res['message']}")
                         break
                     else:
                         retries = self.retries_if_error(f"{article_id} Private API not reachable {private_url}. Retry {retries}",
@@ -200,7 +199,7 @@ class Article:
                 retries = self.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
                 if (retries > self.retries):
                     break
-    
+
     """
     Fetch article metadata by version url.
     :param version object value.
@@ -326,7 +325,9 @@ class Article:
                         os.makedirs(article_folder_path, exist_ok=True)
 
                     file_name_with_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
-                    filecontent = requests.get(file['download_url'], allow_redirects=True)
+                    filecontent = requests.get(file['download_url'], headers={'Authorization': 'token ' + self.api_token},
+                                               allow_redirects=True,
+                                               )
                     if (filecontent.status_code == 200):
                         file_no = file_no + 1
                         print(f"Downloaded file {file_no} for article {version_data['id']} - version {version_data['version']}")
@@ -339,13 +340,13 @@ class Article:
                         if (existing_file_hash != compare_hash):
                             self.logs.write_log_in_file("error",
                                                         f"{version_data['id']} - Hash didn't matched after downloading."
-                                                        + f"Path {file_name_with_path}", True)
+                                                        + f" Name {file['name']}", True)
                             delete_folder = True
                             break
                     else:
                         self.logs.write_log_in_file("error",
                                                     f"{version_data['id']} - File doesn't download. Status code {filecontent.status_code}."
-                                                    + f"Path {file_name_with_path}", True)
+                                                    + f" Name {file['name']}", True)
                         delete_folder = True
                         break
 
