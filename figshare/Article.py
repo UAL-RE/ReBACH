@@ -126,7 +126,10 @@ class Article:
                         if (len(versions) > 0):
                             for version in versions:
                                 print(f"Fetching article {article['id']} version {version['version']}.")
-                                version_data = self.__get_article_metadata_by_version(version, article['id'])
+                                if ('files' not in version):
+                                    version_data = self.private_article_for_data(private_url, article['id'])    
+                                else:
+                                    version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
                         else:
                             version_data = self.private_article_for_data(private_url, article['id'])
