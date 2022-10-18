@@ -420,8 +420,6 @@ class Article:
                                     break
                                 else:
                                     version_data = self.read_version_dirs_fun(read_version_dirs, version_dir, version_data)
-                else:
-                    self.logs.write_log_in_file('error', f"{version_data['id']} not exists in curration storage location.")
 
         return version_data
 
@@ -676,7 +674,7 @@ class Article:
     Called before articles processing.
     """
     def __initial_process(self, total_file_size):
-        # get curration directory path
+        # get curation directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
         preservation_storage_location = self.preservation_storage_location
