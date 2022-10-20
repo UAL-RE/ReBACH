@@ -39,7 +39,12 @@ class Job:
         json_string = self.to_json()
         print(json_string)
         print("Starting job")
-        cmd = f"{self.dart_command} --workflow={self.workflow} --output-dir={self.output_dir} --delete={self.delete}"
+        cmd = (
+            f"{self.dart_command}"
+            f"--workflow={self.workflow}"
+            f"--output-dir={self.output_dir}"
+            f"--delete={self.delete}"
+        )
         child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True,
                       text=True)
         stdout_data, stderr_data = child.communicate(json_string + "\n")
