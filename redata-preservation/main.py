@@ -7,6 +7,7 @@ import sys
 
 from job import Job
 
+
 def get_args():
     """
     Construct args namespace from config file, overriding with values specified
@@ -26,9 +27,9 @@ def get_args():
     args, remaining_argv = conf_parser.parse_known_args()
 
     defaults = {
-        'delete':'True',
-        'output_dir':'../out',
-        'workflow':'config/default_workflow.json'
+        'delete': 'True',
+        'output_dir': '../out',
+        'workflow': 'config/default_workflow.json'
     }
 
     config = configparser.ConfigParser()
@@ -43,12 +44,13 @@ def get_args():
     parser.add_argument('-b', '--batch', help='Process a batch directory.')
     parser.add_argument('-d', '--delete', help='Delete bags after upload.')
     parser.add_argument('-o', '--output_dir',
-                             help="Output directory for bags.")
+                        help="Output directory for bags.")
     parser.add_argument('-w', '--workflow', help="Path to workflow file.")
     parser.add_argument('path')
     args = parser.parse_args(remaining_argv)
 
-    return args,config
+    return args, config
+
 
 def run_dart(path, bag_title, workflow, output_dir, delete, dart_command):
     """
@@ -78,6 +80,7 @@ def run_dart(path, bag_title, workflow, output_dir, delete, dart_command):
 
     return exit_code
 
+
 def run_batch(batch_path: str, **kwargs):
     """
     Run DART executable on a batch of packages.
@@ -86,6 +89,7 @@ def run_batch(batch_path: str, **kwargs):
     """
     for path in next(os.walk(batch_path))[1]:
         run_dart(os.path.join(batch_path, path), **kwargs)
+
 
 def main():
     args, config = get_args()
@@ -118,6 +122,7 @@ def main():
                 'dart-runner'
             )
         )
+
 
 if __name__ == '__main__':
     sys.exit(main())
