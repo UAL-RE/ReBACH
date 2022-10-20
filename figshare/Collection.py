@@ -270,7 +270,6 @@ class Collection:
             if (len(storage_collection_version_dir) == 0 or file_name not in storage_collection_version_dir):
                 self.logs.write_log_in_file("info", f"{complete_path} path already exists but missing {file_name} file.")
 
-
     def get_collection_api_url(self):
         collections_api_url = self.api_endpoint + '/collections'
         if self.api_endpoint[-1] == "/":
