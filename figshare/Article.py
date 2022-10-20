@@ -30,6 +30,7 @@ class Article:
         self.errors = []
         self.exclude_dirs = [".DS_Store"]
         self.total_all_articles_file_size = 0
+        self.institution = int(figshare_config["institution"])
         self.preservation_storage_location = self.system_config["preservation_storage_location"]
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"
@@ -64,7 +65,7 @@ class Article:
                     # total_articles = 5
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
-                    params = {'page': page, 'page_size': page_size}
+                    params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
                                                 params=params,

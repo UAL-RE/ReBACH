@@ -22,6 +22,7 @@ class Collection:
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
+        self.institution = int(figshare_config["institution"])
         self.logs = Log()
         self.errors = []
         self.article_obj = Article()
@@ -38,9 +39,7 @@ class Collection:
     will be called with collection param.
     """
     def get_collections(self):
-        collections_api_url = self.api_endpoint + '/collections'
-        if self.api_endpoint[-1] == "/":
-            collections_api_url = self.api_endpoint + "collections"
+        collections_api_url = self.get_collection_api_url()
         retries = 1
         success = False
         collection_data = {}
@@ -56,7 +55,7 @@ class Collection:
                     # total_articles = 10
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
-                    params = {'page': page, 'page_size': page_size}
+                    params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(collections_api_url, params=params,
                                                 timeout=self.retry_wait)
                     if (get_response.status_code == 200):
@@ -189,12 +188,14 @@ class Collection:
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
-                        articles_list = get_response.json()
-                        if (len(articles_list) == 0):
+                        articles_list_res = get_response.json()
+                        if (len(articles_list_res) == 0):
                             page_empty = True
                             break
+                        else:
+                            articles_list.extend(articles_list_res)
                         success = True
-                        print(f"Fetching collection {len(articles_list)} articles of Page {page}. ID: {collection['id']}")
+                        print(f"Fetching collection {len(articles_list_res)} articles of Page {page}. ID: {collection['id']}")
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"API is not reachable. Retry {retries}", get_response.status_code, retries)
@@ -268,3 +269,33 @@ class Collection:
             file_name = f"{str(collection_id)}.json"
             if (len(storage_collection_version_dir) == 0 or file_name not in storage_collection_version_dir):
                 self.logs.write_log_in_file("info", f"{complete_path} path already exists but missing {file_name} file.")
+
+
+    def get_collection_api_url(self):
+        collections_api_url = self.api_endpoint + '/collections'
+        if self.api_endpoint[-1] == "/":
+            collections_api_url = self.api_endpoint + "collections"
+
+        return collections_api_url
+
+    def fetch_by_collection_id(self):
+        collection_id = 2830067
+        success = False
+        retries = 1
+        while not success and retries <= int(self.retries):
+            try:
+                collection_api_url = self.get_collection_api_url()
+                collection_api_url = collection_api_url + '/' + str(collection_id)
+                get_response = requests.get(collection_api_url, timeout=self.retry_wait)
+                if (get_response.status_code == 200):
+                    collection = get_response.json()
+                    coll_versions = self.__get_collection_versions(collection)
+                    print(coll_versions)
+                    # coll_articles = self.__get_collection_articles(collection)
+                    # collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
+
+            except Exception as e:
+                success = False
+                retries = self.article_obj.retries_if_error(e, 500, retries)
+                if (retries > self.retries):
+                    break

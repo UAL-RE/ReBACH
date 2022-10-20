@@ -54,6 +54,7 @@ def main():
     preservation_storage_location = system_config["preservation_storage_location"]
     figshare_api_token = figshare_config["token"]
     curation_storage_location = system_config["curation_storage_location"]
+    institution = figshare_config["institution"] if ("institution" in figshare_config and figshare_config["institution"] is not None) else 0
 
     # Check required env variables exist.
     if (log_location == ""):
@@ -68,6 +69,9 @@ def main():
 
     if (curation_storage_location == ""):
         log.write_log_in_file('error', "Curation storage location path is required.", True, True)
+
+    if (institution is None or institution == ''):
+        log.write_log_in_file('error', "Institution Id is required.", True, True)
 
     check_logs_path_access()
     # Check storage path exits, if not then give error and stop processing
