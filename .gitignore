@@ -1,6 +1,6 @@
 *batchdir*
 redata-preservation/config/arizona*
-redata-preservation/dart-runner
+redata_preservation/config/arizona*
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
