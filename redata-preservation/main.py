@@ -67,18 +67,20 @@ def run_dart(package_path: str, workflow: str,
 
     data, err, exit_code = job.run()
 
-    data = json.loads(data)
+    # TODO: What if not data?
+    if data:
+        data = json.loads(data)
 
-    errors = data['packageResult']['errors']
-    errors |= data['validationResult']['errors']
-    errors |= data['uploadResults'][0]['errors']
+        errors = data['packageResult']['errors']
+        errors |= data['validationResult']['errors']
+        errors |= data['uploadResults'][0]['errors']
 
-    if errors:
-        print(errors)
-    else:
-        print('Job succeeded')
+        if errors:
+            print(errors)
+        else:
+            print('Job succeeded')
 
-    return exit_code
+        return exit_code
 
 
 def run_batch(batch_path: str, **kwargs):
