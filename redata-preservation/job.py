@@ -35,10 +35,8 @@ class Job:
         }
         return json.dumps(_dict)
 
-    def run(self) -> int:
+    def run(self):
         json_string = self.to_json()
-        print(json_string)
-        print("Starting job")
         cmd = (
             f"{self.dart_command} "
             f"--workflow={self.workflow} "
@@ -48,8 +46,6 @@ class Job:
         child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True,
                       text=True)
         stdout_data, stderr_data = child.communicate(json_string + "\n")
-        if stdout_data is not None:
-            print(stdout_data)
         if stderr_data is not None:
             sys.stderr.write(stderr_data)
-        return child.returncode
+        return stdout_data, stderr_data, child.returncode
