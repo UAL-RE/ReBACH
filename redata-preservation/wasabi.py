@@ -1,7 +1,6 @@
 import sys
 
 from subprocess import run
-from typing import List
 
 
 class Wasabi:
@@ -30,6 +29,6 @@ class Wasabi:
         return ls_result.stdout
 
 
-def get_filenames_from_ls(ls: str) -> List[str]:
+def get_filenames_from_ls(ls: str) -> list[str]:
     lines = ls.splitlines()
     return [line.split('/')[-1] for line in lines if line.split('/')[-1] != '']
