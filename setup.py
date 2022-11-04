@@ -7,9 +7,9 @@ with open("requirements.txt", "r") as fr:
     requirements = fr.read().splitlines()
 
 setup(
-    name='redata-preservation',
+    name='redata_preservation',
     version='1.0.0',
-    packages=['redata-preservation'],
+    packages=['redata_preservation'],
     url='',
     license='MIT License',
     author='Jonathan Ratliff',
