@@ -58,8 +58,7 @@ def run_dart(package_path: str, workflow: str,
     bag_name = get_bag_name(package_path)
 
     if check_duplicate(bag_name):
-        # sys.exit(f"Duplicate bag: {bag_name}")
-        pass
+        sys.exit(f"Duplicate bag: {bag_name}")
 
     metadata = get_metadata(package_path)
 
