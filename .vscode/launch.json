@@ -1,0 +1,22 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: DART",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceRoot}/redata-preservation/main.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceRoot}",
+            "args": [
+                "-c=redata-preservation/config/arizona/arizona.ini",
+                "-o=out","-w=redata-preservation/config/redata-wasabi.json",
+                "TestBags/6944096_04_Chun_Ly_13e8f0d8d3086ea2f5c4c194e5d0873b"
+            ],
+            "justMyCode": true
+        }
+    ]
+}
