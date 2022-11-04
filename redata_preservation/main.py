@@ -17,10 +17,11 @@ def check_duplicate(bag_name: str) -> bool:
     w = Wasabi(access_key=config['Wasabi']['access_key'],
                secret_key=config['Wasabi']['secret_key'],
                s3host=config['Wasabi']['host'],
-               s3hostbucket='%(bucket)s.s3.wasabisys.com',
-               folder_to_list='s3://redata-preservation-test')
+               s3hostbucket='%(bucket)s.s3.wasabisys.com'
+               )
 
-    wasabi_files = w.list_bucket()
+    folder_to_list = 's3://redata-preservation-test'
+    wasabi_files = w.list_bucket(folder_to_list)
     filenames = get_filenames_from_ls(wasabi_files)
 
     return bag_name in filenames

@@ -5,8 +5,8 @@ from subprocess import run
 
 class Wasabi:
 
-    def __init__(self, access_key: str, secret_key, s3host, s3hostbucket,
-                 folder_to_list) -> None:
+    def __init__(self, access_key: str, secret_key, s3host,
+                 s3hostbucket) -> None:
         """
         Initialize Wasabi class with Wasabi connection information
         :param access_key: Wasabi access key
@@ -14,7 +14,6 @@ class Wasabi:
         :param s3host: Wasabi s3 host
         :param s3hostbucket: Template for accessing s3 bucket
         """
-        self.folder_to_list = folder_to_list
         self.s3host = s3host
         self.secret_key = secret_key
         self.access_key = access_key
