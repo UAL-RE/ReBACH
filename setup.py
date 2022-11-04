@@ -8,7 +8,7 @@ with open("requirements.txt", "r") as fr:
 
 setup(
     name='redata-preservation',
-    version='v1.0.0',
+    version='1.0.0',
     packages=['redata-preservation'],
     url='',
     license='MIT License',
