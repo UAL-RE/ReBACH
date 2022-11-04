@@ -8,8 +8,8 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/redata_preservation.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/TestBags" />
-      <excludeFolder url="file://$MODULE_DIR$/redata-preservation/.ipynb_checkpoints" />
-      <excludeFolder url="file://$MODULE_DIR$/redata-preservation/config/arizona" />
+      <excludeFolder url="file://$MODULE_DIR$/redata_preservation/.ipynb_checkpoints" />
+      <excludeFolder url="file://$MODULE_DIR$/redata_preservation/config/arizona" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.10.6 WSL (Ubuntu-22.04): (/home/jnr/code/ReDATA-preservation/.venv/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
