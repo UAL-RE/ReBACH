@@ -8,7 +8,7 @@ from subprocess import Popen, PIPE
 class Job:
 
     def __init__(self, workflow: str, bag_name: str, output_dir: str,
-                 delete: str, dart_command: bool) -> None:
+                 delete: bool, dart_command: str) -> None:
         """
         Init the Job class with attributes for passing to DART
         :param workflow: Workflow JSON fil
