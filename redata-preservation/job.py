@@ -7,10 +7,10 @@ from subprocess import Popen, PIPE
 
 class Job:
 
-    def __init__(self, workflow, package_name, output_dir, delete,
+    def __init__(self, workflow, bag_name, output_dir, delete,
                  dart_command):
         self.workflow = workflow
-        self.package_name = package_name
+        self.bag_name = bag_name
         self.output_dir = output_dir
         self.delete = delete
         self.dart_command = dart_command
@@ -29,7 +29,7 @@ class Job:
 
     def to_json(self):
         _dict = {
-            "packageName": self.package_name,
+            "packageName": self.bag_name,
             "files": self.files,
             "tags": self.tags
         }
