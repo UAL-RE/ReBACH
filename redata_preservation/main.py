@@ -81,7 +81,7 @@ def run_dart(package_path: str, workflow: str,
         else:
             print('Job succeeded')
 
-        return exit_code
+    return exit_code
 
 
 def run_batch(batch_path: str, **kwargs):
