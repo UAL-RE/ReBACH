@@ -22,8 +22,8 @@ class Job:
         self.output_dir = output_dir
         self.delete = delete
         self.dart_command = dart_command
-        self.files = []
-        self.tags = []
+        self.files: list[str] = []
+        self.tags: list[dict[str, str]] = []
 
     def add_file(self, path: str) -> None:
         """
