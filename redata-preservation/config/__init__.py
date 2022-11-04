@@ -1,15 +1,16 @@
 import argparse
 import configparser
 
+from argparse import Namespace
+from configparser import ConfigParser
 
-def get_args():
+
+def get_args() -> tuple[Namespace, ConfigParser]:
     """
     Construct args namespace from config file, overriding with values
     specified at runtime
-
     :return: Tuple of populated args namespace and config variable
     """
-
     conf_parser = argparse.ArgumentParser(
         description=__doc__,  # printed with -h/--help
         formatter_class=argparse.RawDescriptionHelpFormatter,
