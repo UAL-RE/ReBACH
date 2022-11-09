@@ -102,7 +102,6 @@ if __name__ == '__main__':
     if args.batch:
         run_batch(
             batch_path=args.path,
-            bag_title="Bag " + args.path,
             workflow=args.workflow,
             output_dir=args.output_dir,
             delete=args.delete,
