@@ -11,6 +11,7 @@ class Job:
                  delete: bool, dart_command: str) -> None:
         """
         Init the Job class with attributes for passing to DART
+
         :param workflow: Workflow JSON fil
         :param bag_name: Name of bag to generate
         :param output_dir: Directory for outputting temp bag prior to upload
@@ -28,6 +29,7 @@ class Job:
     def add_file(self, path: str) -> None:
         """
         Add a file to the bag
+
         :param path: Path to file/directory for package to process
         """
         self.files.append(path)
@@ -35,6 +37,7 @@ class Job:
     def add_tag(self, tag_file: str, tag_name: str, value: str) -> None:
         """
         Add a metadata tag to the bag
+
         :param tag_file: Name of tag file to which the tag will be added
         :param tag_name: Name of the tag
         :param value: Value of the tag
@@ -45,6 +48,7 @@ class Job:
     def to_json(self) -> str:
         """
         Generate JSON string with data for generating bag
+
         :return: JSON string of bag data to be submitted to DART executable
         """
         _dict = {"packageName": self.bag_name, "files": self.files,
@@ -54,6 +58,7 @@ class Job:
     def run(self) -> tuple[str, str, int]:
         """
         Run the DART executable with the data provided to the Job class
+
         :return: Tuple of stdout, stderr, and return code from DART executable
         """
         json_string = self.to_json()
