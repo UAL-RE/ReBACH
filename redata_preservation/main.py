@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from logging import Logger
 from os.path import dirname
 
@@ -59,13 +60,13 @@ def run_dart(package_path: str, workflow: str,
     """
     if not os.path.exists(package_path):
         log.warning(f'Invalid path: {package_path}')
-        return 1
+        sys.exit(1)
 
     bag_name = get_bag_name(package_path)
 
     if check_duplicate(bag_name, log):
         log.info(f'Duplicate bag: {bag_name}')
-        return 1
+        sys.exit(0)
 
     metadata = get_metadata(package_path)
 
