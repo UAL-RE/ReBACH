@@ -1,6 +1,9 @@
 import json
 import os
-import sys
+from logging import Logger
+from os.path import dirname
+
+from redata.commons import logger, git_info
 
 from config import get_args
 from job import Job
@@ -8,16 +11,18 @@ from metadata import get_metadata
 from wasabi import Wasabi, get_filenames_from_ls
 
 
-def check_duplicate(bag_name: str) -> bool:
+def check_duplicate(bag_name: str, log: Logger) -> bool:
     """
     Check if package being processed has already been bagged and uploaded
     :param bag_name: Name for bag being processed
+    :param log: Logger object object.
     :return: True if bag exists in storage, otherwise False
     """
     w = Wasabi(access_key=config['Wasabi']['access_key'],
                secret_key=config['Wasabi']['secret_key'],
                s3host=config['Wasabi']['host'],
-               s3hostbucket='%(bucket)s.s3.wasabisys.com'
+               s3hostbucket='%(bucket)s.s3.wasabisys.com',
+               log=log
                )
 
     folder_to_list = 's3://redata-preservation-test'
@@ -37,7 +42,8 @@ def get_bag_name(bag_path: str) -> str:
 
 
 def run_dart(package_path: str, workflow: str,
-             output_dir: str, delete: bool, dart_command: str) -> int:
+             output_dir: str, delete: bool, dart_command: str,
+             log: Logger) -> int:
     """
     Run DART executable for a single package
     :param package_path: Path of preservation package
@@ -45,16 +51,19 @@ def run_dart(package_path: str, workflow: str,
     :param output_dir: Directory for generated bag output by DART
     :param delete: Delete output bag if True
     :param dart_command: Path to DART executable
+    :param log: Logger object
 
     :return: Exit code from DART executable
     """
     if not os.path.exists(package_path):
-        sys.exit(f"Invalid path: {package_path}")
+        log.warning(f'Invalid path: {package_path}')
+        return 1
 
     bag_name = get_bag_name(package_path)
 
-    if check_duplicate(bag_name):
-        sys.exit(f"Duplicate bag: {bag_name}")
+    if check_duplicate(bag_name, log):
+        log.info(f'Duplicate bag: {bag_name}')
+        return 1
 
     metadata = get_metadata(package_path)
 
@@ -77,9 +86,9 @@ def run_dart(package_path: str, workflow: str,
         errors |= data['uploadResults'][0]['errors']
 
         if errors:
-            print(errors)
+            log.warning(errors)
         else:
-            print('Job succeeded')
+            log.info(f'Job succeeded: {bag_name}')
 
     return exit_code
 
@@ -96,6 +105,20 @@ def run_batch(batch_path: str, **kwargs):
 
 if __name__ == '__main__':
     args, config = get_args()
+
+    library_root_path = dirname(dirname(__file__))
+    print(library_root_path)
+
+    log_dir = config['Logging']['log_dir']
+    logfile_prefix = config['Logging']['logfile_prefix']
+
+    log = logger.log_setup(log_dir, logfile_prefix)
+    gi = git_info.GitInfo(library_root_path)
+
+    lc = logger.LogCommons(log, 'script_run', gi)
+    lc.script_start()
+    lc.script_sys_info()
+
     os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
     os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
@@ -105,14 +128,20 @@ if __name__ == '__main__':
             workflow=args.workflow,
             output_dir=args.output_dir,
             delete=args.delete,
-            dart_command='dart-runner'
+            dart_command='dart-runner',
+            log=log
         )
 
     else:
-        run_dart(
+        exit_code = run_dart(
             package_path=args.path,
             workflow=args.workflow,
             output_dir=args.output_dir,
             delete=args.delete,
-            dart_command='dart-runner'
+            dart_command='dart-runner',
+            log=log
         )
+        log.info(f'Exit code: {exit_code}')
+
+    lc.script_end()
+    lc.log_permission()
