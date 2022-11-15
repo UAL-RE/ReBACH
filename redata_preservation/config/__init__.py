@@ -9,6 +9,7 @@ def get_args() -> tuple[Namespace, ConfigParser]:
     """
     Construct args namespace from config file, overriding with values
     specified at runtime
+
     :return: Tuple of populated args namespace and config variable
     """
     conf_parser = argparse.ArgumentParser(

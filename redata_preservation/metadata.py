@@ -6,6 +6,7 @@ from os import path
 def __decompose_name(package_name: str) -> tuple[str, str, str]:
     """
     Decompose the name of a package into parts to enable parsing the package
+
     :param package_name: Name (directory) of package
     :return: Tuple of package name parts
     """
@@ -27,6 +28,7 @@ def __decompose_name(package_name: str) -> tuple[str, str, str]:
 def get_metadata(package_path: str) -> dict:
     """
     Pull metadata from package preservation_final JSON file.
+
     :param package_path: Path to the package
     :return: Dict with required metadata elements
     """
