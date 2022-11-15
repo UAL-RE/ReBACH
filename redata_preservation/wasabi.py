@@ -9,6 +9,7 @@ class Wasabi:
                  s3hostbucket, log: Logger) -> None:
         """
         Initialize Wasabi class with Wasabi connection information
+
         :param access_key: Wasabi access key
         :param secret_key: Wasabi secret key
         :param s3host: Wasabi s3 host
@@ -24,6 +25,7 @@ class Wasabi:
     def list_bucket(self, folder_to_list: str) -> str:
         """
         List contents of a folder within Wasabi bucket
+
         :param folder_to_list: Folder within bucket to list contents of
         :return: Results of ls operation on folder_to_list
         """
@@ -41,6 +43,7 @@ class Wasabi:
 def get_filenames_from_ls(ls: str) -> list[str]:
     """
     Parse ls output and return filenames
+
     :param ls: Output of ls command to parse
     :return: List of filenames parsed from ls
     """

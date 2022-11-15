@@ -14,6 +14,7 @@ from wasabi import Wasabi, get_filenames_from_ls
 def check_duplicate(bag_name: str, log: Logger) -> bool:
     """
     Check if package being processed has already been bagged and uploaded
+
     :param bag_name: Name for bag being processed
     :param log: Logger object object.
     :return: True if bag exists in storage, otherwise False
@@ -35,6 +36,7 @@ def check_duplicate(bag_name: str, log: Logger) -> bool:
 def get_bag_name(bag_path: str) -> str:
     """
     Get name for bag from package path, stripping subdirectories and slashes
+
     :param bag_path: Path to package
     :return: Name for bag tarball
     """
@@ -46,13 +48,13 @@ def run_dart(package_path: str, workflow: str,
              log: Logger) -> int:
     """
     Run DART executable for a single package
+
     :param package_path: Path of preservation package
     :param workflow: Path to workflow JSON file
     :param output_dir: Directory for generated bag output by DART
     :param delete: Delete output bag if True
     :param dart_command: Path to DART executable
     :param log: Logger object
-
     :return: Exit code from DART executable
     """
     if not os.path.exists(package_path):
@@ -96,6 +98,7 @@ def run_dart(package_path: str, workflow: str,
 def run_batch(batch_path: str, **kwargs):
     """
     Run DART executable on a batch of packages.
+
     :param batch_path: Path to batch folder containing packages
     :param kwargs: Remainder of arguments passed to run_dart()
     """
