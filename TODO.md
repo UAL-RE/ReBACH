@@ -25,3 +25,4 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
     - Add to documentation: how to download, where to put, how to set executable
       permission
 
+- Handle errors if DART doesn't execute
