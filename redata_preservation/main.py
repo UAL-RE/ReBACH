@@ -44,17 +44,6 @@ class Bagger:
         self.workflow: str = workflow
 
     @staticmethod
-    def get_bag_name(package_path: str) -> str:  # Probably static
-        """
-        Get name for bag from package path, stripping subdirectories and slashes
-
-        :param package_path: Path to preservation package
-        :return: Name for bag tarball
-        """
-
-        return path.basename(path.normpath(package_path)) + '.tar'
-
-    @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:
         """
         Decompose the name of a package into parts to enable parsing the package
@@ -117,7 +106,10 @@ class Bagger:
         :param package_path: Path to preservation package
         :return: Status after attempting execution
         """
-        bag_name = self.get_bag_name(package_path)
+
+        # Get name for bag from package path, stripping subdirectories and
+        # slashes
+        bag_name = path.basename(path.normpath(package_path)) + '.tar'
         package_name = path.basename(path.normpath(package_path))
 
         article_id, version, metadata_hash = self.decompose_name(package_name)
