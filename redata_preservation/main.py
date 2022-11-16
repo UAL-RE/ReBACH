@@ -1,9 +1,10 @@
 import json
 import os
+import sys
 from configparser import ConfigParser
 from enum import Enum
 from logging import Logger
-from os.path import dirname
+from os import path
 
 from redata.commons import logger, git_info
 
@@ -47,11 +48,33 @@ class Bagger:
         """
         Get name for bag from package path, stripping subdirectories and slashes
 
-        :param package_path: Path to package
+        :param package_path: Path to preservation package
         :return: Name for bag tarball
         """
 
-        return os.path.basename(os.path.normpath(package_path)) + '.tar'
+        return path.basename(path.normpath(package_path)) + '.tar'
+
+    @staticmethod
+    def decompose_name(package_name: str) -> tuple[str, str, str]:
+        """
+        Decompose the name of a package into parts to enable parsing the package
+
+        :param package_name: Name (directory) of package
+        :return: Tuple of package name parts
+        """
+        # Format of preservation package name:
+        # [article_id]_[version]_[first_depositor_full_name]_[metadata_hash]
+
+        path_elements = package_name.split('_')
+
+        # Article ID and version are the first and second elements
+        article_id = path_elements[0]
+        version = path_elements[1]
+        # Depositor can be arbitrary number of elements because it is
+        # snake-cased, so get hash as last element
+        metadata_hash = path_elements[-1]
+
+        return article_id, version, metadata_hash
 
     def check_duplicate(self, bag_name: str) -> bool:
         """
@@ -73,6 +96,20 @@ class Bagger:
 
         return bag_name in filenames
 
+    @staticmethod
+    def validate_package(metadata_path: str) -> bool:
+        """
+        Check if the package has a valid directory structure
+        FIXME: The method currently only checks for the presence of the package
+            metadata JSON file in the expected location. Eventually this should
+            validate the entire package against the package structure schema.
+
+        :param metadata_path: Path to preservation package metadata JSON file
+        :return: True if the package is valid, otherwise False
+        """
+
+        return path.exists(metadata_path)
+
     def run_dart(self, package_path: str) -> Status:
         """
         Run DART executable for a single package
@@ -80,15 +117,26 @@ class Bagger:
         :param package_path: Path to preservation package
         :return: Status after attempting execution
         """
-        if not os.path.exists(package_path):
-            return Status.INVALID_PATH
-
         bag_name = self.get_bag_name(package_path)
+        package_name = path.basename(path.normpath(package_path))
+
+        article_id, version, metadata_hash = self.decompose_name(package_name)
+        metadata_dir = f'v{version}/METADATA/'
+        metadata_filename = f'preservation_final_{article_id}.json'
+        metadata_path = path.join(package_path, metadata_dir, metadata_filename)
+
+        if not path.exists(package_path):
+            return Status.INVALID_PATH
 
         if self.check_duplicate(bag_name):
             return Status.DUPLICATE_BAG
 
-        metadata = get_metadata(package_path)
+        if not self.validate_package(metadata_path):
+            return Status.INVALID_PACKAGE
+
+        metadata = get_metadata(metadata_path)
+
+        log.info(metadata)
 
         job = Job(self.workflow, bag_name, self.output_dir, self.delete,
                   self.dart_command)
@@ -120,7 +168,7 @@ class Bagger:
 if __name__ == '__main__':
     args, config = get_args()
 
-    library_root_path = dirname(dirname(__file__))
+    library_root_path = path.dirname(path.dirname(__file__))
     gi = git_info.GitInfo(library_root_path)
 
     log_dir = config['Logging']['log_dir']
@@ -143,13 +191,15 @@ if __name__ == '__main__':
     if args.batch:
         log.info('Batch mode')
         log.info(f'  Batch path: {args.path}')
-        for path in next(os.walk(args.path))[1]:
-            bagger.run_dart(os.path.join(args.path, path))
+        for _path in next(os.walk(args.path))[1]:
+            bagger.run_dart(path.join(args.path, _path))
+        lc.script_end()
+        lc.log_permission()
 
     else:
         status = bagger.run_dart(args.path)
         log.info(f'Status: {status.name}')
         log.info(f'Exit code: {status.value}')
-
-    lc.script_end()
-    lc.log_permission()
+        lc.script_end()
+        lc.log_permission()
+        sys.exit(status.value)
