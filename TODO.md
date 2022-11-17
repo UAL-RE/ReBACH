@@ -7,6 +7,7 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 ### Testing
 
 - [x] Generate test data from sample data
+- [ ] Scaffold tests
 
 ### Metadata Integration
 
@@ -16,7 +17,7 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 
 ### Logging
 
-- [ ] Log all specified activities with redata.commons logging util
+- [x] Log all specified activities with redata.commons logging util
 
 ### Deployment
 
