@@ -1,25 +1,12 @@
 import json
-import os
-import sys
 from configparser import ConfigParser
-from enum import Enum
 from logging import Logger
 from os import path
 
-from redata.commons import logger, git_info
-
-from config import get_args
-from job import Job
-from metadata import get_metadata
-from wasabi import Wasabi, get_filenames_from_ls
-
-
-class Status(Enum):
-    SUCCESS = 0
-    ERROR = 1
-    INVALID_PATH = 2
-    DUPLICATE_BAG = 3
-    INVALID_PACKAGE = 4
+from redata_preservation.bagger import Status
+from redata_preservation.bagger.job import Job
+from redata_preservation.bagger.metadata import get_metadata
+from redata_preservation.bagger.wasabi import Wasabi, get_filenames_from_ls
 
 
 class Bagger:
@@ -128,7 +115,7 @@ class Bagger:
 
         metadata = get_metadata(metadata_path)
 
-        log.info(metadata)
+        self.log.info(metadata)
 
         job = Job(self.workflow, bag_name, self.output_dir, self.delete,
                   self.dart_command)
@@ -150,48 +137,8 @@ class Bagger:
             errors |= data['uploadResults'][0]['errors']
 
             if errors:
-                log.warning(errors)
+                self.log.warning(errors)
             else:
-                log.info(f'Job succeeded: {bag_name}')
+                self.log.info(f'Job succeeded: {bag_name}')
 
         return Status.SUCCESS
-
-
-if __name__ == '__main__':
-    args, config = get_args()
-
-    library_root_path = path.dirname(path.dirname(__file__))
-    gi = git_info.GitInfo(library_root_path)
-
-    log_dir = config['Logging']['log_dir']
-    logfile_prefix = config['Logging']['logfile_prefix']
-
-    log = logger.log_setup(log_dir, logfile_prefix)
-
-    lc = logger.LogCommons(log, 'script_run', gi)
-
-    lc.script_start()
-    lc.script_sys_info()
-
-    os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
-    os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
-
-    bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
-                    delete=args.delete, dart_command='dart-runner',
-                    config=config, log=log)
-
-    if args.batch:
-        log.info('Batch mode')
-        log.info(f'  Batch path: {args.path}')
-        for _path in next(os.walk(args.path))[1]:
-            bagger.run_dart(path.join(args.path, _path))
-        lc.script_end()
-        lc.log_permission()
-
-    else:
-        status = bagger.run_dart(args.path)
-        log.info(f'Status: {status.name}')
-        log.info(f'Exit code: {status.value}')
-        lc.script_end()
-        lc.log_permission()
-        sys.exit(status.value)
