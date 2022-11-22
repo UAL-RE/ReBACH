@@ -33,6 +33,11 @@ class Bagger:
         self.workflow: str = workflow
         self.overwrite: bool = overwrite
 
+        self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
+                             secret_key=config['Wasabi']['secret_key'],
+                             s3host=config['Wasabi']['host'],
+                             s3hostbucket=config['Wasabi']['host_bucket'])
+
     @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:
         """
@@ -55,25 +60,14 @@ class Bagger:
 
         return article_id, version, metadata_hash
 
-    def check_duplicate(self, bag_name: str) -> bool:
+    def list_wasabi(self) -> tuple[str, str]:
         """
         Check if package being processed has already been bagged and uploaded
 
-        :param bag_name: Name of bag to check (including filetype, e.g. '.tar')
         :return: True if bag exists in storage, otherwise False
         """
-        wasabi = Wasabi(access_key=self.config['Wasabi']['access_key'],
-                        secret_key=self.config['Wasabi']['secret_key'],
-                        s3host=self.config['Wasabi']['host'],
-                        s3hostbucket=self.config['Wasabi']['host_bucket'],
-                        log=self.log
-                        )
-
         folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
-        wasabi_files = wasabi.list_bucket(folder_to_list)
-        filenames = get_filenames_from_ls(wasabi_files)
-
-        return bag_name in filenames
+        return self.wasabi.list_bucket(folder_to_list)
 
     @staticmethod
     def validate_package(metadata_path: str) -> bool:
@@ -110,7 +104,17 @@ class Bagger:
         if not path.exists(package_path):
             return Status.INVALID_PATH
 
-        if self.check_duplicate(bag_name) and not self.overwrite:
+        wasabi_ls, wasabi_error = self.list_wasabi()
+
+        if wasabi_error:
+            wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
+            for e in wasabi_errors:
+                self.log.error(f"[Wasabi] {e.strip('ERROR: ')}")
+            return Status.WASABI_ERROR
+
+        wasabi_list = get_filenames_from_ls(wasabi_ls)
+
+        if bag_name in wasabi_list and not self.overwrite:
             return Status.DUPLICATE_BAG
 
         if not self.validate_package(metadata_path):

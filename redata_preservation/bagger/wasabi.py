@@ -1,12 +1,10 @@
-from logging import Logger
-
 from subprocess import run
 
 
 class Wasabi:
 
-    def __init__(self, access_key: str, secret_key, s3host,
-                 s3hostbucket, log: Logger) -> None:
+    def __init__(self, access_key: str, secret_key: str, s3host: str,
+                 s3hostbucket: str) -> None:
         """
         Initialize Wasabi class with Wasabi connection information
 
@@ -14,15 +12,13 @@ class Wasabi:
         :param secret_key: Wasabi secret key
         :param s3host: Wasabi s3 host
         :param s3hostbucket: Template for accessing s3 bucket
-        :param log: Logger object
         """
         self.s3host = s3host
         self.secret_key = secret_key
         self.access_key = access_key
         self.s3hostbucket = s3hostbucket
-        self.log = log
 
-    def list_bucket(self, folder_to_list: str) -> str:
+    def list_bucket(self, folder_to_list: str) -> tuple[str, str]:
         """
         List contents of a folder within Wasabi bucket
 
@@ -34,10 +30,7 @@ class Wasabi:
                self.s3hostbucket, 'ls', folder_to_list]
 
         ls_result = run(cmd, capture_output=True, text=True)
-        if ls_result.stderr:
-            self.log.warning(f"Wasabi error: {ls_result.stderr}")
-
-        return ls_result.stdout
+        return ls_result.stdout, ls_result.stderr
 
 
 def get_filenames_from_ls(ls: str) -> list[str]:

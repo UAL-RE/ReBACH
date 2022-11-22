@@ -7,3 +7,4 @@ class Status(Enum):
     INVALID_PATH = 2
     DUPLICATE_BAG = 3
     INVALID_PACKAGE = 4
+    WASABI_ERROR = 5
