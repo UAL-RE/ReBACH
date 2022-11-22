@@ -4,8 +4,8 @@ from os import path
 
 from redata.commons import logger, git_info
 
-from redata_preservation.config import get_args
 from redata_preservation.bagger.bag import Bagger
+from redata_preservation.config import get_args
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
 
     log = logger.log_setup(log_dir, logfile_prefix)
 
-    lc = logger.LogCommons(log, 'script_run', gi)
+    lc = logger.LogCommons(log, 'ReDATA-P_main', gi)
 
     lc.script_start()
     lc.script_sys_info()
