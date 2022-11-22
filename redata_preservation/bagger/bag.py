@@ -130,11 +130,11 @@ class Bagger:
 
         # TODO: What if not data?
         if data:
-            data = json.loads(data)
+            data_json = json.loads(data)
 
-            errors = data['packageResult']['errors']
-            errors |= data['validationResult']['errors']
-            errors |= data['uploadResults'][0]['errors']
+            errors = data_json['packageResult']['errors']
+            errors |= data_json['validationResult']['errors']
+            errors |= data_json['uploadResults'][0]['errors']
 
             if errors:
                 self.log.warning(errors)
