@@ -24,6 +24,8 @@ def main():
     lc.script_start()
     lc.script_sys_info()
 
+    log.info(f'Config file: {args.config}')
+
     os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
     os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
