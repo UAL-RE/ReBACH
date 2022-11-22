@@ -126,7 +126,11 @@ class Bagger:
         job.add_tag("aptrust-info.txt", "Access", "Institution")
         job.add_tag("aptrust-info.txt", "Title", metadata['title'])
 
-        data, err, exit_code = job.run()
+        data, error, exit_code = job.run()
+
+        if error:
+            # Remove trailing newline from DART runner error output
+            self.log.error(error.rstrip())
 
         # TODO: What if not data?
         if data:
@@ -141,4 +145,4 @@ class Bagger:
             else:
                 self.log.info(f'Job succeeded: {bag_name}')
 
-        return Status.SUCCESS
+        return Status(exit_code)

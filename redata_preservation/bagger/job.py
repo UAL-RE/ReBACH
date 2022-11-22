@@ -66,9 +66,8 @@ class Job:
                f"--workflow={self.workflow} "
                f"--output-dir={self.output_dir} "
                f"--delete={self.delete}")
-        child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, close_fds=True,
-                      text=True)
+        child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+                      close_fds=True, text=True)
         stdout_data, stderr_data = child.communicate(json_string + "\n")
-        if stderr_data is not None:
-            sys.stderr.write(stderr_data)
+
         return stdout_data, stderr_data, child.returncode
