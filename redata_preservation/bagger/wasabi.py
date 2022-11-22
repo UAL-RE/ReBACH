@@ -48,4 +48,5 @@ def get_filenames_from_ls(ls: str) -> list[str]:
     :return: List of filenames parsed from ls
     """
     lines = ls.splitlines()
-    return [line.split('/')[-1] for line in lines if line.split('/')[-1] != '']
+    return [line.rsplit('/', 1)[-1] for line in lines if
+            line.rsplit('/', 1)[-1] != '']
