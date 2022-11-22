@@ -7,7 +7,9 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 ### Testing
 
 - [x] Generate test data from sample data
-- [ ] Scaffold tests
+- [x] Scaffold tests
+- [x] Test Wasabi storage (connectivity, etc)
+    - Get more data from s3cmd to log if there are errors
 
 ### Metadata Integration
 
