@@ -42,6 +42,7 @@ def get_args() -> tuple[Namespace, ConfigParser]:
     parser.add_argument('-o', '--output_dir',
                         help="Output directory for bags.")
     parser.add_argument('-w', '--workflow', help="Path to workflow file.")
+    parser.add_argument('--dart_command', help="Command to invoke DART Runner")
     parser.add_argument('path')
     args = parser.parse_args(remaining_argv)
 
