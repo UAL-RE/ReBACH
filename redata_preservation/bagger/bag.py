@@ -12,7 +12,8 @@ from redata_preservation.bagger.wasabi import Wasabi, get_filenames_from_ls
 class Bagger:
 
     def __init__(self, workflow: str, output_dir: str, delete: bool,
-                 dart_command: str, config: ConfigParser, log: Logger) -> None:
+                 dart_command: str, config: ConfigParser, log: Logger,
+                 overwrite: bool) -> None:
         """
         Set up environment for generating bags with DART
 
@@ -22,6 +23,7 @@ class Bagger:
         :param dart_command: Path to DART executable
         :param config: ConfigParser object
         :param log: Logger object
+        :param overwrite: Overwrite duplicate bags if True
         """
         self.config: ConfigParser = config
         self.log: Logger = log
@@ -29,6 +31,7 @@ class Bagger:
         self.delete: bool = delete
         self.output_dir: str = output_dir
         self.workflow: str = workflow
+        self.overwrite: bool = overwrite
 
     @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:
@@ -56,7 +59,7 @@ class Bagger:
         """
         Check if package being processed has already been bagged and uploaded
 
-        :param bag_name: Name for bag being processed
+        :param bag_name: Name of bag to check (including filetype, e.g. '.tar')
         :return: True if bag exists in storage, otherwise False
         """
         wasabi = Wasabi(access_key=self.config['Wasabi']['access_key'],
@@ -107,7 +110,7 @@ class Bagger:
         if not path.exists(package_path):
             return Status.INVALID_PATH
 
-        if self.check_duplicate(bag_name):
+        if self.check_duplicate(bag_name) and not self.overwrite:
             return Status.DUPLICATE_BAG
 
         if not self.validate_package(metadata_path):
@@ -115,7 +118,7 @@ class Bagger:
 
         metadata = get_metadata(metadata_path)
 
-        self.log.info(metadata)
+        self.log.debug(metadata)
 
         job = Job(self.workflow, bag_name, self.output_dir, self.delete,
                   self.dart_command)

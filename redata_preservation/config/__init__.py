@@ -23,9 +23,10 @@ def get_args() -> tuple[Namespace, ConfigParser]:
     args, remaining_argv = conf_parser.parse_known_args()
 
     defaults = {
-        'delete': 'True',
+        'delete': True,
         'output_dir': '../out',
-        'workflow': 'config/default_workflow.json'
+        'workflow': 'config/default_workflow.json',
+        'overwrite': False
     }
 
     config = configparser.ConfigParser()
@@ -38,11 +39,14 @@ def get_args() -> tuple[Namespace, ConfigParser]:
     )
     parser.set_defaults(**defaults)
     parser.add_argument('-b', '--batch', help='Process a batch directory.')
-    parser.add_argument('-d', '--delete', help='Delete bags after upload.')
+    parser.add_argument('-d', '--delete', help='Delete bags after upload.',
+                        action=argparse.BooleanOptionalAction)
     parser.add_argument('-o', '--output_dir',
-                        help="Output directory for bags.")
-    parser.add_argument('-w', '--workflow', help="Path to workflow file.")
-    parser.add_argument('--dart_command', help="Command to invoke DART Runner")
+                        help='Output directory for generated bags.')
+    parser.add_argument('-w', '--workflow', help='Path to workflow file.')
+    parser.add_argument('--dart_command', help='Command to invoke DART Runner.')
+    parser.add_argument('--overwrite', help='Overwrite duplicate bags.',
+                        action=argparse.BooleanOptionalAction)
     parser.add_argument('path')
     args = parser.parse_args(remaining_argv)
 

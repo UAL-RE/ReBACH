@@ -29,7 +29,7 @@ def main():
 
     bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
                     delete=args.delete, dart_command=args.dart_command,
-                    config=config, log=log)
+                    config=config, log=log, overwrite=args.overwrite)
 
     if args.batch:
         log.info('Batch mode')
