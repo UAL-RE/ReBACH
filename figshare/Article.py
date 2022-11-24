@@ -658,13 +658,17 @@ class Article:
             # check download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+                self.logs.write_log_in_file("info", "Copy curation UAL_RDM files in storage UAL_RDM folder for each version", True)
                 self.__copy_files_ual_rdm(version_data, folder_name)
                 # check and create empty directories for each version
+                self.logs.write_log_in_file("info", "Check and create empty directories for each version", True)
                 self.create_required_folders(version_data, folder_name)
                 # save json in metadata folder for each version
+                self.logs.write_log_in_file("info", "Save json in metadata folder for each version", True)
                 self.__save_json_in_metadata(version_data, folder_name)
             else:
                 # if download process has any error than delete complete folder
+                self.logs.write_log_in_file("info", "If download process has any error than delete complete folder", True)
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each match item.
@@ -723,6 +727,7 @@ class Article:
                             check_main_folder = os.path.exists(check_dir)
                             check_files = True
                             copy_files = True
+                            self.logs.write_log_in_file("info", "Check folder already exists in preservation storage directory.", True)
                             if (check_main_folder is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
@@ -738,6 +743,7 @@ class Article:
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
+                            self.logs.write_log_in_file("info", "Check require files exists in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
                         else:
