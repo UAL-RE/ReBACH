@@ -18,15 +18,15 @@ class Article:
     Class constructor.
     Defined requried variables that will be used in whole class.
     """
-    def __init__(self):
-        self.config_obj = Config()
+    def __init__(self, config):
+        self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
-        self.logs = Log()
+        self.logs = Log(config)
         self.errors = []
         self.exclude_dirs = [".DS_Store"]
         self.total_all_articles_file_size = 0

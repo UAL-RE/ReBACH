@@ -14,8 +14,8 @@ class Collection:
     Class constructor.
     Defined variables that will be used in whole class
     """
-    def __init__(self) -> None:
-        self.config_obj = Config()
+    def __init__(self, config) -> None:
+        self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
@@ -23,9 +23,9 @@ class Collection:
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
         self.institution = int(figshare_config["institution"])
-        self.logs = Log()
+        self.logs = Log(config)
         self.errors = []
-        self.article_obj = Article()
+        self.article_obj = Article(config)
         self.preservation_storage_location = self.system_config["preservation_storage_location"]
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"

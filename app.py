@@ -6,11 +6,11 @@ from Config import Config
 from figshare.Collection import Collection
 
 
-def check_logs_path_access():
+def check_logs_path_access(config_file):
     """
     Checking logs path access
     """
-    config_obj = Config()
+    config_obj = Config(config_file)
     system_config = config_obj.system_config()
     log_location = system_config["logs_location"]
 
@@ -32,24 +32,42 @@ def check_logs_path_access():
         exit()
 
 
+def get_config_file_path():
+    path_val = input("Please enter the file path of the configuration file: ")
+    path_val = path_val.strip()
+    if (path_val == ''):
+        print(asctime() + ":ERROR: Log - " + "Configuration (.ini) file is required.")
+        exit()
+
+    check_path = path_val.split('.')[-1]
+    if (check_path != 'ini'):
+        print(asctime() + ":ERROR: Log - " + "Configuration file extension must be .ini .")
+        exit()
+
+    file_exists = os.path.exists(path_val)
+
+    if (file_exists is False):
+        print(asctime() + ":ERROR: Log - " + "Configuration file is missing on the given path.")
+        exit()
+
+    return path_val
+
+
 def main():
     """
     This function will be called first.
     Setting up required variables and conditions.
     """
-    log = Log()
     # Check .env file exist.
-    file_exists = os.path.exists(".env.ini")
+    env_file = get_config_file_path()
+    print(asctime() + ":Info: Log - " + env_file)
 
-    if (file_exists is False):
-        print(asctime() + ":ERROR: Log - " + "Please setup .env.ini file from .env.sample.ini file.")
-        exit()
+    config_obj = Config(env_file)
 
-    config_obj = Config()
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
     figshare_api_url = figshare_config["url"]
-
+    log = Log(env_file)
     log_location = system_config["logs_location"]
     preservation_storage_location = system_config["preservation_storage_location"]
     figshare_api_token = figshare_config["token"]
@@ -73,7 +91,7 @@ def main():
     if (institution is None or institution == ''):
         log.write_log_in_file('error', "Institution Id is required.", True, True)
 
-    check_logs_path_access()
+    check_logs_path_access(env_file)
     # Check storage path exits, if not then give error and stop processing
     preservation_path_exists = os.path.exists(preservation_storage_location)
     access = os.access(preservation_storage_location, os.W_OK)
@@ -91,29 +109,14 @@ def main():
                               + "not be reached or read.",
                               True, True)
 
-
-def get_articles():
-    """
-    Creating article class object and sending call to process articles, setup metadata and download files.
-    """
-    obj = Article()
-    article_data = obj.get_articles()
-    return article_data
-
-
-def get_collections():
-    """
-    Creating collections class object and sending call to process collections and setup metadata.
-    """
-    obj = Collection()
-    collection_data = obj.get_collections()
-    return collection_data
+    return env_file
 
 
 if __name__ == "__main__":
-    main()
-    log = Log()
-    article_obj = Article()
+    config_file_path = main()
+
+    log = Log(config_file_path)
+    article_obj = Article(config_file_path)
     article_data = article_obj.get_articles()
     log.write_log_in_file('info',
                           f"Total articles fetched: {len(article_data)}",
@@ -122,7 +125,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Try fetching collections....",
                           True)
-    collection_obj = Collection()
+    collection_obj = Collection(config_file_path)
     collection_data = collection_obj.get_collections()
 
     # print(collection_data)
