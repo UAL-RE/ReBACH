@@ -50,11 +50,6 @@ class Collection:
                 page_size = 100
                 page_empty = False
                 while (not page_empty):
-                    # page = 1
-                    # page_size = 3
-                    # total_articles = 10
-                    # no_of_pages = math.ceil(total_articles / page_size)
-                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(collections_api_url, params=params,
                                                 timeout=self.retry_wait)
@@ -185,6 +180,7 @@ class Collection:
                 page = 1
                 page_size = 100
                 while (not page_empty):
+                    print(f"Fetching collection articles of Page {page}. Collection ID: {collection['id']}")
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
@@ -195,7 +191,6 @@ class Collection:
                         else:
                             articles_list.extend(articles_list_res)
                         success = True
-                        print(f"Fetching collection {len(articles_list_res)} articles of Page {page}. ID: {collection['id']}")
                     else:
                         retries = self.article_obj.retries_if_error(
                             f"API is not reachable. Retry {retries}", get_response.status_code, retries)
@@ -262,6 +257,7 @@ class Collection:
             json_data = json.dumps(version_data, indent=4)
             filename_path = complete_path + "/" + str(collection_id) + ".json"
             # Writing to json file
+            print("Saving collection data in json.")
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
         else:

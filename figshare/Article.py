@@ -60,11 +60,6 @@ class Article:
                 page_size = 100
                 page_empty = False
                 while (not page_empty):
-                    # page = 1
-                    # page_size = 3
-                    # total_articles = 5
-                    # no_of_pages = math.ceil(total_articles / page_size)
-                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -700,11 +695,13 @@ class Article:
     """
     def process_articles(self, articles, total_file_size):
         curation_storage_location = self.__initial_process(total_file_size)
+        self.logs.write_log_in_file("info", "Find matched articles.", True)
         article_data = self.find_matched_articles(articles)
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if space is less.
+        self.logs.write_log_in_file("info", "Check required space after curation process, it will stop process if space is less.", True)
         self.check_required_space(required_space)
 
         for article in article_data:
@@ -712,12 +709,12 @@ class Article:
             article_data[article] = []
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
-                    print(f"Processing article {article} version {version_data['version']}")
                     version_no = "v" + str(version_data["version"]).zfill(2)
                     folder_name = str(version_data["id"]) + "_" + version_no + "_" \
                         + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
 
                     if (version_data["matched"] is True):
+                        print(f"Processing article {article} version {version_data['version']}")
                         # call pre process script function for each match item.
                         value_pre_process = self.pre_process_script_function()
                         if (value_pre_process == 0):
