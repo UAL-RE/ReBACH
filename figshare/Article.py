@@ -475,7 +475,8 @@ class Article:
         memory = shutil.disk_usage(preservation_storage_location)
         available_space = memory.free
         if (req_space > available_space):
-            self.logs.write_log_in_file('error', "There isn't enough space in storage path.", True, True)
+            self.logs.write_log_in_file('error', "There isn't enough space in storage path."
+                                                 + f"Required space is {req_space} and available space is {available_space}.", True, True)
 
     """
     Checking file hash
