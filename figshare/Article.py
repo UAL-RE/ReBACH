@@ -389,7 +389,7 @@ class Article:
                                 version_dir = article_dir_in_curation + "/" + dir
                                 # read version dir
                                 read_version_dirs = os.listdir(version_dir)
-                                version_data["matched"] = True
+                                version_data["matched"] = is_matched = True
                                 # item_subtype conditions
                                 sub_type = ''
                                 if (version_data['has_linked_file']):
@@ -398,16 +398,19 @@ class Article:
                                     sub_type = 'metadata'
                                 else:
                                     sub_type = 'regular'
-                                version_data["curation_info"] = {'item_type': 'article', 'item_subtype': sub_type,
+                                version_data["curation_info"] = curation_info = {'item_type': 'article', 'item_subtype': sub_type,
                                                                  'id': version_data['id'], 'version': version_data['version'],
                                                                  'first_author': version_data['authors'][0]['full_name'], 'url': version_data['url'],
                                                                  'md5': version_data['version_md5'], 'path': version_dir,
                                                                  'total_files': version_data['total_num_files'],
-                                                                 'total_files_size': version_data['file_size_sum']
+                                                                 'total_files_size': version_data['file_size_sum'],
+                                                                 'is_matched': is_matched
                                                                  }
 
                                 # article version data with curation info saved in logs.
                                 self.logs.write_log_in_file("info", f"{version_data} ")
+
+                                self.logs.write_log_in_file("info", f"Curration info -- {curation_info} ", True)
 
                                 if "UAL_RDM" not in read_version_dirs:  # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error",
@@ -615,6 +618,7 @@ class Article:
     """
     def find_matched_articles(self, articles):
         article_data = {}
+        no_matched = 0
         for article in articles:
             if (articles[article] is not None):
                 article_versions_list = articles[article]
@@ -625,6 +629,9 @@ class Article:
                         data = self.__check_curation_dir(version_data)
                         if (data["matched"] is True):
                             article_data[version_data['id']].append(data)
+                            no_matched += 1
+
+        self.logs.write_log_in_file("info", f"Total matched articles: {no_matched}.", True)
 
         return article_data
 
@@ -695,8 +702,9 @@ class Article:
     """
     def process_articles(self, articles, total_file_size):
         curation_storage_location = self.__initial_process(total_file_size)
-        self.logs.write_log_in_file("info", "Find matched articles.", True)
+        self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
+
         # calcualte space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size

@@ -16,7 +16,7 @@ class Log:
         system_config = config_obj.system_config()
         log_location = system_config["logs_location"]
 
-        file_name = "log-" + datetime.now().strftime("%Y-%m-%d") + ".log"
+        file_name = "log-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
         if (log_location[-1] != "/"):
             log_location = log_location + '/'
         file_path = log_location + file_name
