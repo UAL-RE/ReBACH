@@ -4,6 +4,7 @@ from figshare.Article import Article
 from time import asctime
 from Config import Config
 from figshare.Collection import Collection
+import sys
 
 
 def check_logs_path_access(config_file):
@@ -33,12 +34,14 @@ def check_logs_path_access(config_file):
 
 
 def get_config_file_path():
-    path_val = input("Please enter the file path of the configuration file: ")
-    path_val = path_val.strip()
-    if (path_val == ''):
-        print(asctime() + ":ERROR: Log - " + "Configuration (.ini) file is required.")
+    args = sys.argv
+
+    if (len(args) == 1 or args[1] == ''):
+        print(asctime() + ":ERROR: Log - " + "First parameter must be configuration (.ini) file.")
         exit()
 
+    path_val = args[1]
+    path_val = path_val.strip()
     check_path = path_val.split('.')[-1]
     if (check_path != 'ini'):
         print(asctime() + ":ERROR: Log - " + "Configuration file extension must be .ini .")
