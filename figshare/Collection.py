@@ -6,7 +6,7 @@ from Log import Log
 from Config import Config
 import hashlib
 from figshare.Article import Article
-
+import re
 
 class Collection:
 
@@ -235,7 +235,8 @@ class Collection:
                 json_data = json.dumps(version).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
-                folder_name = str(collection) + "_" + version_no + "_" + version_md5 + "/" + version_no + "/METADATA"
+                author_name = re.sub("[^A-Za-z0-9]","_",version['authors'][0]['full_name'])
+                folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
                 print(f"Processing collection {collection} version {version['version']}")
                 self.__save_json_in_metadata(collection, version, folder_name)
