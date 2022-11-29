@@ -391,7 +391,7 @@ class Article:
                     version_data["curation_info"] = {}
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
-                            self.logs.write_log_in_file('info', f"dir version {dir} ----- {version_no}", True)
+                            self.logs.write_log_in_file('info', f"dir version {dir} ----- {version_no}")
                             if (dir == version_no):
                                 version_dir = article_dir_in_curation + "/" + dir
                                 # read version dir
@@ -413,11 +413,8 @@ class Article:
                                                                  'total_files_size': version_data['file_size_sum'],
                                                                  'is_matched': is_matched
                                                                  }
-                                curation_info = version_data["curation_info"]
                                 # article version data with curation info saved in logs.
                                 self.logs.write_log_in_file("info", f"{version_data} ")
-
-                                self.logs.write_log_in_file("info", f"Curration info -- {curation_info} ", True)
 
                                 if "UAL_RDM" not in read_version_dirs:  # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error",
