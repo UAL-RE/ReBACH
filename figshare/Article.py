@@ -60,6 +60,11 @@ class Article:
                 page_size = 100
                 page_empty = False
                 while (not page_empty):
+                    # page = 1
+                    # page_size = 3
+                    # total_articles = 5
+                    # no_of_pages = math.ceil(total_articles / page_size)
+                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -378,6 +383,7 @@ class Article:
             if (dir not in self.exclude_dirs):
                 dir_array = dir.split("_")
                 # check author name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
+                self.logs.write_log_in_file('info', f"article {version_data['id']} ----- {dir}", True)
                 if (str(version_data['id']) in dir_array):
                     article_dir_in_curation = curation_storage_location + dir
                     # read author dir
@@ -385,6 +391,7 @@ class Article:
                     version_data["curation_info"] = {}
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
+                            self.logs.write_log_in_file('info', f"dir version {dir} ----- {version_no}", True)
                             if (dir == version_no):
                                 version_dir = article_dir_in_curation + "/" + dir
                                 # read version dir
@@ -398,7 +405,7 @@ class Article:
                                     sub_type = 'metadata'
                                 else:
                                     sub_type = 'regular'
-                                version_data["curation_info"] = curation_info = {'item_type': 'article', 'item_subtype': sub_type,
+                                version_data["curation_info"] = {'item_type': 'article', 'item_subtype': sub_type,
                                                                  'id': version_data['id'], 'version': version_data['version'],
                                                                  'first_author': version_data['authors'][0]['full_name'], 'url': version_data['url'],
                                                                  'md5': version_data['version_md5'], 'path': version_dir,
@@ -406,7 +413,7 @@ class Article:
                                                                  'total_files_size': version_data['file_size_sum'],
                                                                  'is_matched': is_matched
                                                                  }
-
+                                curation_info = version_data["curation_info"]
                                 # article version data with curation info saved in logs.
                                 self.logs.write_log_in_file("info", f"{version_data} ")
 
