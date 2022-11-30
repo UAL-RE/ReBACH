@@ -8,8 +8,9 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 
 ```text
 $ python -m redata_preservation.scripts.main -h
-usage: main.py [-h] [-c CONFIG] [-b BATCH] [-d | --delete | --no-delete] [-o OUTPUT_DIR] [-w WORKFLOW]
-               [--dart_command DART_COMMAND] [--overwrite | --no-overwrite]
+usage: main.py [-h] [-c CONFIG] [-b BATCH] [-d | --delete | --no-delete]
+               [-o OUTPUT_DIR] [-w WORKFLOW] [--dart_command DART_COMMAND]
+               [--overwrite | --no-overwrite]
                path
 
 positional arguments:
