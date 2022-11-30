@@ -1,21 +1,48 @@
 import json
 
+from collections import namedtuple
+from logging import Logger
+from pathlib import Path
+from typing import Literal
 
-def get_metadata(metadata_path: str) -> dict:
-    """
-    Pull metadata from preservation package JSON file.
+Tag = namedtuple('Tag', ['tag_file', 'tag_name', 'tag_value'])
 
-    :param metadata_path: Path to preservation package metadata JSON file
-    :return: Dict with required metadata elements
-    """
 
-    with open(metadata_path, 'r') as f:
-        data = json.load(f)
+class Metadata:
 
-    metadata = dict()
-    metadata['title'] = data['title']
-    metadata['doi'] = data['doi']
-    metadata['published_date'] = data['published_date']
-    metadata['license'] = data['license']['name']
+    def __init__(self, config: dict, metadata_json_path: Path, log: Logger):
+        self.config: dict = config
+        self.log: Logger = log
+        self.metadata_json_path: Path = metadata_json_path
+        self.metadata_config: dict = self.config['Metadata']
 
-    return metadata
+        self.tags: list[Tag] = []
+
+        with open(self.metadata_json_path, 'r') as f:
+            self.data: dict = json.load(f)
+
+    def parse_metadata(self) -> list[Tag] | Literal[False]:
+        for tag_file, tags in self.metadata_config.items():
+            tag_file = f'{tag_file}.txt'
+            for tag_name, tag_source in tags.items():
+                split_tag_source = tag_source.split('.')
+                tag_value = self._descend_json(self.data, split_tag_source)
+
+                if not tag_value:
+                    return False
+
+                self.tags.append(Tag(tag_file, tag_name, tag_value))
+
+        return self.tags
+
+    def _descend_json(self, metadata: dict, tag_source: list) -> bool:
+        if len(tag_source) == 1:
+            try:
+                return metadata[tag_source[0]]
+            except KeyError as e:
+                self.log.error(f"Key '{e.args[0]}' not found in metadata "
+                               f"JSON file.")
+                return False
+
+        else:
+            return self._descend_json(metadata[tag_source[0]], tag_source[1:])

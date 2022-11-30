@@ -1,0 +1,23 @@
+[Defaults]
+output_dir = "out"
+workflow = "redata_preservation/config/default_workflow.json"
+dart_command = "dart-runner"
+
+[Logging]
+log_dir = "logs"
+logfile_prefix = "ReBACH-Bagger"
+
+[Wasabi]
+
+name = "***override***"
+host = "***override***"
+bucket = "***override***"
+host_bucket = "***override***"
+access_key = "***override***"
+secret_key = "***override***"
+
+[Metadata]
+# TagFile.TagName = TagSource
+
+bag-info.DOI = "doi"
+bag-info.License = "license.name"

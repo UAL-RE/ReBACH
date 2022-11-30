@@ -1,6 +1,7 @@
 import os
 import sys
-from os import path
+
+from pathlib import Path
 
 from redata.commons import logger, git_info
 
@@ -9,16 +10,16 @@ from redata_preservation.config import get_args
 
 
 def main():
-    args, config = get_args()
+    library_root_path = Path(__file__).resolve().parents[2]
 
-    library_root_path = path.dirname(path.dirname(__file__))
-    gi = git_info.GitInfo(library_root_path)
+    gi = git_info.GitInfo(str(library_root_path))
+
+    args, config = get_args()
 
     log_dir = config['Logging']['log_dir']
     logfile_prefix = config['Logging']['logfile_prefix']
 
     log = logger.log_setup(log_dir, logfile_prefix)
-
     lc = logger.LogCommons(log, 'ReDATA-P_main', gi)
 
     lc.script_start()
@@ -37,7 +38,7 @@ def main():
         log.info('Batch mode')
         log.info(f'  Batch path: {args.path}')
         for _path in next(os.walk(args.path))[1]:
-            bagger.run_dart(path.join(args.path, _path))
+            bagger.run_dart(Path(args.path, _path))
         lc.script_end()
         lc.log_permission()
 

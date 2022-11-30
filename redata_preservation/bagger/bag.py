@@ -1,18 +1,20 @@
 import json
-from configparser import ConfigParser
 from logging import Logger
-from os import path
+from os import PathLike
+from pathlib import Path
 
 from redata_preservation.bagger import Status
 from redata_preservation.bagger.job import Job
-from redata_preservation.bagger.metadata import get_metadata
+from redata_preservation.bagger.metadata import Metadata
 from redata_preservation.bagger.wasabi import Wasabi, get_filenames_from_ls
 
 
+# TODO: Create BaggerInit class to initialize the Bagger environment. Bagger
+#  class can then take the package_path and other arguments to enable looping.
 class Bagger:
 
-    def __init__(self, workflow: str, output_dir: str, delete: bool,
-                 dart_command: str, config: ConfigParser, log: Logger,
+    def __init__(self, workflow: PathLike, output_dir: PathLike, delete: bool,
+                 dart_command: str, config: dict, log: Logger,
                  overwrite: bool) -> None:
         """
         Set up environment for generating bags with DART
@@ -21,16 +23,16 @@ class Bagger:
         :param output_dir: Directory for generated bag output by DART
         :param delete: Delete output bag if True
         :param dart_command: Path to DART executable
-        :param config: ConfigParser object
+        :param config: Config dict
         :param log: Logger object
         :param overwrite: Overwrite duplicate bags if True
         """
-        self.config: ConfigParser = config
+        self.config: dict = config
         self.log: Logger = log
         self.dart_command: str = dart_command
         self.delete: bool = delete
-        self.output_dir: str = output_dir
-        self.workflow: str = workflow
+        self.output_dir: PathLike = output_dir
+        self.workflow: PathLike = workflow
         self.overwrite: bool = overwrite
 
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
@@ -41,7 +43,8 @@ class Bagger:
     @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:
         """
-        Decompose the name of a package into parts to enable parsing the package
+        Decompose the name of a package into parts to enable traversing the
+        package
 
         :param package_name: Name (directory) of package
         :return: Tuple of package name parts
@@ -70,7 +73,7 @@ class Bagger:
         return self.wasabi.list_bucket(folder_to_list)
 
     @staticmethod
-    def validate_package(metadata_path: str) -> bool:
+    def validate_package(metadata_path: PathLike) -> bool:
         """
         Check if the package has a valid directory structure
         FIXME: The method currently only checks for the presence of the package
@@ -81,27 +84,25 @@ class Bagger:
         :return: True if the package is valid, otherwise False
         """
 
-        return path.exists(metadata_path)
+        return Path(metadata_path).exists()
 
-    def run_dart(self, package_path: str) -> Status:
+    def _init_dart(self, package_path: PathLike) -> Status | tuple[str, list]:
         """
-        Run DART executable for a single package
+        Perform initial error checks and return data for DART data structure
 
         :param package_path: Path to preservation package
-        :return: Status after attempting execution
+        :return: Status if errors are encountered, otherwise bag name and tags
         """
 
-        # Get name for bag from package path, stripping subdirectories and
-        # slashes
-        bag_name = path.basename(path.normpath(package_path)) + '.tar'
-        package_name = path.basename(path.normpath(package_path))
+        package_name = Path(package_path).name
+        bag_name = f'{package_name}.tar'
 
         article_id, version, metadata_hash = self.decompose_name(package_name)
         metadata_dir = f'v{version}/METADATA/'
         metadata_filename = f'preservation_final_{article_id}.json'
-        metadata_path = path.join(package_path, metadata_dir, metadata_filename)
+        metadata_path = Path(package_path, metadata_dir, metadata_filename)
 
-        if not path.exists(package_path):
+        if not Path(package_path).exists():
             return Status.INVALID_PATH
 
         wasabi_ls, wasabi_error = self.list_wasabi()
@@ -120,18 +121,39 @@ class Bagger:
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
 
-        metadata = get_metadata(metadata_path)
+        metadata_tags = Metadata(self.config, metadata_path,
+                                 self.log).parse_metadata()
 
-        self.log.debug(metadata)
+        if not metadata_tags:
+            return Status.INVALID_METADATA
+
+        return bag_name, metadata_tags
+
+    def run_dart(self, package_path: PathLike) -> Status:
+        """
+        Run DART executable for a single package
+
+        :param package_path: Path to preservation package
+        :return: Status after attempting execution
+        """
+
+        # FIXME: This is why we need a class for DART that we can set
+        #  per-bag instance variables (e.g. package_path, bag_name,
+        #  metadata_tags) on.
+        init_status = self._init_dart(package_path)
+        if isinstance(init_status, Status):
+            return init_status
+        else:
+            bag_name, metadata_tags = init_status
 
         job = Job(self.workflow, bag_name, self.output_dir, self.delete,
                   self.dart_command)
 
         job.add_file(package_path)
 
-        job.add_tag("bag-info.txt", "Source-Organization", "ReDATA")
-        job.add_tag("aptrust-info.txt", "Access", "Institution")
-        job.add_tag("aptrust-info.txt", "Title", metadata['title'])
+        for tag in metadata_tags:
+            tag_file, tag_name, tag_value = tag
+            job.add_tag(tag_file, tag_name, tag_value)
 
         data, error, exit_code = job.run()
 

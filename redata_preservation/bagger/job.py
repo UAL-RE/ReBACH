@@ -1,31 +1,30 @@
-# Class for implementing main interactions with dart-runner
-
 import json
+from os import PathLike
 from subprocess import Popen, PIPE
 
 
 class Job:
 
-    def __init__(self, workflow: str, bag_name: str, output_dir: str,
+    def __init__(self, workflow: PathLike, bag_name: str, output_dir: PathLike,
                  delete: bool, dart_command: str) -> None:
         """
         Init the Job class with attributes for passing to DART
 
-        :param workflow: Workflow JSON fil
+        :param workflow: Workflow JSON file
         :param bag_name: Name of bag to generate
         :param output_dir: Directory for outputting temp bag prior to upload
         :param delete: Delete the output bag if true
         :param dart_command: Command to run DART executable
         """
-        self.workflow = workflow
-        self.bag_name = bag_name
-        self.output_dir = output_dir
-        self.delete = delete
-        self.dart_command = dart_command
-        self.files: list[str] = []
+        self.workflow: PathLike = workflow
+        self.bag_name: str = bag_name
+        self.output_dir: PathLike = output_dir
+        self.delete: bool = delete
+        self.dart_command: str = dart_command
+        self.files: list[PathLike] = []
         self.tags: list[dict[str, str]] = []
 
-    def add_file(self, path: str) -> None:
+    def add_file(self, path: PathLike) -> None:
         """
         Add a file to the bag
 
