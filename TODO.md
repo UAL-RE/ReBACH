@@ -10,6 +10,7 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 - [x] Scaffold tests
 - [x] Test Wasabi storage (connectivity, etc)
     - Get more data from s3cmd to log if there are errors
+- [ ] Handle errors if DART doesn't execute
 
 ### Metadata Integration
 
@@ -23,9 +24,14 @@ the APTrust DART tool, and uploading the completed bag to offsite storage.
 
 ### Deployment
 
+- [ ] Merge with ReBACH repo.
+- [ ] Rename to rebach_bagger
+
 - If dart-runner not found, print message and point user to where to locate it
     - Do not attempt to download it
-    - Add to documentation: how to download, where to put, how to set executable
+    - Add to documentation: how to download, where to put, how to set
+      executable
       permission
 
-- Handle errors if DART doesn't execute
+
+

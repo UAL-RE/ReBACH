@@ -9,6 +9,8 @@ from redata_preservation.bagger.bag import Bagger
 from redata_preservation.config import get_args
 
 
+# TODO: Initialization can be made into a self-contained initialization
+#  function
 def main():
     library_root_path = Path(__file__).resolve().parents[2]
 
