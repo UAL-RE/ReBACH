@@ -8,3 +8,4 @@ class Status(Enum):
     DUPLICATE_BAG = 3
     INVALID_PACKAGE = 4
     WASABI_ERROR = 5
+    INVALID_METADATA = 6
