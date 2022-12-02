@@ -1,7 +1,18 @@
 import argparse
-import tomli as tomllib
-
+import sys
 from argparse import Namespace
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
+    import tomli as tomllib
+
+
+# Override tomllib.TOMLDecodeError to include filename as a property
+class TOMLDecodeError(tomllib.TOMLDecodeError):
+    def __init__(self, message, filename):
+        super().__init__(message)
+        self.filename = filename
 
 
 def get_args() -> tuple[Namespace, dict]:
@@ -21,7 +32,11 @@ def get_args() -> tuple[Namespace, dict]:
         'config': args.config, 'delete': True, 'overwrite': False}
 
     with open(args.config, "rb") as f:
-        config = tomllib.load(f)
+        try:
+            config = tomllib.load(f)
+        except tomllib.TOMLDecodeError as e:
+            raise TOMLDecodeError(e, filename=args.config)
+
     defaults.update(dict(config['Defaults']))
 
     parser = argparse.ArgumentParser(  # Inherit options from conf_parser

@@ -125,7 +125,7 @@ class Bagger:
                                  self.log).parse_metadata()
 
         if not metadata_tags:
-            return Status.INVALID_METADATA
+            return Status.INVALID_CONFIG
 
         return bag_name, metadata_tags
 
