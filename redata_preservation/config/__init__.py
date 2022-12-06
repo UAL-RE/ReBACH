@@ -1,6 +1,7 @@
 import argparse
 import sys
 from argparse import Namespace
+from typing import Optional, Union
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -15,17 +16,29 @@ class TOMLDecodeError(tomllib.TOMLDecodeError):
         self.filename = filename
 
 
-def get_args() -> tuple[Namespace, dict]:
+def get_args(path: Optional[str] = None,
+             default_conf: Optional[str] = None) -> Union[dict, tuple[Namespace, dict]]:
     """
     Construct args namespace from config file, overriding with values
     specified at runtime
 
     :return: Tuple of populated args namespace and config variable
     """
+    if not default_conf:
+        default_conf = 'redata_preservation/config/default.toml'
+
+    if path:
+        with open(default_conf, "rb") as f:
+            try:
+                config = tomllib.load(f)
+            except tomllib.TOMLDecodeError as e:
+                raise TOMLDecodeError(e, filename=default_conf)
+        return config
+
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument('-c', '--config',
                              help='Path to configuration file.',
-                             default='redata_preservation/config/default.toml')
+                             default=default_conf)
     args, remaining_argv = conf_parser.parse_known_args()
 
     defaults = {  # This puts the correct config file into the args object
