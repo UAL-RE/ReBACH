@@ -8,13 +8,13 @@
             "name": "Python: DART",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceRoot}/redata-preservation/main.py",
+            "program": "-m redata_preservation.scripts.main",
             "console": "integratedTerminal",
             "cwd": "${workspaceRoot}",
             "args": [
-                "-c=redata-preservation/config/arizona/arizona.ini",
-                "-o=out","-w=redata-preservation/config/redata-wasabi.json",
-                "TestBags/6944096_04_Chun_Ly_13e8f0d8d3086ea2f5c4c194e5d0873b"
+                "-c=redata_preservation/config/arizona/arizona.toml",
+                "-o=out","-w=redata_preservation/config/redata-wasabi.json",
+                "TestBags/7873476_01_Jeffrey_C_Oliver_b3e8ca9fce68c6dd95c4b71efe9220b7"
             ],
             "justMyCode": true
         }
