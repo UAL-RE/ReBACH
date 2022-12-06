@@ -3,7 +3,7 @@ import json
 from collections import namedtuple
 from logging import Logger
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Union
 
 Tag = namedtuple('Tag', ['tag_file', 'tag_name', 'tag_value'])
 
@@ -21,7 +21,7 @@ class Metadata:
         with open(self.metadata_json_path, 'r') as f:
             self.data: dict = json.load(f)
 
-    def parse_metadata(self) -> list[Tag] | Literal[False]:
+    def parse_metadata(self) -> Union[list[Tag], Literal[False]]:
         for tag_file, tags in self.metadata_config.items():
             tag_file = f'{tag_file}.txt'
             for tag_name, tag_source in tags.items():
