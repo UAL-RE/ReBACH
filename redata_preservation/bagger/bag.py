@@ -87,7 +87,7 @@ class Bagger:
 
         return Path(metadata_path).exists()
 
-    def _init_dart(self, package_path: PathLike) -> Union[Status,  tuple[str, list]]:
+    def _init_dart(self, package_path: PathLike) -> Union[Status, tuple[str, list]]:
         """
         Perform initial error checks and return data for DART data structure
 
