@@ -3,7 +3,7 @@ redata-preservation/config/arizona*
 redata_preservation/config/arizona*
 .DS_Store
 
-redata_preservation/config/default.ini
+redata_preservation/config/default.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

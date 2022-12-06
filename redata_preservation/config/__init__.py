@@ -25,7 +25,7 @@ def get_args() -> tuple[Namespace, dict]:
     conf_parser = argparse.ArgumentParser(add_help=False)
     conf_parser.add_argument('-c', '--config',
                              help='Path to configuration file.',
-                             default='redata_preservation/config/default.ini')
+                             default='redata_preservation/config/default.toml')
     args, remaining_argv = conf_parser.parse_known_args()
 
     defaults = {  # This puts the correct config file into the args object
