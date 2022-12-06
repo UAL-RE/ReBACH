@@ -209,3 +209,5 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 /TestBags/
+ReBACH-Bagger.sublime-project
+ReBACH-Bagger.sublime-workspace
