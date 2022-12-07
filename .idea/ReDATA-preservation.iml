@@ -8,10 +8,10 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/redata_preservation.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/TestBags" />
-      <excludeFolder url="file://$MODULE_DIR$/redata_preservation/.ipynb_checkpoints" />
-      <excludeFolder url="file://$MODULE_DIR$/redata_preservation/config/arizona" />
-      <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/bagger/.ipynb_checkpoints" />
+      <excludeFolder url="file://$MODULE_DIR$/bagger/config/arizona" />
       <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/.mypy_cache" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
     <orderEntry type="inheritedJdk" />

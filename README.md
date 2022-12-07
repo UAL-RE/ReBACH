@@ -43,7 +43,7 @@ example follows:
 
 ```python
 # Import Bagger
-from redata_preservation.bagger.bag import Bagger
+from bagger.bag import Bagger
 
 # Instantiate Bagger with necessary arguments
 B = Bagger(workflow, output_dir, delete, dart_command, config, log)

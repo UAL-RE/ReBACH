@@ -4,10 +4,10 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from redata_preservation.bagger import Status
-from redata_preservation.bagger.job import Job
-from redata_preservation.bagger.metadata import Metadata
-from redata_preservation.bagger.wasabi import Wasabi, get_filenames_from_ls
+from bagger import Status
+from bagger.job import Job
+from bagger.metadata import Metadata
+from bagger.wasabi import Wasabi, get_filenames_from_ls
 
 
 # TODO: Create BaggerInit class to initialize the Bagger environment. Bagger

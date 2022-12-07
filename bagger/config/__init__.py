@@ -25,7 +25,7 @@ def get_args(path: Optional[str] = None,
     :return: Tuple of populated args namespace and config variable
     """
     if not default_conf:
-        default_conf = 'redata_preservation/config/default.toml'
+        default_conf = 'bagger/config/default.toml'
 
     if path:
         with open(default_conf, "rb") as f:

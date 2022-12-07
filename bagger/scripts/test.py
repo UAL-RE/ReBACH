@@ -3,12 +3,11 @@ import sys
 from pathlib import Path
 from redata.commons import logger
 
-from redata_preservation.bagger.bag import Bagger, Status
-from redata_preservation.config import get_args, TOMLDecodeError
+from bagger.bag import Bagger, Status
+from bagger.config import get_args, TOMLDecodeError
 
 
 def main() -> None:
-
     path = 'TestBags/7873476_01_Jeffrey_C_Oliver_b3e8ca9fce68c6dd95c4b71efe9220b7'
     init_log = logger.log_stdout()
     library_root_path = Path(__file__).resolve().parents[2]

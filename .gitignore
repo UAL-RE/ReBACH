@@ -1,9 +1,8 @@
 *batchdir*
-redata-preservation/config/arizona*
-redata_preservation/config/arizona*
+bagger/config/arizona*
 .DS_Store
 
-redata_preservation/config/default.toml
+bagger/config/default.toml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

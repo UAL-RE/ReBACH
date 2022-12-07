@@ -5,8 +5,8 @@ from pathlib import Path
 
 from redata.commons import logger, git_info
 
-from redata_preservation.bagger.bag import Bagger, Status
-from redata_preservation.config import get_args, TOMLDecodeError
+from bagger.bag import Bagger, Status
+from bagger.config import get_args, TOMLDecodeError
 
 
 class LogCommons(logger.LogCommons):

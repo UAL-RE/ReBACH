@@ -2,8 +2,8 @@ import sys
 
 import pytest
 
-from redata_preservation.bagger.bag import Bagger
-from redata_preservation.scripts.main import main
+from bagger.bag import Bagger
+from bagger.scripts.main import main
 
 p = '7873476_02_Jeffrey_C_Oliver_846ccf901fffd449e2d276285d15dca4'
 
@@ -24,9 +24,9 @@ def test_validate_package():
 
 def test_run_dart(capsys):
     with pytest.raises(SystemExit) as excinfo:
-        args = ['-c=redata_preservation/config/arizona/arizona.ini',
+        args = ['-c=bagger/config/arizona/arizona.ini',
                 '-o=out',
-                '-w=redata_preservation/config/redata-wasabi.json',
+                '-w=bagger/config/redata-wasabi.json',
                 f'TestBags/{p}/'
                 ]
         sys.argv.extend(args)
