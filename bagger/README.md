@@ -4,6 +4,33 @@ This tool implements the "last mile" of ReDATA's preservation strategy by
 ingesting a data/metadata package, generating a preservation-ready bag using
 the APTrust DART tool, and uploading the completed bag to offsite storage.
 
+## Setup
+
+ReBACH-Bagger has a handful of dependencies that can be installed with PIP:
+
+```text
+$ pip install -r requirements.txt
+```
+
+These dependencies are [ReDATA Commons](https://github.com/UAL-RE/redata-commons), which Bagger uses
+for logging;
+[s3cmd](https://s3tools.org/s3cmd) for interacting with Wasabi; and the tomllib backport
+[tomli](https://github.com/hukkin/tomli).
+
+ReBACH-Bagger also depends on the
+[DART Runner](https://aptrust.github.io/dart-docs/users/dart_runner/) executable being available in
+the environment path. One simple way to do this is to download the executable to the Python virtual
+environment bin directory:
+
+```text
+$ wget -P venv/bin https://s3.amazonaws.com/aptrust.public.download/dart-runner/v0.95-beta/linux-x64/dart-runner
+$ chmod +x venv/bin/dart-runner
+```
+
+You may pass or configure a different path to DART runner using the `dart_command` directive in
+the config file or `--dart_command` on the command line. See "DART Workflow" section below for
+details on configuring DART.
+
 ## Usage
 
 ReBACH-Bagger can be used on the command line by calling the `scripts/main.py`
@@ -58,7 +85,7 @@ ReBACH-Bagger uses [TOML-based](https://toml.io/en/) configuration files found
 in the config directory. The `default.example.toml` file in the config
 directory contains the configuration variables expected by ReBACH-Bagger. By
 default, the program will look for a config file named `default.toml` in the
-`rebach_bagger/config` directory. A config file can also be specified at
+`bagger/config` directory. A config file can also be specified at
 runtime using `--config` or `-c`. Paths in the config file are all relative to
 the directory from which the script is called. Using absolute paths may be
 advisable if ReBACH-Bagger will be imported as a module.
@@ -151,4 +178,30 @@ bag-info.DOI = "doi"
 
 ## DART Workflow
 
-## BagIt Profile
+A [DART workflow](https://aptrust.github.io/dart-docs/users/workflows/) is a JSON file that
+describes the packaging and upload operations that should be performed when a bag is created by
+DART Runner. Users should create the workflow file using the desktop version of DART. Details
+are available in the [DART documentation](https://aptrust.github.io/dart-docs/users/workflows/).
+
+The workflow file will include a name, description, the backage format (BagIt) and a BagIt
+profile (APTrust or a profile based on APTrust containing additional ReDATA-specific tags; see
+below). The workflow will also include the storage location and credentials needed to upload
+the bag.
+
+When creating a new workflow with DART, users should NOT enter their AWS/Wasabi access key or
+secret key into the workflow configuration. Instead, DART provides the option to access these
+values [with an environment variable](https://aptrust.github.io/dart-docs/users/settings/storage_services/#login),
+which ReBACH-Bagger will populate from the Wasabi credentials in the configuration file.
+
+Instead of entering the access key ID into the login field, enter `env:WASABI_ACCESS_KEY_ID`.
+For the password, enter `env:WASABI_SECRET_ACCESS_KEY`.
+
+### BagIt Profile
+
+The BagIt profile describes the metadata tags that are required or expected to be stored within
+the bag. These tags include default tags common to all BagIt bags, tags required by APTrust, and
+tags defined by the ReBACH-Bagger metadata configuration (see above). Profiles can
+be created and
+modified [using DART's desktop application](https://aptrust.github.io/dart-docs/users/bagit/).
+Profiles are embedded in the DART workflow file and do not need to be separately provided to
+ReBACH-Bagger.

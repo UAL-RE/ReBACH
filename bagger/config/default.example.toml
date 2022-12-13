@@ -1,6 +1,6 @@
 [Defaults]
 output_dir = "out"
-workflow = "redata_preservation/config/default_workflow.json"
+workflow = "bagger/config/default_workflow.json"
 dart_command = "dart-runner"
 
 [Logging]
