@@ -22,7 +22,7 @@ class Job:
         self.output_dir: PathLike = output_dir
         self.delete: bool = delete
         self.dart_command: str = dart_command
-        self.files: list[PathLike] = []
+        self.files: list[str] = []
         self.tags: list[dict[str, str]] = []
         self.log: Logger = log
 
@@ -32,7 +32,9 @@ class Job:
 
         :param path: Path to file/directory for package to process
         """
-        self.files.append(path)
+
+        # PathLike is not JSON serializable, so stringify before appending it to files array
+        self.files.append(str(path))
 
     def add_tag(self, tag_file: str, tag_name: str, value: str) -> None:
         """

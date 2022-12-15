@@ -1,11 +1,14 @@
+import os
 import sys
+from pathlib import Path
 
-import pytest
+from redata.commons import logger
 
+from bagger import Status
 from bagger.bag import Bagger
-from bagger.scripts.main import main
+from bagger.config import get_args, TOMLDecodeError
 
-p = '7873476_02_Jeffrey_C_Oliver_846ccf901fffd449e2d276285d15dca4'
+p = '1234567_01_TEST_PACKAGE_6de0ea5d4b2317d016c6db397bbebe86'
 
 
 def test_decompose_name():
@@ -13,9 +16,9 @@ def test_decompose_name():
 
     assert isinstance(name_parts, tuple)
 
-    assert name_parts[0] == '7873476'
-    assert name_parts[1] == '02'
-    assert name_parts[2] == '846ccf901fffd449e2d276285d15dca4'
+    assert name_parts[0] == '1234567'
+    assert name_parts[1] == '01'
+    assert name_parts[2] == '6de0ea5d4b2317d016c6db397bbebe86'
 
 
 def test_validate_package():
@@ -23,15 +26,33 @@ def test_validate_package():
 
 
 def test_run_dart(capsys):
-    with pytest.raises(SystemExit) as excinfo:
-        args = ['-c=bagger/config/arizona/arizona.ini',
-                '-o=out',
-                '-w=bagger/config/redata-wasabi.json',
-                f'TestBags/{p}/'
-                ]
-        sys.argv.extend(args)
-        main()
-    assert excinfo.value.code == 3
+
+    path = Path('tests', 'testbag', p)
+
+    try:
+        config = get_args(path=path)
+    except TOMLDecodeError:
+        sys.exit(Status.INVALID_CONFIG)
+
+    log_dir = config['Logging']['log_dir']
+    logfile_prefix = config['Logging']['logfile_prefix']
+
+    log = logger.log_setup(log_dir, logfile_prefix)
+
+    os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
+    os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
+
+    bagger = Bagger(workflow=config['Defaults']['workflow'],
+                    output_dir=config['Defaults']['output_dir'],
+                    delete=True,
+                    dart_command=config['Defaults']['dart_command'],
+                    config=config,
+                    log=log,
+                    overwrite=True)
+
+    status = bagger.run_dart(path)
+
+    assert status == 0
 
 
 def test_batch():

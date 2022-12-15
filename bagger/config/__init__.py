@@ -1,6 +1,8 @@
 import argparse
 import sys
 from argparse import Namespace
+from os import PathLike
+from pathlib import Path
 from typing import Optional, Union
 
 if sys.version_info >= (3, 11):
@@ -16,8 +18,8 @@ class TOMLDecodeError(tomllib.TOMLDecodeError):
         self.filename = filename
 
 
-def get_args(path: Optional[str] = None,
-             default_conf: Optional[str] = None) -> Union[dict, tuple[Namespace, dict]]:
+def get_args(path: Optional[PathLike] = None,
+             default_conf: Optional[PathLike] = None) -> Union[dict, tuple[Namespace, dict]]:
     """
     Construct args namespace from config file, overriding with values
     specified at runtime
@@ -25,7 +27,7 @@ def get_args(path: Optional[str] = None,
     :return: Tuple of populated args namespace and config variable
     """
     if not default_conf:
-        default_conf = 'bagger/config/default.toml'
+        default_conf = Path('bagger/config/default.toml')
 
     if path:
         with open(default_conf, "rb") as f:
