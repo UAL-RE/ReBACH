@@ -117,12 +117,11 @@ logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 
 ### Wasabi
 
-Both DART and ReBACH-Bagger use the `access_key` and `secret_key` credentials
-defined in the configuration to authenticate to Wasabi. However, only
-ReBACH-Bagger uses the other variables defined here to access the storage
-endpoint for the purpose of checking for duplicate bags. DART uses the storage
-configuration embedded in the workflow JSON file for selecting the correct
-endpoint. Verify that these values match.
+Both DART and ReBACH-Bagger use the `access_key` and `secret_key` credentials defined in the
+configuration to authenticate to Wasabi (see below for details on how these variables are used in
+DART). However, only ReBACH-Bagger uses the other variables defined here to access the endpoint for
+the purpose of checking for duplicate bags. DART uses the storage configuration embedded in the
+workflow JSON file for selecting the correct endpoint. Verify that these values match.
 
 ```toml
 [Wasabi]
@@ -174,6 +173,18 @@ config file:
 bag-info.First-Author = "authors.0.full_name"
 bag-info.License = "license.name"
 bag-info.DOI = "doi"
+```
+
+ReBACH-Bagger can strip HTML tags out of a metadata value. To enable this functionality, use a
+TOML inline table to define a `tag_source` key and set the `strip_html` key to `true`. Optionally, 
+set the `shorten` key to the maximum number of characters to allow in the formatted value. 
+Shortening will truncate at word boundaries (see
+[Python documentation](https://docs.python.org/3.9/library/textwrap.html#textwrap.shorten)), so 
+the resulting string may be shorter than the specified limit.
+
+```toml
+[Metadata]
+aptrust-info.Description = { tag_source = "description", strip_html = true, shorten = 100 }
 ```
 
 ## DART Workflow

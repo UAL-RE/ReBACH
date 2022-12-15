@@ -63,7 +63,9 @@ exclude =
     # pytest cache
     .pytest_cache,
     # mypy cache
-    .mypy_cache
+    .mypy_cache,
+    # venv
+    .venv, venv
 # Provide a comma-separate list of glob patterns to include for checks.
 filename =
     *.py

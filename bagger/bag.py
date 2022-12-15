@@ -148,7 +148,7 @@ class Bagger:
             bag_name, metadata_tags = init_status
 
         job = Job(self.workflow, bag_name, self.output_dir, self.delete,
-                  self.dart_command)
+                  self.dart_command, self.log)
 
         job.add_file(package_path)
 

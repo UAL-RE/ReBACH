@@ -8,7 +8,6 @@ log_dir = "logs"
 logfile_prefix = "ReBACH-Bagger"
 
 [Wasabi]
-
 name = "***override***"
 host = "***override***"
 bucket = "***override***"
@@ -17,7 +16,11 @@ access_key = "***override***"
 secret_key = "***override***"
 
 [Metadata]
-# TagFile.TagName = TagSource
+# tag-file.Tag-Name = "tag_source"
+# https://github.com/UAL-RE/ReBACH/blob/12-merge-rebach-bagger/bagger/README.md#metadata
 
 bag-info.DOI = "doi"
 bag-info.License = "license.name"
+bag-info.Published-Date = "published_date"
+aptrust-info.Title = "title"
+aptrust-info.Description = { tag_source = "description", strip_html = true }

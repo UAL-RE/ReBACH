@@ -1,4 +1,5 @@
 import json
+from logging import Logger
 from os import PathLike
 from subprocess import Popen, PIPE
 
@@ -6,7 +7,7 @@ from subprocess import Popen, PIPE
 class Job:
 
     def __init__(self, workflow: PathLike, bag_name: str, output_dir: PathLike,
-                 delete: bool, dart_command: str) -> None:
+                 delete: bool, dart_command: str, log: Logger) -> None:
         """
         Init the Job class with attributes for passing to DART
 
@@ -23,6 +24,7 @@ class Job:
         self.dart_command: str = dart_command
         self.files: list[PathLike] = []
         self.tags: list[dict[str, str]] = []
+        self.log: Logger = log
 
     def add_file(self, path: PathLike) -> None:
         """
@@ -59,13 +61,16 @@ class Job:
 
         :return: Tuple of stdout, stderr, and return code from DART executable
         """
-        json_string = self.to_json()
+        job_params = self.to_json()
+
+        self.log.debug(f'Job params: {job_params}')
+
         cmd = (f"{self.dart_command} "
                f"--workflow={self.workflow} "
                f"--output-dir={self.output_dir} "
                f"--delete={self.delete}")
         child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                       close_fds=True, text=True)
-        stdout_data, stderr_data = child.communicate(json_string + "\n")
+        stdout_data, stderr_data = child.communicate(job_params + "\n")
 
         return stdout_data, stderr_data, child.returncode
