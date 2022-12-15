@@ -696,9 +696,6 @@ class Article:
         # preservation dir is reachable
         self.check_access_of_directries(preservation_storage_location, "preservation")
 
-        # check required space after Figshare API process, it will stop process if space is less.
-        self.check_required_space(total_file_size)
-
         return curation_storage_location
 
     """
