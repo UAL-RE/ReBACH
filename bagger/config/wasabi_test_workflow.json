@@ -1,20 +1,20 @@
 {
   "id": "540d3238-ec1c-4d9d-a314-23e190930e88",
-  "name": "ReDATA Preservation",
-  "description": "",
+  "name": "ReBACH",
+  "description": "ReBACH DART Workflow",
   "packageFormat": "BagIt",
   "packagePluginId": "BagIt",
   "packagePluginName": null,
   "bagItProfile": {
-    "id": "043f1c22-c9ff-4112-86f8-8f8f1e6a2dca",
-    "userCanDelete": false,
+    "id": "80dda49d-96c9-46dd-91bf-7f57053854d4",
+    "userCanDelete": true,
     "required": [
       "name",
       "id"
     ],
     "errors": {},
-    "name": "APTrust",
-    "description": "APTrust 2.2 default BagIt profile.",
+    "name": "ReBACH BagIt Profile",
+    "description": "BagIt Profile for ReDATA/ReBACH BagIt preservation workflow (based on APTrust BagIt Profile 2.2)",
     "acceptBagItVersion": [
       "0.97",
       "1.0"
@@ -24,13 +24,13 @@
     ],
     "allowFetchTxt": false,
     "bagItProfileInfo": {
-      "bagItProfileIdentifier": "https://raw.githubusercontent.com/APTrust/preservation-services/master/profiles/aptrust-v2.2.json",
+      "bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/rebach-v1.0.json",
       "bagItProfileVersion": "",
-      "contactEmail": "support@aptrust.org",
-      "contactName": "A. Diamond",
-      "externalDescription": "BagIt profile for ingesting content into APTrust. Updated November 9, 2018.",
-      "sourceOrganization": "aptrust.org",
-      "version": "2.2"
+      "contactEmail": "frios@arizona.edu",
+      "contactName": "Fernando Rios",
+      "externalDescription": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
+      "sourceOrganization": "redata.arizona.edu",
+      "version": "1.0"
     },
     "manifestsRequired": [
       "md5"
@@ -91,15 +91,14 @@
         "tagName": "Source-Organization",
         "required": true,
         "values": [],
-        "defaultValue": null,
+        "defaultValue": "University of Arizona",
         "userValue": "",
         "help": "The name of the organization that produced this bag, or is responsible for its contents.",
         "isBuiltIn": true,
         "isUserAddedFile": false,
         "isUserAddedTag": false,
         "wasAddedForJob": false,
-        "errors": {},
-        "emptyOk": false
+        "errors": {}
       },
       {
         "id": "117e46d8-096f-41f1-8c94-7d9202b9477b",
@@ -107,15 +106,14 @@
         "tagName": "Bag-Count",
         "required": false,
         "values": [],
-        "defaultValue": null,
+        "defaultValue": "",
         "userValue": "",
         "help": "The number of bags that make up this object. Set this only if you are packaging a single object into multiple bags. See https://wiki.aptrust.org/Bagging_specifications for info on naming multi-part APTrust bags.",
         "isBuiltIn": true,
         "isUserAddedFile": false,
         "isUserAddedTag": false,
         "wasAddedForJob": false,
-        "errors": {},
-        "emptyOk": true
+        "errors": {}
       },
       {
         "id": "41b75504-e54d-49a1-aad4-c8a4921d15ce",
@@ -239,15 +237,14 @@
           "Institution",
           "Restricted"
         ],
-        "defaultValue": null,
+        "defaultValue": "Institution",
         "userValue": "Institution",
         "help": "Access rights for this bag describe who can see that it exists in the repository.",
         "isBuiltIn": true,
         "isUserAddedFile": false,
         "isUserAddedTag": false,
         "wasAddedForJob": false,
-        "errors": {},
-        "emptyOk": false
+        "errors": {}
       },
       {
         "id": "d94d1d47-49cb-4569-8d27-d9ebbf25c9b2",
@@ -290,11 +287,56 @@
         "wasAddedForJob": false,
         "errors": {},
         "emptyOk": false
+      },
+      {
+        "id": "d2e29c7a-0d33-4e72-8e37-2d994b6bfe9f",
+        "tagFile": "bag-info.txt",
+        "tagName": "DOI",
+        "required": true,
+        "values": [],
+        "defaultValue": "",
+        "userValue": "",
+        "help": "",
+        "isBuiltIn": false,
+        "isUserAddedFile": false,
+        "isUserAddedTag": true,
+        "wasAddedForJob": false,
+        "errors": {}
+      },
+      {
+        "id": "16772027-e33b-416b-9eb1-9d50b02224f7",
+        "tagFile": "bag-info.txt",
+        "tagName": "License-Name",
+        "required": false,
+        "values": [],
+        "defaultValue": "",
+        "userValue": "",
+        "help": "",
+        "isBuiltIn": false,
+        "isUserAddedFile": false,
+        "isUserAddedTag": true,
+        "wasAddedForJob": false,
+        "errors": {}
+      },
+      {
+        "id": "d9044d6b-818c-4c3b-b7ff-ab867c525249",
+        "tagFile": "bag-info.txt",
+        "tagName": "Published-Date",
+        "required": false,
+        "values": [],
+        "defaultValue": "",
+        "userValue": "",
+        "help": "",
+        "isBuiltIn": false,
+        "isUserAddedFile": false,
+        "isUserAddedTag": true,
+        "wasAddedForJob": false,
+        "errors": {}
       }
     ],
     "serialization": "required",
-    "baseProfileId": "",
-    "isBuiltIn": true,
+    "baseProfileId": "043f1c22-c9ff-4112-86f8-8f8f1e6a2dca",
+    "isBuiltIn": false,
     "tarDirMustMatchName": true
   },
   "storageServices": [
@@ -309,7 +351,7 @@
       ],
       "errors": {},
       "name": "Wasabi Test",
-      "description": "",
+      "description": "Test Wasabi storage endpoint",
       "protocol": "s3",
       "host": "s3.us-west-1.wasabisys.com",
       "port": 0,
