@@ -30,7 +30,7 @@ class Wasabi:
         return f"Wasabi( access_key={_access_key}, secret_key={_secret_key}, " \
                f"s3host='{self.s3host}', s3hostbucket='{self.s3hostbucket}' )"
 
-    @Dryable(('', ''))
+    @Dryable(dry_return=('', ''))
     def list_bucket(self, folder_to_list: str) -> tuple[str, str]:
         """
         List contents of a folder within Wasabi bucket

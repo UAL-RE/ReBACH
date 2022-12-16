@@ -3,7 +3,7 @@ from logging import Logger
 from os import PathLike
 from subprocess import Popen, PIPE
 
-from bagger import Dryable
+from bagger import Dryable, Status
 
 
 class Job:
@@ -67,7 +67,7 @@ class Job:
                  "tags": self.tags}
         return json.dumps(_dict)
 
-    @Dryable(('', '', 7))
+    @Dryable(dry_return=('', '', Status.DRY_RUN))
     def run(self) -> tuple[str, str, int]:
         """
         Run the DART executable with the data provided to the Job class
