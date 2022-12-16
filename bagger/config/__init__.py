@@ -44,7 +44,8 @@ def get_args(path: Optional[PathLike] = None,
     args, remaining_argv = conf_parser.parse_known_args()
 
     defaults = {  # This puts the correct config file into the args object
-        'config': args.config, 'delete': True, 'overwrite': False}
+        'config': args.config, 'delete': True, 'overwrite': False, 'dry_run': False
+    }
 
     with open(args.config, "rb") as f:
         try:
@@ -67,7 +68,10 @@ def get_args(path: Optional[PathLike] = None,
                         help='Command to invoke DART Runner.')
     parser.add_argument('--overwrite', help='Overwrite duplicate bags.',
                         action=argparse.BooleanOptionalAction)
-    parser.add_argument('path', help='Path to the package or batch directory')
+    parser.add_argument('--dry-run',
+                        help='Log execution steps without actually executing. (default: False)',
+                        action='store_true')
+    parser.add_argument('path', help='Path to the package or batch directory.')
     args = parser.parse_args(remaining_argv)
 
     return args, config

@@ -3,6 +3,8 @@ from logging import Logger
 from os import PathLike
 from subprocess import Popen, PIPE
 
+from bagger import Dryable
+
 
 class Job:
 
@@ -25,6 +27,14 @@ class Job:
         self.files: list[str] = []
         self.tags: list[dict[str, str]] = []
         self.log: Logger = log
+
+    def __str__(self):
+        return f"Job( workflow='{self.workflow}', bag_name='{self.bag_name}', " \
+               f"output_dir='{self.output_dir}', delete={self.delete}, " \
+               f"dart_command='{self.dart_command}', log='{self.log.handlers[-1].baseFilename}' " \
+               f"files={self.files} " \
+               f"tags={self.tags} )" \
+               f"\n\nJob Params: {self.to_json()}"
 
     def add_file(self, path: PathLike) -> None:
         """
@@ -57,6 +67,7 @@ class Job:
                  "tags": self.tags}
         return json.dumps(_dict)
 
+    @Dryable(('', '', 7))
     def run(self) -> tuple[str, str, int]:
         """
         Run the DART executable with the data provided to the Job class

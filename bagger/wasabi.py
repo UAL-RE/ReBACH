@@ -1,5 +1,7 @@
 from subprocess import run
 
+from bagger import Dryable
+
 
 class Wasabi:
 
@@ -18,6 +20,17 @@ class Wasabi:
         self.access_key = access_key
         self.s3hostbucket = s3hostbucket
 
+    def __str__(self):
+        _access_key, _secret_key = 'unset', 'unset'
+        if self.access_key:
+            _access_key = 'set'
+        if self.secret_key:
+            _secret_key = 'set'
+
+        return f"Wasabi( access_key={_access_key}, secret_key={_secret_key}, " \
+               f"s3host='{self.s3host}', s3hostbucket='{self.s3hostbucket}' )"
+
+    @Dryable(('', ''))
     def list_bucket(self, folder_to_list: str) -> tuple[str, str]:
         """
         List contents of a folder within Wasabi bucket

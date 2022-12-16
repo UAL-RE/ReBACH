@@ -37,14 +37,13 @@ ReBACH-Bagger can be used on the command line by calling the `scripts/main.py`
 file or running the main script as a module:
 
 ```text
-$ python -m redata_preservation.scripts.main -h
-usage: main.py [-h] [-c CONFIG] [-b BATCH] [-d | --delete | --no-delete]
-               [-o OUTPUT_DIR] [-w WORKFLOW] [--dart_command DART_COMMAND]
-               [--overwrite | --no-overwrite]
+$ python -m redata_preservation.scripts.main --help
+usage: main.py [-h] [-c CONFIG] [-b BATCH] [-d | --delete | --no-delete] [-o OUTPUT_DIR]
+               [-w WORKFLOW] [--dart_command DART_COMMAND] [--overwrite | --no-overwrite] [--dryrun]
                path
 
 positional arguments:
-  path                  Path to the package or batch directory
+  path                  Path to the package or batch directory.
 
 options:
   -h, --help            show this help message and exit
@@ -62,6 +61,7 @@ options:
                         Command to invoke DART Runner.
   --overwrite, --no-overwrite
                         Overwrite duplicate bags. (default: False)
+  --dryrun              Log execution steps without executing. (default: False)
 ```
 
 ReBACH-Bagger can also be imported as a module. The `main.py` script

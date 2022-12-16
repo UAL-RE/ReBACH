@@ -4,7 +4,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from bagger import Status
+from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
 from bagger.wasabi import Wasabi, get_filenames_from_ls
@@ -16,7 +16,7 @@ class Bagger:
 
     def __init__(self, workflow: PathLike, output_dir: PathLike, delete: bool,
                  dart_command: str, config: dict, log: Logger,
-                 overwrite: bool) -> None:
+                 overwrite: bool, dryrun: bool = False) -> None:
         """
         Set up environment for generating bags with DART
 
@@ -35,6 +35,11 @@ class Bagger:
         self.output_dir: PathLike = output_dir
         self.workflow: PathLike = workflow
         self.overwrite: bool = overwrite
+        self.dryrun: bool = dryrun
+
+        if self.dryrun:
+            self.log.info('DRYRUN MODE')
+            Dryable.activate(True, self.log)
 
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
                              secret_key=config['Wasabi']['secret_key'],
@@ -63,15 +68,6 @@ class Bagger:
         metadata_hash = path_elements[-1]
 
         return article_id, version, metadata_hash
-
-    def list_wasabi(self) -> tuple[str, str]:
-        """
-        Check if package being processed has already been bagged and uploaded
-
-        :return: True if bag exists in storage, otherwise False
-        """
-        folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
-        return self.wasabi.list_bucket(folder_to_list)
 
     @staticmethod
     def validate_package(metadata_path: PathLike) -> bool:
@@ -106,7 +102,8 @@ class Bagger:
         if not Path(package_path).exists():
             return Status.INVALID_PATH
 
-        wasabi_ls, wasabi_error = self.list_wasabi()
+        folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
+        wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
 
         if wasabi_error:
             wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
