@@ -133,17 +133,27 @@ access_key = "***override***"
 secret_key = "***override***"
 ```
 
-### Metadata
+## Metadata Configuration
 
-ReBACH-Bagger can apply a configurable set of metadata tags to the bags it
-generates. These tags are defined in the `Metadata` section of the
-configuration file. The tags are defined with the following schema:
+ReBACH-Bagger can apply a configurable set of metadata tags to the bags it generates. These tags
+are defined in the `Metadata` section of the configuration file. The tags are defined with the
+following schema:
 
-`tag_file.tag_name = "tag_source"`
+`# tag-file.Tag-Name = "Tag value"`
 
-The `tag_source` element is a dot-notation path to the tag's corresponding key
-in the package's metadata JSON file. Take the following abbreviated example of
-Figshare's API metadata:
+The `tag-file` element corresponds to the tag file (e.g. bag-info.txt) in which the tag will be
+placed. Do not include `.txt` as part of the tag-file element.
+
+`Tag-Name` is the name of the metadata tag. Conventionally, tag names are uppercase, dash-separated
+words.
+
+If the `"Tag value"` element is a string, ReBACH-Bagger will simply use the string as the value of
+the tag.
+
+### Metadata from JSON
+
+Users may also use an inline table to define a dot-notation `tag_path` to the tag's corresponding 
+key in the package's metadata file. Take the following abbreviated example of a metadata JSON file:
 
 ```json
 {
@@ -164,27 +174,28 @@ Figshare's API metadata:
 }
 ```
 
-To define a set of tags named "First-Author", "License", and "DOI" in the "
-bag-info.txt" tag file, users can define the following relationships in the
-config file:
+To define a set of tags based on this metadata named "First-Author", "License", and "DOI" in the 
+"bag-info.txt" tag file, users can define the following relationships in the config file:
 
 ```toml
 [Metadata]
-bag-info.First-Author = "authors.0.full_name"
-bag-info.License = "license.name"
-bag-info.DOI = "doi"
+bag-info.First-Author = { tag_path = "authors.0.full_name" }
+bag-info.License = { tag_path = "license.name" }
+bag-info.DOI = { tag_path = "doi" }
 ```
 
+### Metadata Utilities
+
 ReBACH-Bagger can strip HTML tags out of a metadata value. To enable this functionality, use a
-TOML inline table to define a `tag_source` key and set the `strip_html` key to `true`. Optionally, 
-set the `shorten` key to the maximum number of characters to allow in the formatted value. 
+TOML inline table to define a `tag_path` key and set the `strip_html` key to `true`. Optionally,
+set the `shorten` key to the maximum number of characters to allow in the formatted value.
 Shortening will truncate at word boundaries (see
-[Python documentation](https://docs.python.org/3.9/library/textwrap.html#textwrap.shorten)), so 
+[Python documentation](https://docs.python.org/3.9/library/textwrap.html#textwrap.shorten)), so
 the resulting string may be shorter than the specified limit.
 
 ```toml
 [Metadata]
-aptrust-info.Description = { tag_source = "description", strip_html = true, shorten = 100 }
+aptrust-info.Description = { tag_path = "description", strip_html = true, shorten = 100 }
 ```
 
 ## DART Workflow

@@ -135,9 +135,6 @@ class Bagger:
         :return: Status after attempting execution
         """
 
-        # FIXME: This is why we need a class for DART that we can set
-        #  per-bag instance variables (e.g. package_path, bag_name,
-        #  metadata_tags) on.
         init_status = self._init_dart(package_path)
         if isinstance(init_status, Status):
             return init_status

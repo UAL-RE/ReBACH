@@ -1,6 +1,6 @@
 import argparse
 import sys
-from argparse import Namespace
+from argparse import Namespace, BooleanOptionalAction
 from os import PathLike
 from pathlib import Path
 from typing import Optional, Union
@@ -38,7 +38,7 @@ def get_args(path: Optional[PathLike] = None,
         return config
 
     conf_parser = argparse.ArgumentParser(add_help=False)
-    conf_parser.add_argument('-c', '--config',
+    conf_parser.add_argument('-c', '--config', metavar='config_file',
                              help='Path to configuration file.',
                              default=default_conf)
     args, remaining_argv = conf_parser.parse_known_args()
@@ -58,17 +58,19 @@ def get_args(path: Optional[PathLike] = None,
     parser = argparse.ArgumentParser(  # Inherit options from conf_parser
         parents=[conf_parser])
     parser.set_defaults(**defaults)
-    parser.add_argument('-b', '--batch', help='Process a batch directory.')
-    parser.add_argument('-d', '--delete', help='Delete bags after upload.',
-                        action=argparse.BooleanOptionalAction)
-    parser.add_argument('-o', '--output_dir',
+    parser.add_argument('-b', '--batch', metavar='batch_dir',
+                        help='Process a batch directory.')
+    parser.add_argument('-d', '--delete',
+                        help='Delete bags after upload.', action=BooleanOptionalAction)
+    parser.add_argument('-o', '--output_dir', metavar='output_dir',
                         help='Output directory for generated bags.')
-    parser.add_argument('-w', '--workflow', help='Path to workflow file.')
-    parser.add_argument('--dart_command',
+    parser.add_argument('-w', '--workflow', metavar='workflow_file',
+                        help='Path to workflow file.')
+    parser.add_argument('--dart_command', metavar='dart_command',
                         help='Command to invoke DART Runner.')
-    parser.add_argument('--overwrite', help='Overwrite duplicate bags.',
-                        action=argparse.BooleanOptionalAction)
-    parser.add_argument('--dry-run',
+    parser.add_argument('--overwrite',
+                        help='Overwrite duplicate bags.', action=BooleanOptionalAction)
+    parser.add_argument('--dry-run', '--dryrun',
                         help='Log execution steps without actually executing. (default: False)',
                         action='store_true')
     parser.add_argument('path', help='Path to the package or batch directory.')

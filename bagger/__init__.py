@@ -17,9 +17,10 @@ class Status(IntEnum):
     DRY_RUN = 7
 
 
-# Adapted from https://github.com/haarcuba/dryable
+# Adapted from https://github.com/haarcuba/dryable (MIT License)
+# Copyright (c) 2019 Yoav Kleinberger
 class Dryable:
-    _dryRun: bool
+    _dryRun: bool = False
     _log: Logger
 
     def __init__(self, value=None):
