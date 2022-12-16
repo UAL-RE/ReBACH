@@ -224,10 +224,6 @@ class Collection:
     :param collections object
     """
     def process_collections(self, collections):
-        storage_folder = self.preservation_storage_location
-        existing_space = self.article_obj.get_file_size_of_given_path(storage_folder)
-        self.article_obj.check_required_space(existing_space)
-
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
