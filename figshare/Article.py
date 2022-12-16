@@ -1,5 +1,5 @@
 import json
-# import math
+import math
 import shutil
 import os
 import sys
@@ -56,15 +56,15 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented.
+                # page = 1
+                # page_size = 100
+                # page_empty = False
+                # while (not page_empty):
                 page = 1
-                page_size = 100
-                page_empty = False
-                while (not page_empty):
-                    # page = 1
-                    # page_size = 3
-                    # total_articles = 5
-                    # no_of_pages = math.ceil(total_articles / page_size)
-                    # while (page <= no_of_pages):
+                page_size = 3
+                total_articles = 5
+                no_of_pages = math.ceil(total_articles / page_size)
+                while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -175,8 +175,6 @@ class Article:
                                 version_metadata['errors'] = []
                                 version_metadata['errors'].append(error)
 
-                            self.total_all_articles_file_size += total_file_size
-
                             self.logs.write_log_in_file("info", f"{version_metadata} ")
 
                             error = f"{version_data['id']} - This item had a total embargo. The files are from version {version_data['version']}."
@@ -248,8 +246,6 @@ class Article:
                         if (error):
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
-
-                        self.total_all_articles_file_size += total_file_size
 
                         self.logs.write_log_in_file("info", f"{version_metadata} ")
 
@@ -632,6 +628,8 @@ class Article:
                     if (version_data is not None and len(version_data) > 0):
                         data = self.__check_curation_dir(version_data)
                         if (data["matched"] is True):
+                            total_file_size = version_data['size']
+                            self.total_all_articles_file_size += total_file_size
                             article_data[version_data['id']].append(data)
                             no_matched += 1
 
