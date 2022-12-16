@@ -1,5 +1,5 @@
 import json
-import math
+# import math
 import shutil
 import os
 import sys
@@ -56,15 +56,15 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented.
-                # page = 1
-                # page_size = 100
-                # page_empty = False
-                # while (not page_empty):
                 page = 1
-                page_size = 3
-                total_articles = 5
-                no_of_pages = math.ceil(total_articles / page_size)
-                while (page <= no_of_pages):
+                page_size = 100
+                page_empty = False
+                while (not page_empty):
+                    # page = 1
+                    # page_size = 3
+                    # total_articles = 5
+                    # no_of_pages = math.ceil(total_articles / page_size)
+                    # while (page <= no_of_pages):
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
