@@ -334,7 +334,8 @@ class Article:
                     if (filecontent.status_code == 200):
                         file_no = file_no + 1
                         self.logs.write_log_in_file("info",
-                                                    f"Downloaded file {file_no} for article {version_data['id']} - version {version_data['version']}", True)
+                                                    f"Downloaded file {file_no} for article {version_data['id']} - "
+                                                    + f"version {version_data['version']}", True)
                         open(file_name_with_path, 'wb').write(filecontent.content)
                         existing_file_hash = hashlib.md5(open(file_name_with_path, 'rb').read()).hexdigest()
                         compare_hash = file['supplied_md5']
@@ -507,7 +508,7 @@ class Article:
         if (article_files_path_exists is True):
             get_files = os.listdir(article_folder_path)
             if (len(get_files) > 0):
-                self.logs.write_log_in_file('info', f"Checking hashes of files against existing files.", True)
+                self.logs.write_log_in_file('info', "Checking hashes of files against existing files.", True)
                 for file in files:
                     file_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
                     file_exists = os.path.exists(file_path)

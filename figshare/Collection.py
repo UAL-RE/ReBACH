@@ -248,7 +248,7 @@ class Collection:
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
         preservation_storage_location = self.preservation_storage_location
 
-        self.article_obj.check_access_of_directries(preservation_storage_location, "preservation")
+        self.article_obj.check_access_of_directories(preservation_storage_location, "preservation")
 
         complete_path = preservation_storage_location + folder_name
         check_path_exists = os.path.exists(complete_path)
@@ -257,7 +257,7 @@ class Collection:
             json_data = json.dumps(version_data, indent=4)
             filename_path = complete_path + "/" + str(collection_id) + ".json"
             # Writing to json file
-            self.logs.write_log_in_file("info", f"Saving collection data in json.", True)
+            self.logs.write_log_in_file("info", "Saving collection data in json.", True)
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
         else:
@@ -286,8 +286,6 @@ class Collection:
                     collection = get_response.json()
                     coll_versions = self.__get_collection_versions(collection)
                     self.logs.write_log_in_file("info", f"{coll_versions}", True)
-                    # coll_articles = self.__get_collection_articles(collection)
-                    # collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
 
             except Exception as e:
                 success = False

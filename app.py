@@ -119,7 +119,7 @@ def main():
 if __name__ == "__main__":
     config_file_path = main()
     log = Log(config_file_path)
-    
+
     log.write_log_in_file('info',
                           "Fetching articles...",
                           True)
