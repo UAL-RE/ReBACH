@@ -758,7 +758,7 @@ class Article:
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
-                                                                        + "post-processing script error found.", True)
+                                                                    + "post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
@@ -771,7 +771,7 @@ class Article:
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
-                                                                + "Post-processing script failed.", True)
+                                                            + "Post-processing script failed.", True)
 
     """
     Preservation and Curation directory access check while processing.
