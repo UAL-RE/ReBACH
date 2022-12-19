@@ -63,8 +63,8 @@ def main():
     """
     # Check .env file exist.
     env_file = get_config_file_path()
-    print(asctime() + ":Info: Log - " + env_file)
-
+    print(asctime() + ":Info: Log - " + "Env file:" + env_file)
+    print(asctime() + ":Info: Log - " + "Checking configuration file.")
     config_obj = Config(env_file)
 
     figshare_config = config_obj.figshare_config()
@@ -94,6 +94,7 @@ def main():
     if (institution is None or institution == ''):
         log.write_log_in_file('error', "Institution Id is required.", True, True)
 
+    log.write_log_in_file('info', "Configuration file meets requirements.", True)
     check_logs_path_access(env_file)
     # Check storage path exits, if not then give error and stop processing
     preservation_path_exists = os.path.exists(preservation_storage_location)
@@ -117,25 +118,28 @@ def main():
 
 if __name__ == "__main__":
     config_file_path = main()
-
     log = Log(config_file_path)
+    
+    log.write_log_in_file('info',
+                          "Fetching articles...",
+                          True)
     article_obj = Article(config_file_path)
     article_data = article_obj.get_articles()
     log.write_log_in_file('info',
-                          f"Total articles fetched: {len(article_data)}",
+                          f"Total articles fetched: {len(article_data)}.",
                           True)
     print(" ")
+
     log.write_log_in_file('info',
-                          "Try fetching collections....",
+                          "Fetching collections...",
                           True)
     collection_obj = Collection(config_file_path)
     collection_data = collection_obj.get_collections()
-
-    # print(collection_data)
     log.write_log_in_file('info',
-                          f"Total collections fetched: {len(collection_data)}",
+                          f"Total collections fetched: {len(collection_data)}.",
                           True)
     print(" ")
+
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 
