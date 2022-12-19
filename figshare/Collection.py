@@ -51,6 +51,7 @@ class Collection:
                 page_size = 100
                 page_empty = False
                 while (not page_empty):
+                    self.logs.write_log_in_file("info", f"Getting page {page} of {page_size} collections. Total amount of pages not available.", True)
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(collections_api_url, params=params,
                                                 timeout=self.retry_wait)
@@ -82,7 +83,7 @@ class Collection:
         no_of_col = 0
         for collection in collections:
             no_of_col = no_of_col + 1
-            print(f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}")
+            self.logs.write_log_in_file("info", f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}.", True)
             coll_versions = self.__get_collection_versions(collection)
             coll_articles = self.__get_collection_articles(collection)
             collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
@@ -111,13 +112,13 @@ class Collection:
                         metadata = []
                         if (len(versions) > 0):
                             for version in versions:
-                                print(f"Fetching collection {collection['id']} version {version['version']}.")
+                                self.logs.write_log_in_file("info", f"Fetching collection {collection['id']} version {version['version']}.", True)
                                 version_data = self.__get_collection_metadata_by_version(version, collection['id'])
                                 metadata.append(version_data)
                             success = True
                             return metadata
                         else:
-                            self.logs.write_log_in_file("info", f"{collection['id']} - Entity not found")
+                            self.logs.write_log_in_file("info", f"{collection['id']} - Entity not found. It will be skipped during processing.")
                             break
                     else:
                         retries = self.article_obj.retries_if_error(
@@ -181,7 +182,7 @@ class Collection:
                 page = 1
                 page_size = 100
                 while (not page_empty):
-                    print(f"Fetching collection articles of Page {page}. Collection ID: {collection['id']}")
+                    self.logs.write_log_in_file("info", f"Fetching collection articles of Page {page}. Collection ID: {collection['id']}.", True)
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
@@ -220,10 +221,11 @@ class Collection:
         return coll_articles_api
 
     """
-    Function to process collections and it's articles with collection versions.
+    Function to process collections and its articles with collection versions.
     :param collections object
     """
     def process_collections(self, collections):
+        self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
@@ -235,7 +237,7 @@ class Collection:
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
                 folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
-                print(f"Processing collection {collection} version {version['version']}")
+                self.logs.write_log_in_file("info", f"Processing collection {collection} version {version['version']}.", True)
                 self.__save_json_in_metadata(collection, version, folder_name)
 
     """
@@ -255,7 +257,7 @@ class Collection:
             json_data = json.dumps(version_data, indent=4)
             filename_path = complete_path + "/" + str(collection_id) + ".json"
             # Writing to json file
-            print("Saving collection data in json.")
+            self.logs.write_log_in_file("info", f"Saving collection data in json.", True)
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
         else:
@@ -283,7 +285,7 @@ class Collection:
                 if (get_response.status_code == 200):
                     collection = get_response.json()
                     coll_versions = self.__get_collection_versions(collection)
-                    print(coll_versions)
+                    self.logs.write_log_in_file("info", f"{coll_versions}", True)
                     # coll_articles = self.__get_collection_articles(collection)
                     # collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
 
