@@ -59,6 +59,8 @@ class Article:
                 page = 1
                 page_size = 100
                 page_empty = False
+                self.logs.write_log_in_file("info",
+                            f"Page size is {page_size}.", True)
                 while (not page_empty):
                     # page = 1
                     # page_size = 3
@@ -66,7 +68,7 @@ class Article:
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
                     self.logs.write_log_in_file("info",
-                                                f"Getting page {page} of {page_size} articles. Total amount of pages not available.", True)
+                                                f"Getting page {page} of articles. Total amount of pages not available.", True)
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -77,6 +79,8 @@ class Article:
                         articles = get_response.json()
                         if (len(articles) == 0):
                             page_empty = True
+                            self.logs.write_log_in_file("info",
+                                                        f"Page {page} is empty.", True)
                             break
                         article_data = self.article_loop(articles, page_size, page, article_data)
                         success = True
@@ -100,7 +104,7 @@ class Article:
             if (article['published_date'] is not None or article['published_date'] != ''):
                 no_of_article = no_of_article + 1
                 self.logs.write_log_in_file("info",
-                                            f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}.", True)
+                                            f"Fetching article {no_of_article} on page {page}. ID: {article['id']}.", True)
                 article_data[article['id']] = self.__get_article_versions(article)
 
         return article_data
@@ -344,14 +348,14 @@ class Article:
 
                         if (existing_file_hash != compare_hash):
                             self.logs.write_log_in_file("error",
-                                                        f"{version_data['id']} - Hash didn't matched after downloading: "
+                                                        f"{version_data['id']} version {version_data['version']} - Hash didn't matched after downloading: "
                                                         + f"Filename {file['name']}. Folder will be deleted.", True)
                             delete_folder = True
                             break
                     else:
                         self.logs.write_log_in_file("error",
-                                                    f"{version_data['id']} - File couldn't download. Status code {filecontent.status_code}."
-                                                    + f"Filename {file['name']}. Folder will be deleted", True)
+                                                    f"{version_data['id']} version {version_data['version']} - File couldn't download. Status code {filecontent.status_code}. "
+                                                    + f"Filename {file['name']}. Folder will be deleted.", True)
                         delete_folder = True
                         break
 
@@ -421,7 +425,7 @@ class Article:
 
                                 if "UAL_RDM" not in read_version_dirs:  # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error",
-                                                                f"{version_data['id']} - UAL_RDM directory missing in curation storage."
+                                                                f"{version_data['id']} version {version_data['version']} - UAL_RDM directory missing in curation storage."
                                                                 + "Path is {version_dir}", True)
                                     break
                                 else:
@@ -655,8 +659,8 @@ class Article:
         if (version_data["deposit_agrement_file"] is False
                 or version_data["redata_deposit_review_file"] is False
                 or version_data["trello_file"] is False):
-            self.logs.write_log_in_file("error", f"{version_data['id']} - UAL_RDM directory doesn't have required "
-                                        + "files in curation storage.", True)
+            self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - UAL_RDM directory doesn't have required "
+                                        + "files in curation storage. Folder will be deleted.", True)
             copy_files = False
         else:
             copy_files = True
@@ -689,7 +693,7 @@ class Article:
             # call post process script function for each match item.
             value_post_process = self.post_process_script_function()
             if (value_post_process != 0):
-                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
     """
     Called before articles processing.
@@ -754,7 +758,7 @@ class Article:
                                     # call post process script function for each match item.
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
-                                        self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
+                                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
@@ -766,7 +770,7 @@ class Article:
                             # call post process script function for each match item.
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no} - Post-processing script failed.", True)
+                                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
     """
     Preservation and Curation directory access check while processing.

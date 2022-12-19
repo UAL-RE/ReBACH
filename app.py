@@ -57,6 +57,7 @@ def get_config_file_path():
 
 
 def main():
+    print(asctime() + ":Info: Log - ReBACH script has started.")
     """
     This function will be called first.
     Setting up required variables and conditions.
@@ -81,6 +82,8 @@ def main():
     if (log_location == ""):
         print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env.ini file.")
         exit()
+
+    log.write_log_in_file('info', "Logs location is accessible. Logging will now start.", True, True)
 
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
@@ -145,3 +148,5 @@ if __name__ == "__main__":
 
     # Start collections processing after completing fetcing data from API and articles processing.
     collection_obj.process_collections(collection_data)
+
+    log.write_log_in_file('info', "ReBACH script has successfully finished.", True, True)

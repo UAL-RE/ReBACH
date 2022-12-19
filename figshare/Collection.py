@@ -50,8 +50,9 @@ class Collection:
                 page = 1
                 page_size = 100
                 page_empty = False
+                self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
                 while (not page_empty):
-                    self.logs.write_log_in_file("info", f"Getting page {page} of {page_size} collections. Total amount of pages not available.", True)
+                    self.logs.write_log_in_file("info", f"Getting page {page} of collections. Total amount of pages not available.", True)
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(collections_api_url, params=params,
                                                 timeout=self.retry_wait)
@@ -59,6 +60,7 @@ class Collection:
                         collections = get_response.json()
                         if (len(collections) == 0):
                             page_empty = True
+                            self.logs.write_log_in_file("info", f"Page of collections is empty.", True)
                             break
 
                         collection_data = self.collections_loop(collections, page_size, page, collection_data)
@@ -83,7 +85,7 @@ class Collection:
         no_of_col = 0
         for collection in collections:
             no_of_col = no_of_col + 1
-            self.logs.write_log_in_file("info", f"Fetching collection {no_of_col} of {page_size} on Page {page}. ID: {collection['id']}.", True)
+            self.logs.write_log_in_file("info", f"Fetching collection {no_of_col} on page {page}. ID: {collection['id']}.", True)
             coll_versions = self.__get_collection_versions(collection)
             coll_articles = self.__get_collection_articles(collection)
             collection_data[collection['id']] = {"versions": coll_versions, "articles": coll_articles}
@@ -182,13 +184,14 @@ class Collection:
                 page = 1
                 page_size = 100
                 while (not page_empty):
-                    self.logs.write_log_in_file("info", f"Fetching collection articles of Page {page}. Collection ID: {collection['id']}.", True)
+                    self.logs.write_log_in_file("info", f"Fetching page {page} of collection articles. Collection ID: {collection['id']}.", True)
                     params = {'page': page, 'page_size': page_size}
                     get_response = requests.get(coll_articles_api, params=params, timeout=self.retry_wait)
                     if (get_response.status_code == 200):
                         articles_list_res = get_response.json()
                         if (len(articles_list_res) == 0):
                             page_empty = True
+                            self.logs.write_log_in_file("info", f"Page of collection articles is empty. Collection ID: {collection['id']}.", True)
                             break
                         else:
                             articles_list.extend(articles_list_res)
