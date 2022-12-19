@@ -60,7 +60,7 @@ class Article:
                 page_size = 100
                 page_empty = False
                 self.logs.write_log_in_file("info",
-                            f"Page size is {page_size}.", True)
+                                        f"Page size is {page_size}.", True)
                 while (not page_empty):
                     # page = 1
                     # page_size = 3
@@ -348,14 +348,14 @@ class Article:
 
                         if (existing_file_hash != compare_hash):
                             self.logs.write_log_in_file("error",
-                                                        f"{version_data['id']} version {version_data['version']} - Hash didn't matched after downloading: "
-                                                        + f"Filename {file['name']}. Folder will be deleted.", True)
+                                                        f"{version_data['id']} version {version_data['version']} - Hash didn't "
+                                                        + f"match after downloading: Filename {file['name']}. Folder will be deleted.", True)
                             delete_folder = True
                             break
                     else:
                         self.logs.write_log_in_file("error",
-                                                    f"{version_data['id']} version {version_data['version']} - File couldn't download. Status code {filecontent.status_code}. "
-                                                    + f"Filename {file['name']}. Folder will be deleted.", True)
+                                                    f"{version_data['id']} version {version_data['version']} - File couldn't download. Status "
+                                                    + f"code {filecontent.status_code}. Filename {file['name']}. Folder will be deleted.", True)
                         delete_folder = True
                         break
 
@@ -425,8 +425,8 @@ class Article:
 
                                 if "UAL_RDM" not in read_version_dirs:  # check if UAL_RDM dir not exists...
                                     self.logs.write_log_in_file("error",
-                                                                f"{version_data['id']} version {version_data['version']} - UAL_RDM directory missing in curation storage."
-                                                                + "Path is {version_dir}", True)
+                                                                f"{version_data['id']} version {version_data['version']} - UAL_RDM directory "
+                                                                + "missing in curation storage. Path is {version_dir}", True)
                                     break
                                 else:
                                     version_data = self.read_version_dirs_fun(read_version_dirs, version_dir, version_data)
@@ -758,7 +758,8 @@ class Article:
                                     # call post process script function for each match item.
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
-                                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - post-processing script error found.", True)
+                                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
+                                                                + "post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
@@ -770,7 +771,8 @@ class Article:
                             # call post process script function for each match item.
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+                                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
+                                                        + "Post-processing script failed.", True)
 
     """
     Preservation and Curation directory access check while processing.

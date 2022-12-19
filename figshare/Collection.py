@@ -60,7 +60,7 @@ class Collection:
                         collections = get_response.json()
                         if (len(collections) == 0):
                             page_empty = True
-                            self.logs.write_log_in_file("info", f"Page of collections is empty.", True)
+                            self.logs.write_log_in_file("info", "Page of collections is empty.", True)
                             break
 
                         collection_data = self.collections_loop(collections, page_size, page, collection_data)
