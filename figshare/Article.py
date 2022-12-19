@@ -65,6 +65,8 @@ class Article:
                     # total_articles = 5
                     # no_of_pages = math.ceil(total_articles / page_size)
                     # while (page <= no_of_pages):
+                    self.logs.write_log_in_file("info",
+                                                f"Getting page {page} of {page_size} articles. Total amount of pages not available.", True)
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
                     get_response = requests.get(articles_api,
                                                 headers={'Authorization': 'token ' + self.api_token},
@@ -97,7 +99,8 @@ class Article:
         for article in articles:
             if (article['published_date'] is not None or article['published_date'] != ''):
                 no_of_article = no_of_article + 1
-                print(f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}")
+                self.logs.write_log_in_file("info",
+                                            f"Fetching article {no_of_article} of {page_size} on Page {page}. ID: {article['id']}.", True)
                 article_data[article['id']] = self.__get_article_versions(article)
 
         return article_data
@@ -126,7 +129,8 @@ class Article:
                         metadata = []
                         if (len(versions) > 0):
                             for version in versions:
-                                print(f"Fetching article {article['id']} version {version['version']}.")
+                                self.logs.write_log_in_file("info",
+                                                            f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
                         else:
@@ -181,13 +185,13 @@ class Article:
                             self.logs.write_log_in_file("info", f"{error}", True)
                             return version_data
                         else:
-                            error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
+                            error = f"{version_data['id']} - This item’s curation_status was not 'approved'. It will be skipped during processing."
                             self.logs.write_log_in_file("info", f"{error}", True)
                             break
                     elif (get_response.status_code == 404):
                         res = get_response.json()
                         self.logs.write_log_in_file("info",
-                                                    f"{article_id} - {res['message']}")
+                                                    f"{article_id} - {res['message']}. It will be skipped during processing.")
                         break
                     else:
                         retries = self.retries_if_error(f"{article_id} Private API not reachable {private_url}. Retry {retries}",
@@ -299,7 +303,7 @@ class Article:
                         + f" The files are from version {str(private_version_no)}."
                 self.logs.write_log_in_file("info", f"{error}", True)
             else:
-                error = f"{version_data['id']} - This item’s curation_status was not 'approved'"
+                error = f"{version_data['id']} - This item’s curation_status was not 'approved'. It will be skipped during processing."
                 self.logs.write_log_in_file("info", f"{error}", True)
 
         return {"files": files, "private_version_no": private_version_no, "file_len": file_len}
@@ -309,6 +313,7 @@ class Article:
     """
     def __download_files(self, files, version_data, folder_name):
         delete_folder = False
+        self.logs.write_log_in_file('info', "Downloading files.", True)
         if (len(files) > 0):
             version_no = "v" + str(version_data["version"]).zfill(2)
             article_folder = folder_name + "/" + version_no
@@ -328,7 +333,9 @@ class Article:
                                                )
                     if (filecontent.status_code == 200):
                         file_no = file_no + 1
-                        print(f"Downloaded file {file_no} for article {version_data['id']} - version {version_data['version']}")
+                        self.logs.write_log_in_file("info",
+                                                    f"Downloaded file {file_no} for article {version_data['id']} - "
+                                                    + f"version {version_data['version']}", True)
                         open(file_name_with_path, 'wb').write(filecontent.content)
                         existing_file_hash = hashlib.md5(open(file_name_with_path, 'rb').read()).hexdigest()
                         compare_hash = file['supplied_md5']
@@ -337,14 +344,14 @@ class Article:
 
                         if (existing_file_hash != compare_hash):
                             self.logs.write_log_in_file("error",
-                                                        f"{version_data['id']} - Hash didn't matched after downloading."
-                                                        + f" Name {file['name']}", True)
+                                                        f"{version_data['id']} - Hash didn't matched after downloading: "
+                                                        + f"Filename {file['name']}. Folder will be deleted.", True)
                             delete_folder = True
                             break
                     else:
                         self.logs.write_log_in_file("error",
-                                                    f"{version_data['id']} - File doesn't download. Status code {filecontent.status_code}."
-                                                    + f" Name {file['name']}", True)
+                                                    f"{version_data['id']} - File couldn't download. Status code {filecontent.status_code}."
+                                                    + f"Filename {file['name']}. Folder will be deleted", True)
                         delete_folder = True
                         break
 
@@ -468,6 +475,7 @@ class Article:
     :return log error and terminate script if required_space greater.
     """
     def check_required_space(self, required_space):
+        self.logs.write_log_in_file("info", "Checking required space, script will stop if there's not enough space.", True)
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"]) / 100))
         preservation_storage_location = self.preservation_storage_location
         memory = shutil.disk_usage(preservation_storage_location)
@@ -491,7 +499,7 @@ class Article:
         article_folder_path = preservation_storage_location + article_files_folder
 
         # check preservation dir is reachable
-        self.check_access_of_directries(preservation_storage_location, "preservation")
+        self.check_access_of_directories(preservation_storage_location, "preservation")
 
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
@@ -500,6 +508,7 @@ class Article:
         if (article_files_path_exists is True):
             get_files = os.listdir(article_folder_path)
             if (len(get_files) > 0):
+                self.logs.write_log_in_file('info', "Checking hashes of files against existing files.", True)
                 for file in files:
                     file_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
                     file_exists = os.path.exists(file_path)
@@ -514,7 +523,7 @@ class Article:
                             delete_folder = True
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
                         else:
-                            self.logs.write_log_in_file('info', f"{file_path} hash matched, files already exists.", True)
+                            self.logs.write_log_in_file('info', f"{file_path} hash matched, file already exists.", True)
 
                         process_article = False
                         break
@@ -531,6 +540,7 @@ class Article:
 
         # delete directory if validation failed.
         if (delete_folder is True):
+            self.logs.write_log_in_file("error", f"Validation failed, deleting {preservation_storage_location + folder_path}.", True)
             self.delete_folder(preservation_storage_location + folder_path)
 
         return process_article
@@ -585,7 +595,7 @@ class Article:
         # curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
         # check_folder = os.path.exists(curation_dir_name)
         # check curation dir is reachable
-        self.check_access_of_directries(curation_storage_location, "curation")
+        self.check_access_of_directories(curation_storage_location, "curation")
 
         preservation_storage_location = self.preservation_storage_location
         complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
@@ -603,15 +613,16 @@ class Article:
                             if (dir == version_no):
                                 curation_dir_name = article_dir_in_curation + "/" + dir + "/UAL_RDM"
                                 # check preservation dir is reachable
-                                self.check_access_of_directries(preservation_storage_location, "preservation")
+                                self.check_access_of_directories(preservation_storage_location, "preservation")
                                 try:
+                                    self.logs.write_log_in_file("info", "Copying files to preservation folder.", True)
                                     check_path_exists = os.path.exists(complete_folder_name)
                                     if (check_path_exists is False):
                                         os.makedirs(complete_folder_name, exist_ok=True)
-                                    # copying files to storage version folder
+                                    # copying files to preservation version folder
                                     shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
                                 except Exception as e:
-                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} err while coping file.", True)
+                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} error while copying file.", True)
 
     """
     Find matched articles from the fetched data and curation dir
@@ -662,17 +673,17 @@ class Article:
             # check download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                self.logs.write_log_in_file("info", "Copy curation UAL_RDM files in storage UAL_RDM folder for each version", True)
+                self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder for each version.", True)
                 self.__copy_files_ual_rdm(version_data, folder_name)
                 # check and create empty directories for each version
-                self.logs.write_log_in_file("info", "Check and create empty directories for each version", True)
+                self.logs.write_log_in_file("info", "Checking and creating empty directories for each version.", True)
                 self.create_required_folders(version_data, folder_name)
                 # save json in metadata folder for each version
-                self.logs.write_log_in_file("info", "Save json in metadata folder for each version", True)
+                self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
             else:
                 # if download process has any error than delete complete folder
-                self.logs.write_log_in_file("info", "If download process has any error than delete complete folder", True)
+                self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each match item.
@@ -689,10 +700,10 @@ class Article:
         # get preservation directory path
         preservation_storage_location = self.preservation_storage_location
         # curation dir is reachable
-        self.check_access_of_directries(curation_storage_location, "curation")
+        self.check_access_of_directories(curation_storage_location, "curation")
 
         # preservation dir is reachable
-        self.check_access_of_directries(preservation_storage_location, "preservation")
+        self.check_access_of_directories(preservation_storage_location, "preservation")
 
         return curation_storage_location
 
@@ -704,11 +715,10 @@ class Article:
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
-        # calcualte space for given path.
+        # calculate space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if space is less.
-        self.logs.write_log_in_file("info", "Check required space after curation process, it will stop process if space is less.", True)
         self.check_required_space(required_space)
 
         for article in article_data:
@@ -721,17 +731,18 @@ class Article:
                         + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
 
                     if (version_data["matched"] is True):
-                        print(f"Processing article {article} version {version_data['version']}")
+                        self.logs.write_log_in_file("info", f"Processing article {article} version {version_data['version']}.", True)
                         # call pre process script function for each match item.
                         value_pre_process = self.pre_process_script_function()
                         if (value_pre_process == 0):
+                            self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
                             preservation_storage_location = self.preservation_storage_location
                             check_dir = preservation_storage_location + folder_name
                             check_main_folder = os.path.exists(check_dir)
                             check_files = True
                             copy_files = True
-                            self.logs.write_log_in_file("info", "Check folder already exists in preservation storage directory.", True)
+                            self.logs.write_log_in_file("info", "Checking that folder already exists in preservation storage directory.", True)
                             if (check_main_folder is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
@@ -740,21 +751,22 @@ class Article:
                                     check_files = False
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
-                                    # call pre process script function for each match item.
+                                    # call post process script function for each match item.
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
-                            self.logs.write_log_in_file("info", "Check require files exists in curation UAL_RDM folder.", True)
+                            self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
                         else:
+                            self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each match item.
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no} - Post-processing script failed.", True)
 
     """
     Preservation and Curation directory access check while processing.
@@ -762,7 +774,7 @@ class Article:
     :param directory_path string
     :param process_name string
     """
-    def check_access_of_directries(self, directory_path, process_name="preservation"):
+    def check_access_of_directories(self, directory_path, process_name="preservation"):
         success = False
         retries = 1
         while not success and retries <= int(self.retries):
@@ -773,13 +785,14 @@ class Article:
                 text = "preservation storage"
             if (path_exists is False or folder_access is False):
                 retries = self.retries_if_error(f"The {text} location specified in the config file could"
-                                                + f" not be reached or read.. Retry {retries}", 500, retries)
+                                                + f" not be reached or read. Retry {retries}.", 500, retries)
                 if (retries > self.retries):
                     exit()
             else:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
+        self.logs.write_log_in_file("info", "Creating UAL_RDM and DATA folders in preservation storage.", True)
         preservation_storage_location = self.preservation_storage_location
         version_no = "v" + str(version_data["version"]).zfill(2)
         # setup UAL_RDM directory
@@ -797,22 +810,22 @@ class Article:
             os.makedirs(data_folder_name, exist_ok=True)
 
     """
-    Preprocess script command function.
+    Pre-processing script command function.
     """
     def pre_process_script_function(self):
         pre_process_script_command = self.system_config["pre_process_script_command"]
         if (pre_process_script_command != ""):
-            print(f"Processing....{pre_process_script_command}")
+            self.logs.write_log_in_file("info", f"Executing pre-processing script: {pre_process_script_command}.", True)
         else:
             return 0
 
     """
-    Postprocess script command function.
+    Post-processing script command function.
     """
     def post_process_script_function(self):
         post_process_script_command = self.system_config["post_process_script_command"]
         if (post_process_script_command != ""):
-            print(f"Processing....{post_process_script_command}")
+            self.logs.write_log_in_file("info", f"Executing post-processing script: {post_process_script_command}.", True)
         else:
             return 0
 
@@ -820,7 +833,7 @@ class Article:
     Delete folder
     """
     def delete_folder(self, folder_path):
-        check_exsits = os.path.exists(folder_path)
-        if (check_exsits is True):
+        check_exists = os.path.exists(folder_path)
+        if (check_exists is True):
             shutil.rmtree(folder_path)
             self.logs.write_log_in_file("error", f"{folder_path} deleted due to failed validations.")
