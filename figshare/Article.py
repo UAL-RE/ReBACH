@@ -672,17 +672,17 @@ class Article:
             # check download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
-                self.logs.write_log_in_file("info", "Copy curation UAL_RDM files in storage UAL_RDM folder for each version", True)
+                self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder for each version.", True)
                 self.__copy_files_ual_rdm(version_data, folder_name)
                 # check and create empty directories for each version
-                self.logs.write_log_in_file("info", "Check and create empty directories for each version", True)
+                self.logs.write_log_in_file("info", "Checking and creating empty directories for each version.", True)
                 self.create_required_folders(version_data, folder_name)
                 # save json in metadata folder for each version
-                self.logs.write_log_in_file("info", "Save json in metadata folder for each version", True)
+                self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
             else:
                 # if download process has any error than delete complete folder
-                self.logs.write_log_in_file("info", "If download process has any error than delete complete folder", True)
+                self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each match item.
@@ -699,10 +699,10 @@ class Article:
         # get preservation directory path
         preservation_storage_location = self.preservation_storage_location
         # curation dir is reachable
-        self.check_access_of_directries(curation_storage_location, "curation")
+        self.check_access_of_directories(curation_storage_location, "curation")
 
         # preservation dir is reachable
-        self.check_access_of_directries(preservation_storage_location, "preservation")
+        self.check_access_of_directories(preservation_storage_location, "preservation")
 
         return curation_storage_location
 
@@ -714,11 +714,10 @@ class Article:
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
-        # calcualte space for given path.
+        # calculate space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if space is less.
-        self.logs.write_log_in_file("info", "Check required space after curation process, it will stop process if space is less.", True)
         self.check_required_space(required_space)
 
         for article in article_data:
@@ -731,17 +730,18 @@ class Article:
                         + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
 
                     if (version_data["matched"] is True):
-                        print(f"Processing article {article} version {version_data['version']}")
+                        self.logs.write_log_in_file("info", f"Processing article {article} version {version_data['version']}.", True)
                         # call pre process script function for each match item.
                         value_pre_process = self.pre_process_script_function()
                         if (value_pre_process == 0):
+                            self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
                             preservation_storage_location = self.preservation_storage_location
                             check_dir = preservation_storage_location + folder_name
                             check_main_folder = os.path.exists(check_dir)
                             check_files = True
                             copy_files = True
-                            self.logs.write_log_in_file("info", "Check folder already exists in preservation storage directory.", True)
+                            self.logs.write_log_in_file("info", "Checking that folder already exists in preservation storage directory.", True)
                             if (check_main_folder is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
@@ -750,21 +750,22 @@ class Article:
                                     check_files = False
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
-                                    # call pre process script function for each match item.
+                                    # call post process script function for each match item.
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} - post script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check require files exists in curation UAL_RDM folder
-                            self.logs.write_log_in_file("info", "Check require files exists in curation UAL_RDM folder.", True)
+                            self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
                         else:
+                            self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each match item.
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no}- post script error found.", True)
+                                self.logs.write_log_in_file("error", f"{version_data['id']} {version_no} - Post-processing script failed.", True)
 
     """
     Preservation and Curation directory access check while processing.
@@ -772,7 +773,7 @@ class Article:
     :param directory_path string
     :param process_name string
     """
-    def check_access_of_directries(self, directory_path, process_name="preservation"):
+    def check_access_of_directories(self, directory_path, process_name="preservation"):
         success = False
         retries = 1
         while not success and retries <= int(self.retries):
@@ -783,13 +784,14 @@ class Article:
                 text = "preservation storage"
             if (path_exists is False or folder_access is False):
                 retries = self.retries_if_error(f"The {text} location specified in the config file could"
-                                                + f" not be reached or read.. Retry {retries}", 500, retries)
+                                                + f" not be reached or read. Retry {retries}.", 500, retries)
                 if (retries > self.retries):
                     exit()
             else:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
+        self.logs.write_log_in_file("info", "Creating UAL_RDM and DATA folders in preservation storage.", True)
         preservation_storage_location = self.preservation_storage_location
         version_no = "v" + str(version_data["version"]).zfill(2)
         # setup UAL_RDM directory
@@ -807,22 +809,22 @@ class Article:
             os.makedirs(data_folder_name, exist_ok=True)
 
     """
-    Preprocess script command function.
+    Pre-processing script command function.
     """
     def pre_process_script_function(self):
         pre_process_script_command = self.system_config["pre_process_script_command"]
         if (pre_process_script_command != ""):
-            print(f"Processing....{pre_process_script_command}")
+            self.logs.write_log_in_file("info", f"Executing pre-processing script: {pre_process_script_command}.", True)
         else:
             return 0
 
     """
-    Postprocess script command function.
+    Post-processing script command function.
     """
     def post_process_script_function(self):
         post_process_script_command = self.system_config["post_process_script_command"]
         if (post_process_script_command != ""):
-            print(f"Processing....{post_process_script_command}")
+            self.logs.write_log_in_file("info", f"Executing post-processing script: {post_process_script_command}.", True)
         else:
             return 0
 
@@ -830,7 +832,7 @@ class Article:
     Delete folder
     """
     def delete_folder(self, folder_path):
-        check_exsits = os.path.exists(folder_path)
-        if (check_exsits is True):
+        check_exists = os.path.exists(folder_path)
+        if (check_exists is True):
             shutil.rmtree(folder_path)
             self.logs.write_log_in_file("error", f"{folder_path} deleted due to failed validations.")
