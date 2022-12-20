@@ -581,7 +581,8 @@ class Article:
             del (version_data["deposit_agrement_file"])
         if ("trello_file" in version_data):
             del (version_data["trello_file"])
-
+        if ("author_dir" in version_data):
+            del (version_data["author_dir"])
         json_data = json.dumps(version_data, indent=4)
         filename_path = complete_path + "/" + str(version_data['id']) + ".json"
         # Writing to json file
