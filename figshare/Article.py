@@ -643,7 +643,7 @@ class Article:
                     if (version_data is not None and len(version_data) > 0):
                         data = self.__check_curation_dir(version_data)
                         version_no = "v" + str(data["version"]).zfill(2)
-                        i +=1
+                        i += 1
                         if (data["matched"] is True):
                             total_file_size = version_data['size']
                             self.total_all_articles_file_size += total_file_size
@@ -652,10 +652,8 @@ class Article:
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
                         else:
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- "
-                        
 
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
-
         return article_data
 
     """
@@ -733,7 +731,7 @@ class Article:
         # log articles id, version and dir name if matched.
         for index in self.article_match_info:
             self.logs.write_log_in_file('info', self.article_match_info[index], True)
-        
+
         for article in article_data:
             article_versions_list = article_data[article]
             # article_data[article] = []
