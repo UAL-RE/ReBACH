@@ -654,7 +654,7 @@ class Article:
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- "
                         
 
-        self.logs.write_log_in_file("info", f"Total matched articles: {no_matched}.", True)
+        self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
 
         return article_data
 
