@@ -83,7 +83,7 @@ def main():
         print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env.ini file.")
         exit()
 
-    log.write_log_in_file('info', "Logs location is accessible. Logging will now start.", True, True)
+    log.write_log_in_file('info', "Logs location is accessible. Logging will now start.", True)
 
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)

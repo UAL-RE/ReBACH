@@ -37,6 +37,7 @@ class Article:
         self.curation_storage_location = self.system_config["curation_storage_location"]
         if self.curation_storage_location[-1] != "/":
             self.curation_storage_location = self.curation_storage_location + "/"
+        self.article_match_info = {}
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -65,6 +66,7 @@ class Article:
                     # page_size = 3
                     # total_articles = 5
                     # no_of_pages = math.ceil(total_articles / page_size)
+                    # self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
                     # while (page <= no_of_pages):
                     self.logs.write_log_in_file("info",
                                                 f"Getting page {page} of articles. Total amount of pages not available.", True)
@@ -389,7 +391,7 @@ class Article:
             if (dir not in self.exclude_dirs):
                 dir_array = dir.split("_")
                 # check author name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
-                self.logs.write_log_in_file('info', f"article {version_data['id']} ----- {dir}", True)
+                author_dir = dir
                 if (str(version_data['id']) in dir_array):
                     article_dir_in_curation = curation_storage_location + dir
                     # read author dir
@@ -397,12 +399,12 @@ class Article:
                     version_data["curation_info"] = {}
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
-                            self.logs.write_log_in_file('info', f"dir version {dir} ----- {version_no}")
                             if (dir == version_no):
                                 version_dir = article_dir_in_curation + "/" + dir
                                 # read version dir
                                 read_version_dirs = os.listdir(version_dir)
                                 version_data["matched"] = is_matched = True
+                                version_data['author_dir'] = author_dir
                                 # item_subtype conditions
                                 sub_type = ''
                                 if (version_data['has_linked_file']):
@@ -594,9 +596,6 @@ class Article:
     def __copy_files_ual_rdm(self, version_data, folder_name):
         version_no = "v" + str(version_data["version"]).zfill(2)
         curation_storage_location = self.curation_storage_location
-        # author_name = version_data['authors'][0]["url_name"]
-        # curation_dir_name = curation_storage_location + author_name + "_" + str(version_data['id']) + "/" + version_no + "/UAL_RDM"
-        # check_folder = os.path.exists(curation_dir_name)
         # check curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
 
@@ -633,6 +632,7 @@ class Article:
     def find_matched_articles(self, articles):
         article_data = {}
         no_matched = 0
+        i = 0
         for article in articles:
             if (articles[article] is not None):
                 article_versions_list = articles[article]
@@ -641,11 +641,17 @@ class Article:
                     # check curation folder for required files and setup data for further processing.
                     if (version_data is not None and len(version_data) > 0):
                         data = self.__check_curation_dir(version_data)
+                        version_no = "v" + str(data["version"]).zfill(2)
+                        i +=1
                         if (data["matched"] is True):
                             total_file_size = version_data['size']
                             self.total_all_articles_file_size += total_file_size
                             article_data[version_data['id']].append(data)
                             no_matched += 1
+                            self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
+                        else:
+                            self.article_match_info[i] = f"article {data['id']} {version_no} ----- "
+                        
 
         self.logs.write_log_in_file("info", f"Total matched articles: {no_matched}.", True)
 
@@ -723,10 +729,13 @@ class Article:
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if space is less.
         self.check_required_space(required_space)
-
+        # log articles id, version and dir name if matched.
+        for index in self.article_match_info:
+            self.logs.write_log_in_file('info', self.article_match_info[index], True)
+        
         for article in article_data:
-            article_versions_list = articles[article]
-            article_data[article] = []
+            article_versions_list = article_data[article]
+            # article_data[article] = []
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
                     version_no = "v" + str(version_data["version"]).zfill(2)
