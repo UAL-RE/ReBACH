@@ -36,3 +36,9 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py .env.ini` or `python app.py .env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
 - Informational and error output will occur in the terminal. The same output will be appeneded to a file in the logs location with today's date with some additional information and error logging occurring in the file
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
+
+## Execution notes
+- ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored. 
+- Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed. 
+- When processing collections, ReBACH records which items are part of the collection. However, to avoid duplication, it does not attempt to fetch the content of the items within the collection.
+- If an item encounters errors, it will not be processed an any partial files are deleted in preservation staging storage
