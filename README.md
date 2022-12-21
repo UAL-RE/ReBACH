@@ -8,6 +8,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 
 ## Dependencies:
 - Python >= 3.9
+- requests library >= 2.28.1
 - Ubuntu >= 20.04
 
 ## Requirements:
