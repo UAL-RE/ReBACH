@@ -2,7 +2,8 @@
 
 This tool implements the "last mile" of ReDATA's preservation strategy by
 ingesting a data/metadata package, generating a preservation-ready bag using
-the APTrust DART tool, and uploading the completed bag to offsite storage.
+the APTrust [DART](https://github.com/APTrust/dart) tool, and uploading the completed bag to offsite storage.
+Refer to the ReBACH specification (internal docs)
 
 ## Setup
 
@@ -147,7 +148,7 @@ placed. Do not include `.txt` as part of the tag-file element.
 `Tag-Name` is the name of the metadata tag. Conventionally, tag names are uppercase, dash-separated
 words.
 
-If the `"Tag value"` element is a string, ReBACH-Bagger will simply use the string as the value of
+The `"Tag value"` element can be a string or an inline table (see below). If the `"Tag value"` element is a string, ReBACH-Bagger will simply use the string as the value of
 the tag.
 
 ### Metadata from JSON
@@ -200,7 +201,7 @@ aptrust-info.Description = { tag_path = "description", strip_html = true, shorte
 
 ## DART Workflow
 
-A [DART workflow](https://aptrust.github.io/dart-docs/users/workflows/) is a JSON file that
+A [DART workflow](https://aptrust.github.io/dart-docs/users/workflows/) can be represented as a JSON file that
 describes the packaging and upload operations that should be performed when a bag is created by
 DART Runner. Users should create the workflow file using the desktop version of DART. Details
 are available in the [DART documentation](https://aptrust.github.io/dart-docs/users/workflows/).
