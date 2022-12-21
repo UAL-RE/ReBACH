@@ -3,7 +3,7 @@
 This tool implements the "last mile" of ReDATA's preservation strategy by
 ingesting a data/metadata package, generating a preservation-ready bag using
 the APTrust [DART](https://github.com/APTrust/dart) tool, and uploading the completed bag to offsite storage.
-Refer to the ReBACH specification (internal docs)
+Refer to the ReBACH specification (internal docs).
 
 ## Setup
 
@@ -29,40 +29,40 @@ $ chmod +x venv/bin/dart-runner
 ```
 
 You may pass or configure a different path to DART runner using the `dart_command` directive in
-the config file or `--dart_command` on the command line. See "DART Workflow" section below for
+the config file or `--dart_command` on the command line. See [DART Workflow]("#dart-workflow") for
 details on configuring DART.
 
 ## Usage
 
-ReBACH-Bagger can be used on the command line by calling the `scripts/main.py`
-file or running the main script as a module:
+ReBACH-Bagger can be used on the command line by running the main script as a module:
 
 ```text
-$ python -m redata_preservation.scripts.main --help
-usage: main.py [-h] [-c CONFIG] [-b BATCH] [-d | --delete | --no-delete] [-o OUTPUT_DIR]
-               [-w WORKFLOW] [--dart_command DART_COMMAND] [--overwrite | --no-overwrite] [--dryrun]
+$ python -m bagger.scripts.main -h
+usage: main.py [-h] [-c config_file] [-b batch_dir] [-d | --delete | --no-delete]
+               [-o output_dir] [-w workflow_file] [--dart_command dart_command]
+               [--overwrite | --no-overwrite] [--dry-run]
                path
 
 positional arguments:
   path                  Path to the package or batch directory.
 
-options:
+optional arguments:
   -h, --help            show this help message and exit
-  -c CONFIG, --config CONFIG
+  -c config_file, --config config_file
                         Path to configuration file.
-  -b BATCH, --batch BATCH
+  -b batch_dir, --batch batch_dir
                         Process a batch directory.
   -d, --delete, --no-delete
                         Delete bags after upload. (default: True)
-  -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+  -o output_dir, --output_dir output_dir
                         Output directory for generated bags.
-  -w WORKFLOW, --workflow WORKFLOW
+  -w workflow_file, --workflow workflow_file
                         Path to workflow file.
-  --dart_command DART_COMMAND
+  --dart_command dart_command
                         Command to invoke DART Runner.
   --overwrite, --no-overwrite
                         Overwrite duplicate bags. (default: False)
-  --dryrun              Log execution steps without executing. (default: False)
+  --dry-run, --dryrun   Log execution steps without actually executing. (default: False)
 ```
 
 ReBACH-Bagger can also be imported as a module. The `main.py` script
@@ -78,6 +78,40 @@ B = Bagger(workflow, output_dir, delete, dart_command, config, log)
 
 # Run DART on the package specified with path
 run = B.run_dart(path)
+```
+
+### Return Values
+
+ReBACH-Bagger's return values are defined in the `Status` object in `bagger/__init__.py`:
+
+```python
+class Status(IntEnum):
+    SUCCESS = 0
+    ERROR = 1
+    INVALID_PATH = 2
+    DUPLICATE_BAG = 3
+    INVALID_PACKAGE = 4
+    WASABI_ERROR = 5
+    INVALID_CONFIG = 6
+    DRY_RUN = SUCCESS
+```
+
+Code that imports the `Bagger` module can use the name or value of the `Status` object: 
+
+```python
+if status == Status.INVALID_PATH:
+    print("Try a different path")
+
+if status > 0:
+    print("Bag not created")
+```
+
+Scripts can pass the value of the `Status` object as an exit code which the calling program may
+use to decide whether to exit or retry:
+
+```python
+if error:
+    raise SystemExit(Status.WASABI_ERROR)
 ```
 
 ## Configuration
@@ -96,7 +130,7 @@ advisable if ReBACH-Bagger will be imported as a module.
 The `Defaults` section of the configuration file contains keys that define the
 program's execution environment. The keys defined here can also be set at
 runtime using the command line options described above. Command line
-configuration options are first in precendce, meaning values passed with the
+configuration options are first in precedence, meaning values passed with the
 command line will override values set in the config file.
 
 ```toml
@@ -119,10 +153,11 @@ logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 ### Wasabi
 
 Both DART and ReBACH-Bagger use the `access_key` and `secret_key` credentials defined in the
-configuration to authenticate to Wasabi (see below for details on how these variables are used in
-DART). However, only ReBACH-Bagger uses the other variables defined here to access the endpoint for
-the purpose of checking for duplicate bags. DART uses the storage configuration embedded in the
-workflow JSON file for selecting the correct endpoint. Verify that these values match.
+configuration to authenticate to Wasabi (see [DART Workflow]("#dart-workflow") for details on how
+these variables are used in DART). However, only ReBACH-Bagger uses the other variables defined
+here to access the endpoint for the purpose of checking for duplicate bags. DART uses the storage
+configuration embedded in the workflow JSON file for selecting the correct endpoint. Verify that
+these values match.
 
 ```toml
 [Wasabi]
@@ -142,13 +177,14 @@ following schema:
 
 `# tag-file.Tag-Name = "Tag value"`
 
-The `tag-file` element corresponds to the tag file (e.g. bag-info.txt) in which the tag will be
+The `tag-file` element corresponds to the tag file (e.g. "bag-info.txt") in which the tag will be
 placed. Do not include `.txt` as part of the tag-file element.
 
 `Tag-Name` is the name of the metadata tag. Conventionally, tag names are uppercase, dash-separated
 words.
 
-The `"Tag value"` element can be a string or an inline table (see below). If the `"Tag value"` element is a string, ReBACH-Bagger will simply use the string as the value of
+The `"Tag value"` element can be a string or an inline table ([see below]("#metadata-from-json")).
+If the `"Tag value"` element is a string, ReBACH-Bagger will simply use the string as the value of
 the tag.
 
 ### Metadata from JSON
@@ -202,14 +238,14 @@ aptrust-info.Description = { tag_path = "description", strip_html = true, shorte
 ## DART Workflow
 
 A [DART workflow](https://aptrust.github.io/dart-docs/users/workflows/) can be represented as a JSON file that
-describes the packaging and upload operations that should be performed when a bag is created by
+describes the packaging and upload operations which should be performed when a bag is created by
 DART Runner. Users should create the workflow file using the desktop version of DART. Details
 are available in the [DART documentation](https://aptrust.github.io/dart-docs/users/workflows/).
 
-The workflow file will include a name, description, the backage format (BagIt) and a BagIt
-profile (APTrust or a profile based on APTrust containing additional ReDATA-specific tags; see
-below). The workflow will also include the storage location and credentials needed to upload
-the bag.
+The workflow file will include a name, description, the package format (BagIt) and a BagIt
+profile (APTrust or a profile based on APTrust containing additional ReDATA-specific tags;
+[see below]("#bagit-profile")). The workflow will also include the storage location and credentials
+needed to upload the bag.
 
 When creating a new workflow with DART, users should NOT enter their AWS/Wasabi access key or
 secret key into the workflow configuration. Instead, DART provides the option to access these
@@ -223,8 +259,7 @@ For the password, enter `env:WASABI_SECRET_ACCESS_KEY`.
 
 The BagIt profile describes the metadata tags that are required or expected to be stored within
 the bag. These tags include default tags common to all BagIt bags, tags required by APTrust, and
-tags defined by the ReBACH-Bagger metadata configuration (see above). Profiles can
-be created and
-modified [using DART's desktop application](https://aptrust.github.io/dart-docs/users/bagit/).
+tags defined by the ReBACH-Bagger metadata configuration ([see above]("#metadata-from-json")).
+Profiles can be created and modified [using DART's desktop application](https://aptrust.github.io/dart-docs/users/bagit/).
 Profiles are embedded in the DART workflow file and do not need to be separately provided to
 ReBACH-Bagger.
