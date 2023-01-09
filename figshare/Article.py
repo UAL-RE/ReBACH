@@ -139,6 +139,7 @@ class Article:
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 metadata.append(version_data)
                         else:
+                            # This branch is for cases where the item has a total embargo and no versions are available via the public API
                             version_data = self.private_article_for_data(private_url, article['id'])
                             if (version_data is not None and len(version_data) > 0):
                                 metadata.append(version_data)
@@ -190,7 +191,7 @@ class Article:
                             self.logs.write_log_in_file("info", f"{error}", True)
                             return version_data
                         else:
-                            error = f"{version_data['id']} - This item’s curation_status was not 'approved'. It will be skipped during processing."
+                            error = f"{version_data['id']} - This item's curation_status was not 'approved'. It will be skipped during processing."
                             self.logs.write_log_in_file("info", f"{error}", True)
                             break
                     elif (get_response.status_code == 404):
@@ -308,7 +309,7 @@ class Article:
                         + f" The files are from version {str(private_version_no)}."
                 self.logs.write_log_in_file("info", f"{error}", True)
             else:
-                error = f"{version_data['id']} - This item’s curation_status was not 'approved'. It will be skipped during processing."
+                error = f"{version_data['id']} - This item's curation_status was not 'approved'. It will be skipped during processing."
                 self.logs.write_log_in_file("info", f"{error}", True)
 
         return {"files": files, "private_version_no": private_version_no, "file_len": file_len}
@@ -653,6 +654,10 @@ class Article:
                         else:
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- "
 
+        # log articles id, version and dir name if matched.
+        for index in self.article_match_info:
+            self.logs.write_log_in_file('info', self.article_match_info[index], True)
+
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         return article_data
 
@@ -728,9 +733,6 @@ class Article:
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if space is less.
         self.check_required_space(required_space)
-        # log articles id, version and dir name if matched.
-        for index in self.article_match_info:
-            self.logs.write_log_in_file('info', self.article_match_info[index], True)
 
         for article in article_data:
             article_versions_list = article_data[article]
