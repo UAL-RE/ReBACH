@@ -40,5 +40,5 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored. 
 - Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed. 
-- When processing collections, ReBACH records which items are part of the collection. However, to avoid duplication, it does not attempt to fetch the content of the items within the collection.
+- When processing collections, ReBACH records which items are part of the collection by appending them to collection's JSON as returned by the Figshare API. 
 - If an item encounters errors, it will not be processed an any partial files are deleted in preservation staging storage
