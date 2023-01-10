@@ -1,5 +1,4 @@
 import json
-# import math
 import os
 import requests
 from Log import Log

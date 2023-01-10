@@ -1,5 +1,4 @@
 import json
-# import math
 import shutil
 import os
 import sys
@@ -62,12 +61,6 @@ class Article:
                 page_empty = False
                 self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
                 while (not page_empty):
-                    # page = 1
-                    # page_size = 3
-                    # total_articles = 5
-                    # no_of_pages = math.ceil(total_articles / page_size)
-                    # self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
-                    # while (page <= no_of_pages):
                     self.logs.write_log_in_file("info",
                                                 f"Getting page {page} of articles. Total amount of pages not available.", True)
                     params = {'page': page, 'page_size': page_size, 'institution': self.institution}
