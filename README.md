@@ -8,6 +8,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 
 ## Dependencies:
 - Python >= 3.9
+- requests library >= 2.18.4
 - Ubuntu >= 20.04
 
 ## Requirements:
@@ -18,7 +19,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Write privileges to logs location
 
 ## How to run:
-- Rename the .env.sample.ini to .env.ini (alternatively you may copy the .env.sample.ini file and rename it)
+- Copy the .env.sample.ini file and give it a name of your choice (e.g. .env.ini).
 - Fill out the .env.ini file (IMPORTANT: Make sure not to commit this file to Github)
     - url - required: The figshare API url
     - token - required: Your auth token to your organization's API
@@ -32,6 +33,12 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - post_process_script_command - optional: The terminal command (including arguments) to invoke a script to be run AFTER the files are copied and logic applied to the preservation storage (note: this action is not currently implemented)
     - curation_storage_location - required: The file system location where the Curation files reside
 - Ensure the aforementioned Dependencies and Requirements are met
-- Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py` or `python app.py` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
+- Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py /path/of/.env.ini` or `python app.py /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
 - Informational and error output will occur in the terminal. The same output will be appeneded to a file in the logs location with today's date with some additional information and error logging occurring in the file
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
+
+## Execution notes
+- ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored. 
+- Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed. 
+- When processing collections, ReBACH records which items are part of the collection by appending them to collection's JSON as returned by the Figshare API.
+- If an item encounters errors, it will not be processed and any partial files are deleted in preservation staging storage.
