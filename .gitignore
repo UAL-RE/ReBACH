@@ -133,5 +133,5 @@ dmypy.json
 /storage
 
 .DS_Store
-.env.production.ini
-.env.staging.ini
+*.ini
+!.env.sample.ini
