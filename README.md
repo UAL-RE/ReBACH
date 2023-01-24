@@ -8,7 +8,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 
 ## Dependencies:
 - Python >= 3.9
-- requests library >= 2.18.4
+- requests Python library >= 2.18.4
 - Ubuntu >= 20.04
 
 ## Requirements:
@@ -34,7 +34,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - curation_storage_location - required: The file system location where the Curation files reside
 - Ensure the aforementioned Dependencies and Requirements are met
 - Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py /path/of/.env.ini` or `python app.py /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
-- Informational and error output will occur in the terminal. The same output will be appeneded to a file in the logs location with today's date with some additional information and error logging occurring in the file
+- Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
 
 ## Execution notes
