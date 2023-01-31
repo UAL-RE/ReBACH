@@ -438,11 +438,11 @@ class Article:
                     ual_rdm_path = version_dir + "/" + dir
                     ual_dir = os.listdir(ual_rdm_path)
                     for ual_file in ual_dir:
-                        if (ual_file.startswith("Deposit Agreement")
-                                or ual_file.startswith("Deposit_Agreement")):
+                        if ("Deposit Agreement" in ual_file)
+                                or "Deposit_Agreement" in ual_file):
                             deposit_agrement_file = True
 
-                        if (ual_file.startswith("ReDATA-DepositReview")):
+                        if ("ReDATA-DepositReview" in ual_file):
                             redata_deposit_review_file = True
 
                         if (ual_file.endswith("Trello.pdf")):
