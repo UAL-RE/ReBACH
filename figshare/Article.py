@@ -438,7 +438,7 @@ class Article:
                     ual_rdm_path = version_dir + "/" + dir
                     ual_dir = os.listdir(ual_rdm_path)
                     for ual_file in ual_dir:
-                        if ("Deposit Agreement" in ual_file)
+                        if ("Deposit Agreement" in ual_file
                                 or "Deposit_Agreement" in ual_file):
                             deposit_agrement_file = True
 
@@ -600,7 +600,7 @@ class Article:
         for dir in dirs:
             if (dir not in self.exclude_dirs):
                 dir_array = dir.split("_")
-                # check author name with article id directory exists like 'Jeffrey_C_Oliver_7873476'
+                # check author name with article id directory exists like 'John_Smith_546187'
                 if (str(version_data['id']) in dir_array):
                     article_dir_in_curation = curation_storage_location + dir
                     # read author dir
