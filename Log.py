@@ -6,7 +6,6 @@ from Config import Config
 
 # Log class to handle log messages
 class Log:
-
     def __init__(self, config):
         self.config = config
 
