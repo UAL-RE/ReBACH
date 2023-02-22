@@ -15,7 +15,7 @@ def check_logs_path_access(config_file):
     system_config = config_obj.system_config()
     log_location = system_config["logs_location"]
 
-    # Check logs path exits, if not then create directory
+    # Check logs path exists, if not then create directory
     logs_path_exists = os.path.exists(log_location)
 
     try:
@@ -62,7 +62,7 @@ def main():
     This function will be called first.
     Setting up required variables and conditions.
     """
-    # Check .env file exist.
+    # Check .env file exists.
     env_file = get_config_file_path()
     print(asctime() + ":Info: Log - " + "Env file:" + env_file)
     print(asctime() + ":Info: Log - " + "Checking configuration file.")
@@ -99,7 +99,7 @@ def main():
 
     log.write_log_in_file('info', "Configuration file meets requirements.", True)
     check_logs_path_access(env_file)
-    # Check storage path exits, if not then give error and stop processing
+    # Check storage path exists, if not then give error and stop processing
     preservation_path_exists = os.path.exists(preservation_storage_location)
     access = os.access(preservation_storage_location, os.W_OK)
     if (preservation_path_exists is False or access is False):
@@ -107,7 +107,7 @@ def main():
                               "The preservation storage location specified in the config file could not be reached or read.",
                               True, True)
 
-    # Check curation path exits, if not then give error and stop processing
+    # Check curation path exists, if not then give error and stop processing
     curation_path_exists = os.path.exists(curation_storage_location)
     curation_folder_access = os.access(curation_storage_location, os.W_OK)
     if (curation_path_exists is False or curation_folder_access is False):
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     # Start articles processing after completing fetching data from API
     article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
 
-    # Start collections processing after completing fetcing data from API and articles processing.
+    # Start collections processing after completing fetching data from API and articles processing.
     collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info', "ReBACH script has successfully finished.", True, True)

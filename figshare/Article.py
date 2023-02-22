@@ -15,7 +15,7 @@ class Article:
 
     """
     Class constructor.
-    Defined requried variables that will be used in whole class.
+    Defined required variables that will be used in whole class.
     """
     def __init__(self, config):
         self.config_obj = Config(config)
@@ -207,7 +207,7 @@ class Article:
     :param version object value.
     :param article_id int value.
     On successful response from url_public_api API, metadata array will be setup for response.
-    If files doesn't found and size is > 0 in public API response then
+    If files aren't found and size is > 0 in public API response then
     private api will be called for files.
     No. of tries implemented in while loop, loop will exit if API is not giving
     200 response after no. of tries defined in config file.
@@ -373,7 +373,7 @@ class Article:
         return retries
 
     """
-    Checking curation directory, if require files found copying all files to temp directory on root of the script
+    Checks curation directory, if required files are found, copies all files to temp directory on root of the script
     :param version_data dictionary
     """
     def __check_curation_dir(self, version_data):
@@ -418,7 +418,8 @@ class Article:
                                 # article version data with curation info saved in logs.
                                 self.logs.write_log_in_file("info", f"{version_data} ")
 
-                                if "UAL_RDM" not in read_version_dirs:  # check if UAL_RDM dir not exists...
+                                # check if UAL_RDM dir exists
+                                if "UAL_RDM" not in read_version_dirs:
                                     self.logs.write_log_in_file("error",
                                                                 f"{version_data['id']} version {version_data['version']} - UAL_RDM directory "
                                                                 + "missing in curation storage. Path is {version_dir}", True)
@@ -429,7 +430,7 @@ class Article:
         return version_data
 
     def read_version_dirs_fun(self, read_version_dirs, version_dir, version_data):
-        deposit_agrement_file = False
+        deposit_agreement_file = False
         redata_deposit_review_file = False
         trello_file = False
         for dir in read_version_dirs:
@@ -440,7 +441,7 @@ class Article:
                     for ual_file in ual_dir:
                         if ("Deposit Agreement" in ual_file
                                 or "Deposit_Agreement" in ual_file):
-                            deposit_agrement_file = True
+                            deposit_agreement_file = True
 
                         if ("ReDATA-DepositReview" in ual_file):
                             redata_deposit_review_file = True
@@ -448,7 +449,7 @@ class Article:
                         if (ual_file.endswith("Trello.pdf")):
                             trello_file = True
 
-        version_data["deposit_agrement_file"] = deposit_agrement_file
+        version_data["deposit_agreement_file"] = deposit_agreement_file
         version_data["redata_deposit_review_file"] = redata_deposit_review_file
         version_data["trello_file"] = trello_file
 
@@ -497,7 +498,7 @@ class Article:
         preservation_storage_location = self.preservation_storage_location
         article_folder_path = preservation_storage_location + article_files_folder
 
-        # check preservation dir is reachable
+        # check if preservation dir is reachable
         self.check_access_of_directories(preservation_storage_location, "preservation")
 
         article_files_path_exists = os.path.exists(article_folder_path)
@@ -516,7 +517,7 @@ class Article:
                         compare_hash = file['computed_md5']
 
                     if (file_exists is True):
-                        # checking md5 values to check existing file is same or not.
+                        # checking md5 values to check if existing file is same or not.
                         existing_file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
                         if (existing_file_hash != compare_hash):
                             delete_folder = True
@@ -557,8 +558,8 @@ class Article:
         check_path_exists = os.path.exists(complete_path)
         if (check_path_exists is False):
             os.makedirs(complete_path, exist_ok=True)
-        # Remove extra indexes from version data before getting save in json file
-        # these indexes created in code while fetching data from APIs for further processing
+        # Remove extra indexes from version data before saving in json file
+        # These indexes were created in code while fetching data from APIs for further processing
         if ("matched" in version_data):
             del (version_data["matched"])
         if ("curation_info" in version_data):
@@ -571,8 +572,8 @@ class Article:
             del (version_data["version_md5"])
         if ("redata_deposit_review_file" in version_data):
             del (version_data["redata_deposit_review_file"])
-        if ("deposit_agrement_file" in version_data):
-            del (version_data["deposit_agrement_file"])
+        if ("deposit_agreement_file" in version_data):
+            del (version_data["deposit_agreement_file"])
         if ("trello_file" in version_data):
             del (version_data["trello_file"])
         if ("author_dir" in version_data):
@@ -658,7 +659,7 @@ class Article:
     Check files are copyable or not
     """
     def __can_copy_files(self, version_data):
-        if (version_data["deposit_agrement_file"] is False
+        if (version_data["deposit_agreement_file"] is False
                 or version_data["redata_deposit_review_file"] is False
                 or version_data["trello_file"] is False):
             self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - UAL_RDM directory doesn't have required "
@@ -674,9 +675,9 @@ class Article:
     """
     def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
         if (check_files is True and copy_files is True):
-            # download all files and veriy hash with downloaded file.
+            # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
-            # check download process has error or not.
+            # check if download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
                 self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder for each version.", True)
@@ -688,11 +689,11 @@ class Article:
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
             else:
-                # if download process has any error than delete complete folder
+                # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
-            # call post process script function for each match item.
+            # call post process script function for each matched item.
             value_post_process = self.post_process_script_function()
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
@@ -724,7 +725,7 @@ class Article:
         # calculate space for given path.
         curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
         required_space = curation_folder_size + self.total_all_articles_file_size
-        # check required space after curation process, it will stop process if space is less.
+        # check required space after curation process, it will stop process if there isn't sufficient space.
         self.check_required_space(required_space)
 
         for article in article_data:
@@ -738,7 +739,7 @@ class Article:
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"Processing article {article} version {version_data['version']}.", True)
-                        # call pre process script function for each match item.
+                        # call pre process script function for each matched item.
                         value_pre_process = self.pre_process_script_function()
                         if (value_pre_process == 0):
                             self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
@@ -757,20 +758,20 @@ class Article:
                                     check_files = False
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
-                                    # call post process script function for each match item.
+                                    # call post process script function for each matched item.
                                     value_post_process = self.post_process_script_function()
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
-                            # check require files exists in curation UAL_RDM folder
+                            # check required files exist in curation UAL_RDM folder
                             self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
-                            # call post process script function for each match item.
+                            # call post process script function for each matched item.
                             value_post_process = self.post_process_script_function()
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
@@ -814,7 +815,7 @@ class Article:
         data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
         data_path_exists = os.path.exists(data_folder_name)
         if (data_path_exists is False):
-            # create DATA directory if not exist
+            # create DATA directory if it does not exist
             os.makedirs(data_folder_name, exist_ok=True)
 
     """
