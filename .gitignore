@@ -104,12 +104,14 @@ celerybeat.pid
 # Environments
 .env
 .env.ini
+*.ini
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+!.env.sample.ini
 
 # Spyder project settings
 .spyderproject
@@ -128,10 +130,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Storage directories
 /temp
 /curation
 /storage
 
+#Other
 .DS_Store
-*.ini
-!.env.sample.ini
