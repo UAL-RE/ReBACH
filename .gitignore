@@ -131,14 +131,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Jetbrains/PyCharm
+.idea/
+.vscode/
+
 # Storage directories
 /temp
 /curation
 /storage
-
-# Jetbrains/PyCharm
-.idea/
-.vscode/
 
 #Other
 .DS_Store
