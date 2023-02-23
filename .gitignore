@@ -136,5 +136,9 @@ dmypy.json
 /curation
 /storage
 
+# Jetbrains/PyCharm
+.idea/
+.vscode/
+
 #Other
 .DS_Store
