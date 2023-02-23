@@ -1,0 +1,30 @@
+[Defaults]
+output_dir = "out"
+workflow = "bagger/config/default_workflow.json"
+dart_command = "dart-runner"
+overwrite = false
+
+[Logging]
+log_dir = "logs"
+logfile_prefix = "ReBACH-Bagger"
+
+[Wasabi]
+name = "***override***"
+host = "***override***"
+bucket = "***override***"
+host_bucket = "***override***"
+access_key = "***override***"
+secret_key = "***override***"
+
+[Metadata]
+# https://github.com/UAL-RE/ReBACH/blob/12-merge-rebach-bagger/bagger/README.md#metadata
+
+aptrust-info.Title = { tag_path = "title" }
+aptrust-info.Description = { tag_path = "description", strip_html = true }
+
+bag-info.Source-Organization = "University of Arizona"
+bag-info.Contact-Name = "Fernando Rios"
+bag-info.Contact-Email = "frios@arizona.edu"
+bag-info.DOI = { tag_path = "doi" }
+bag-info.License-Name = { tag_path = "license.name" }
+bag-info.Published-Date = { tag_path = "published_date" }

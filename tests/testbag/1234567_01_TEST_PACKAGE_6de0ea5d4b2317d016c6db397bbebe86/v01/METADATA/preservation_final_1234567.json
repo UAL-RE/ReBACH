@@ -1,0 +1,63 @@
+{
+  "url_public_html": "https://example.com/articles/dataset/Test_dataset/1234567/1",
+  "files": [],
+  "custom_fields": [],
+  "authors": [
+    {
+      "id": 7654321,
+      "full_name": "Reginald Data",
+      "is_active": true,
+      "url_name": "Reginald_Data",
+      "orcid_id": "0000-0000-0000-0000"
+    }
+  ],
+  "figshare_url": "https://example.com/articles/dataset/Test_dataset/1234567",
+  "description": "<p>Test dataset for ReBACH. <a href='https://www.example.com'>This is a link</a>, but shouldn't be in the tagfile.</p>",
+  "funding": null,
+  "funding_list": [],
+  "version": 1,
+  "status": "public",
+  "size": 0,
+  "created_date": "2022-07-29T23:44:46Z",
+  "modified_date": "2022-08-01T20:42:54Z",
+  "is_public": true,
+  "is_confidential": false,
+  "is_metadata_record": true,
+  "confidential_reason": "",
+  "metadata_reason": "",
+  "license": {
+    "value": 1,
+    "name": "CC BY",
+    "url": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "tags": [],
+  "categories": [],
+  "references": [],
+  "has_linked_file": false,
+  "citation": "",
+  "is_embargoed": false,
+  "embargo_date": null,
+  "embargo_type": "file",
+  "embargo_title": "",
+  "embargo_reason": "",
+  "embargo_options": [],
+  "id": 1234567,
+  "title": "Test dataset for ReBACH",
+  "doi": "10.xxx/ReBACH.Test.Data",
+  "handle": "",
+  "url": "https://api.example.com/v2/articles/1234567",
+  "published_date": "2022-07-29T23:44:46Z",
+  "thumb": "",
+  "defined_type": 3,
+  "defined_type_name": "dataset",
+  "group_id": 12345,
+  "url_private_api": "https://api.example.com/v2/account/articles/1234567",
+  "url_public_api": "https://api.example.com/v2/articles/1234567",
+  "url_private_html": "https://example.com/account/articles/1234567",
+  "timeline": {
+    "posted": "2022-07-29T23:44:46",
+    "firstOnline": "2022-07-29T23:44:46"
+  },
+  "resource_title": null,
+  "resource_doi": null
+}
