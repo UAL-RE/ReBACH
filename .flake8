@@ -85,7 +85,7 @@ builtins =
 disable-noqa = False
 
 # Set the maximum length that any line (with some exceptions) may be.
-max-line-length = 100
+max-line-length = 150
 # Set the maximum allowed McCabe complexity value for a block of code.
 # max-complexity = 10
 # Toggle whether pycodestyle should enforce matching the indentation of the opening bracket’s line.
