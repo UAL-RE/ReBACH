@@ -825,6 +825,16 @@ class Article:
     Pre-processing script command function.
     """
     def pre_process_script_function(self):
+        pre_process_script_command = self.system_config["pre_process_script_command"]
+        if (pre_process_script_command != ""):
+            self.logs.write_log_in_file("info", f"Executing pre-processing script: {pre_process_script_command}.", True)
+        else:
+            return 0
+
+    """
+    Post-processing script command function.
+    """
+    def post_process_script_function(self, preservation_package_path, value_pre_process):
         try:
             args, config = get_args()
         except TOMLDecodeError as e:
@@ -865,17 +875,7 @@ class Article:
                 elif (status == 3):
                      return 0
                 else:
-                     return status 
-
-    """
-    Post-processing script command function.
-    """
-    def post_process_script_function(self):
-        post_process_script_command = self.system_config["post_process_script_command"]
-        if (post_process_script_command != ""):
-            self.logs.write_log_in_file("info", f"Executing post-processing script: {post_process_script_command}.", True)
-        else:
-            return 0
+                     return status  
 
     """
     Delete folder
