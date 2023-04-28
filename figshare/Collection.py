@@ -303,7 +303,7 @@ class Collection:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
-  
+
     def post_process_script_function(self, preservation_package_path):
         try:
             args, config = get_args()
