@@ -9,9 +9,10 @@ import hashlib
 from Log import Log
 from Config import Config
 from pathlib import Path
-from redata.commons import logger, git_info
+from redata.commons import logger
 from bagger.bag import Bagger, Status
 from bagger.config import get_args, TOMLDecodeError
+
 
 class Article:
 
@@ -697,7 +698,7 @@ class Article:
                 value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", 
-                    True)
+                                                True)
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
@@ -853,7 +854,7 @@ class Article:
         logfile_prefix = config['Logging']['logfile_prefix']
         log = logger.log_setup(log_dir, logfile_prefix)
         
-        self.logs.write_log_in_file("info",f"Config file: {args.config}", True)
+        self.logs.write_log_in_file("Info", f"Config file: {args.config}", True)
         
         os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
         os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
