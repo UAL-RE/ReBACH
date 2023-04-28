@@ -4,9 +4,13 @@ import os
 import sys
 import time
 import requests
+import hashlib
 from Log import Log
 from Config import Config
-import hashlib
+from pathlib import Path
+from redata.commons import logger
+from bagger.bag import Bagger, Status
+from bagger.config import get_args, TOMLDecodeError
 
 
 class Article:
