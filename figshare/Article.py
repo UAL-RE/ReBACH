@@ -16,7 +16,6 @@ from bagger.config import get_args, TOMLDecodeError
 
 class Article:
 
-
     api_endpoint = ""
     api_token = ""
 
