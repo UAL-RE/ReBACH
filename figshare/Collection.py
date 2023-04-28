@@ -248,7 +248,8 @@ class Collection:
                 collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
                 value_post_process = self.post_process_script_function(collection_preservation_path)
                 if (value_post_process != 0):
-                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Collection post-processing script failed.", True)
+                    self.logs.write_log_in_file("error", f"collection {collection} version {version['version']} - Collection post-processing script failed.",
+                                                True)
 
     """
     Save json data for each collection version in related directory
@@ -302,6 +303,7 @@ class Collection:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
+                    
     def post_process_script_function(self, preservation_package_path):
         try:
             args, config = get_args()
