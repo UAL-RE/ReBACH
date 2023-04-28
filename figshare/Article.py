@@ -696,7 +696,7 @@ class Article:
                 self.__save_json_in_metadata(version_data, folder_name)
                 value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                 if (value_post_process != 0):
-                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", 
+                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                 True)
             else:
                 # if download process has any errors then delete complete folder
@@ -852,9 +852,9 @@ class Article:
         log_dir = config['Logging']['log_dir']
         logfile_prefix = config['Logging']['logfile_prefix']
         log = logger.log_setup(log_dir, logfile_prefix)
-        
+
         self.logs.write_log_in_file("Info", f"Config file: {args.config}", True)
-        
+
         os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
         os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
@@ -863,7 +863,7 @@ class Article:
         bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
                         delete=args.delete, dart_command=args.dart_command,
                         config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
-  
+
         if args.batch:
             self.logs.write_log_in_file("Info", "Batch mode", True)
             self.logs.write_log_in_file("Info", f" Batch path: {args.path}", True)
