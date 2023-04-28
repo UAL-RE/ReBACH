@@ -673,7 +673,7 @@ class Article:
     """
     Final process for matched articles.
     """
-    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
+    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
         if (check_files is True and copy_files is True):
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
