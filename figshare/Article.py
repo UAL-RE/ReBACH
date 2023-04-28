@@ -839,7 +839,7 @@ class Article:
     """
     Post-processing script command function.
     """
-    def post_process_script_function(self):
+    def post_process_script_function(self, preservation_package_path, value_pre_process):
         try:
             args, config = get_args()
         except TOMLDecodeError as e:
