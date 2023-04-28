@@ -13,8 +13,7 @@ from bagger.bag import Bagger, Status
 from bagger.config import get_args, TOMLDecodeError
 
 class Article:
-    
-    
+
     api_endpoint = ""
     api_token = ""
 
@@ -844,20 +843,20 @@ class Article:
             args, config = get_args()
         except TOMLDecodeError as e:
             self.logs.write_log_in_file('Info', f"Error in configuration file: {e.filename}.", True)
-            self.logs.write_log_in_file('Info', f"TOML Decode Error: {e}.",True)
+            self.logs.write_log_in_file('Info', f"TOML Decode Error: {e}.", True)
             sys.exit(Status.INVALID_CONFIG)
 
         log_dir = config['Logging']['log_dir']
         logfile_prefix = config['Logging']['logfile_prefix']
         log = logger.log_setup(log_dir, logfile_prefix)
         
-        self.logs.write_log_in_file("info",f"Config file: {args.config}",True)
+        self.logs.write_log_in_file("info",f"Config file: {args.config}", True)
         
         os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
         os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
         args.path = preservation_package_path
-            
+        
         preservation_package_name = os.path.basename(preservation_package_path)
         bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
                  delete=args.delete, dart_command=args.dart_command,
@@ -867,7 +866,7 @@ class Article:
             self.logs.write_log_in_file("Info", "Batch mode", True)
             self.logs.write_log_in_file("Info", f" Batch path: {args.path}", True)
             for _path in next(os.walk(args.path))[1]:
-                 bagger.run_dart(Path(args.path, _path))
+                bagger.run_dart(Path(args.path, _path))
         else:
             self.logs.write_log_in_file("Info", f"Trying to upload preservation package '{preservation_package_name}' to Wasabi. ", True)
             status = bagger.run_dart(args.path)
