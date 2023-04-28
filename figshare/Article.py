@@ -4,10 +4,12 @@ import os
 import sys
 import time
 import requests
-from Log import Log
-from Config import Config
 import hashlib
 
+from Log import Log
+from Config import Config
+from bagger.bag import Bagger, Status
+from bagger.config import get_args, TOMLDecodeError
 
 class Article:
     api_endpoint = ""
