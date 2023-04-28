@@ -867,7 +867,7 @@ class Article:
             self.logs.write_log_in_file("Info", "Batch mode", True)
             self.logs.write_log_in_file("Info", f" Batch path: {args.path}", True)
             for _path in next(os.walk(args.path))[1]:
-                bagger.run_dart(Path(args.path, _path))
+                 bagger.run_dart(Path(args.path, _path))
         else:
             self.logs.write_log_in_file("Info", f"Trying to upload preservation package '{preservation_package_name}' to Wasabi. ", True)
             status = bagger.run_dart(args.path)
