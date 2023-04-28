@@ -8,11 +8,13 @@ import hashlib
 
 from Log import Log
 from Config import Config
+from pathlib import Path
 from redata.commons import logger, git_info
 from bagger.bag import Bagger, Status
 from bagger.config import get_args, TOMLDecodeError
 
 class Article:
+
 
     api_endpoint = ""
     api_token = ""
@@ -694,7 +696,8 @@ class Article:
                 self.__save_json_in_metadata(version_data, folder_name)
                 value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                 if (value_post_process != 0):
-                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", 
+                    True)
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
@@ -856,12 +859,11 @@ class Article:
         os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
         args.path = preservation_package_path
-        
         preservation_package_name = os.path.basename(preservation_package_path)
         bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
-                 delete=args.delete, dart_command=args.dart_command,
-                 config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
-        
+                        delete=args.delete, dart_command=args.dart_command,
+                        config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
+  
         if args.batch:
             self.logs.write_log_in_file("Info", "Batch mode", True)
             self.logs.write_log_in_file("Info", f" Batch path: {args.path}", True)
