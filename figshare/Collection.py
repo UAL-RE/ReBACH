@@ -345,4 +345,4 @@ class Collection:
             elif (status == 3):
                 return 0
             else:
-                return status    
+                return status
