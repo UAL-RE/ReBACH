@@ -677,7 +677,7 @@ class Article:
     """
     Final process for matched articles.
     """
-    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process, check_dir, value_pre_process):
+    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
         if (check_files is True and copy_files is True):
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
@@ -694,7 +694,7 @@ class Article:
                 self.__save_json_in_metadata(version_data, folder_name)
                 value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                 if (value_post_process != 0):
-                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                  True)
             else:
                 # if download process has any errors then delete complete folder
@@ -841,7 +841,7 @@ class Article:
     """
     def post_process_script_function(self, preservation_package_path, value_pre_process):
         try:
-             args, config = get_args()
+            args, config = get_args()
         except TOMLDecodeError as e:
             self.logs.write_log_in_file("Info", f"Error in configuration file: {e.filename}.", True)
             self.logs.write_log_in_file("Info", f"TOML Decode Error: {e}.", True)
