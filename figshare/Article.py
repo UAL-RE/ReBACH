@@ -767,7 +767,7 @@ class Article:
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
                                     # call post process script function for each matched item.
-                                    value_post_process = self.post_process_script_function()
+                                    value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
@@ -776,11 +776,11 @@ class Article:
                             # check required files exist in curation UAL_RDM folder
                             self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
-                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
+                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = self.post_process_script_function()
+                            value_post_process = self.post_process_script_function(check_dir, value_pre_process)
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
