@@ -677,7 +677,7 @@ class Article:
     """
     Final process for matched articles.
     """
-    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
+    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
         if (check_files is True and copy_files is True):
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
@@ -692,13 +692,17 @@ class Article:
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
+                value_post_process = self.post_process_script_function(check_dir, value_pre_process)
+                if (value_post_process != 0):
+                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                True)
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each matched item.
-            value_post_process = self.post_process_script_function()
+            value_post_process = self.post_process_script_function(check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
