@@ -1,7 +1,5 @@
-import pdb
 import os
-from Log import Log
-from Config import Config
+import sys
 from pathlib import Path
 from redata.commons import logger
 from bagger.bag import Bagger, Status
@@ -9,7 +7,6 @@ from bagger.config import get_args, TOMLDecodeError
 
 
 class Integration:
-
 
     """
     Post-processing script command function.
@@ -31,7 +28,9 @@ class Integration:
         preservation_package_path = args[1]
 
         if (package == "Article"):
-            value_pre_process = args[2]
+            # Acting on value_pre_process is not currently implemented and is commented out until needed.
+            # value_pre_process = args[2]
+            pass
 
         post_process_script_command = self.system_config["post_process_script_command"]
 
@@ -69,7 +68,7 @@ class Integration:
                 self.logs.write_log_in_file("Info", f"Trying to upload preservation package '{preservation_package_name}' to Wasabi. ", True)
                 status = bagger.run_dart(args.path)
                 self.logs.write_log_in_file("Info", f"Status: {status.name}.", True)
-                self.logs.write_log_in_file("Info", f"Exit code: {status}." ,True)
+                self.logs.write_log_in_file("Info", f"Exit code: {status}.", True)
                 if (status == 0):
                     self.logs.write_log_in_file("Info", f"Preservation package '{preservation_package_name}' successfully uploaded to Wasabi", True)
                     return 0
