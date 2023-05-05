@@ -4,9 +4,10 @@ import os
 import sys
 import time
 import requests
+import hashlib
 from Log import Log
 from Config import Config
-import hashlib
+from figshare.Integration import Integration
 
 
 class Article:
@@ -673,7 +674,7 @@ class Article:
     """
     Final process for matched articles.
     """
-    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no):
+    def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
         if (check_files is True and copy_files is True):
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
@@ -688,7 +689,7 @@ class Article:
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
-                value_post_process = self.post_process_script_function()
+                value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                 True)
@@ -698,7 +699,7 @@ class Article:
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each matched item.
-            value_post_process = self.post_process_script_function()
+            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
@@ -763,7 +764,7 @@ class Article:
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
                                     # call post process script function for each matched item.
-                                    value_post_process = self.post_process_script_function()
+                                    value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
@@ -772,11 +773,11 @@ class Article:
                             # check required files exist in curation UAL_RDM folder
                             self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
                             copy_files = self.__can_copy_files(version_data)
-                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no)
+                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = self.post_process_script_function()
+                            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
@@ -829,16 +830,6 @@ class Article:
         pre_process_script_command = self.system_config["pre_process_script_command"]
         if (pre_process_script_command != ""):
             self.logs.write_log_in_file("info", f"Executing pre-processing script: {pre_process_script_command}.", True)
-        else:
-            return 0
-
-    """
-    Post-processing script command function.
-    """
-    def post_process_script_function(self):
-        post_process_script_command = self.system_config["post_process_script_command"]
-        if (post_process_script_command != ""):
-            self.logs.write_log_in_file("info", f"Executing post-processing script: {post_process_script_command}.", True)
         else:
             return 0
 

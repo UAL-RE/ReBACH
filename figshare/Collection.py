@@ -1,11 +1,12 @@
 import json
 import os
 import requests
+import hashlib
+import re
 from Log import Log
 from Config import Config
-import hashlib
 from figshare.Article import Article
-import re
+from figshare.Integration import Integration
 
 
 class Collection:
@@ -241,6 +242,10 @@ class Collection:
                 version["articles"] = articles
                 self.logs.write_log_in_file("info", f"Processing collection {collection} version {version['version']}.", True)
                 self.__save_json_in_metadata(collection, version, folder_name)
+                collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
+                value_post_process = Integration.post_process_script_function(self, "Collection", collection_preservation_path)
+                if (value_post_process != 0):
+                    self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
 
     """
     Save json data for each collection version in related directory
