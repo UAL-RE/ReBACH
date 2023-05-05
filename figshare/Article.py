@@ -7,10 +7,7 @@ import requests
 import hashlib
 from Log import Log
 from Config import Config
-from pathlib import Path
-from redata.commons import logger
-from bagger.bag import Bagger, Status
-from bagger.config import get_args, TOMLDecodeError
+from figshare.Integration import Integration
 
 
 class Article:
@@ -692,7 +689,7 @@ class Article:
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
-                value_post_process = self.post_process_script_function(check_dir, value_pre_process)
+                value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                 True)
@@ -702,7 +699,7 @@ class Article:
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each matched item.
-            value_post_process = self.post_process_script_function(check_dir, value_pre_process)
+            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
@@ -767,7 +764,7 @@ class Article:
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
                                     # call post process script function for each matched item.
-                                    value_post_process = self.post_process_script_function(check_dir, value_pre_process)
+                                    value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
@@ -780,7 +777,7 @@ class Article:
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = self.post_process_script_function(check_dir, value_pre_process)
+                            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
@@ -835,52 +832,6 @@ class Article:
             self.logs.write_log_in_file("info", f"Executing pre-processing script: {pre_process_script_command}.", True)
         else:
             return 0
-
-    """
-    Post-processing script command function.
-    """
-    def post_process_script_function(self, preservation_package_path, value_pre_process):
-        try:
-            args, config = get_args()
-        except TOMLDecodeError as e:
-            self.logs.write_log_in_file("Info", f"Error in configuration file: {e.filename}.", True)
-            self.logs.write_log_in_file("Info", f"TOML Decode Error: {e}.", True)
-            sys.exit(Status.INVALID_CONFIG)
-
-        log_dir = config['Logging']['log_dir']
-        logfile_prefix = config['Logging']['logfile_prefix']
-
-        log = logger.log_setup(log_dir, logfile_prefix)
-
-        self.logs.write_log_in_file("Info", f"Config file: {args.config}", True)
-
-        os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
-        os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
-
-        args.path = preservation_package_path
-
-        preservation_package_name = os.path.basename(preservation_package_path)
-        bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
-                        delete=args.delete, dart_command=args.dart_command,
-                        config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
-
-        if args.batch:
-            self.logs.write_log_in_file("Info", "Batch mode", True)
-            self.logs.write_log_in_file("Info", f" Batch path: {args.path}", True)
-            for _path in next(os.walk(args.path))[1]:
-                bagger.run_dart(Path(args.path, _path))
-        else:
-            self.logs.write_log_in_file("Info", f"Trying to upload preservation package '{preservation_package_name}' to Wasabi. ", True)
-            status = bagger.run_dart(args.path)
-            self.logs.write_log_in_file("Info", f"Status: {status.name}.", True)
-            self.logs.write_log_in_file("Info", f"Exit code: {status}.", True)
-            if (status == 0):
-                self.logs.write_log_in_file("Info", f"Preservation package '{preservation_package_name}' successfully uploaded to Wasabi", True)
-                return 0
-            elif (status == 3):
-                return 0
-            else:
-                return status
 
     """
     Delete folder
