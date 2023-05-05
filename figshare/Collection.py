@@ -1,7 +1,6 @@
 import json
 import os
 import requests
-import sys
 import hashlib
 import re
 from Log import Log
