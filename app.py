@@ -109,7 +109,7 @@ def main():
 
     # Check curation path exists, if not then give error and stop processing
     curation_path_exists = os.path.exists(curation_storage_location)
-    curation_folder_access = os.access(curation_storage_location, os.W_OK)
+    curation_folder_access = os.access(curation_storage_location, os.R_OK)
     if (curation_path_exists is False or curation_folder_access is False):
         log.write_log_in_file('error',
                               "The curation storage location specified in the config file could"
