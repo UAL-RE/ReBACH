@@ -328,15 +328,27 @@ class Article:
                         os.makedirs(article_folder_path, exist_ok=True)
 
                     file_name_with_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
-                    filecontent = requests.get(file['download_url'], headers={'Authorization': 'token ' + self.api_token},
-                                               allow_redirects=True,
-                                               )
-                    if (filecontent.status_code == 200):
+                    self.logs.write_log_in_file("info",
+                                                f"Downloading file {file['id']} for article {version_data['id']} - "
+                                                + f"version {version_data['version']}", True)
+
+                    status_code = -1
+                    with requests.get(file['download_url'], stream=True, allow_redirects=True,
+                                       headers={'Authorization': 'token ' + self.api_token}) as r:
+                        r.raise_for_status()
+                        try:
+                            with open(file_name_with_path, 'wb') as f:
+                                for chunk in r.iter_content(chunk_size=8192):
+                                    f.write(chunk)
+                            status_code = r.status_code
+                        except requests.exceptions.HTTPError as e:
+                            status_code = e.response.status_code
+                        except Exception as e:
+                            status_code = -1
+
+                    if (status_code == 200):
                         file_no = file_no + 1
-                        self.logs.write_log_in_file("info",
-                                                    f"Downloaded file {file_no} for article {version_data['id']} - "
-                                                    + f"version {version_data['version']}", True)
-                        open(file_name_with_path, 'wb').write(filecontent.content)
+                        self.logs.write_log_in_file("info", "Checking hash")
                         existing_file_hash = hashlib.md5(open(file_name_with_path, 'rb').read()).hexdigest()
                         compare_hash = file['supplied_md5']
                         if (compare_hash == ""):
@@ -348,10 +360,12 @@ class Article:
                                                         + f"match after downloading: Filename {file['name']}. Folder will be deleted.", True)
                             delete_folder = True
                             break
+                        else:
+                            self.logs.write_log_in_file("info","Download ok", True)
                     else:
                         self.logs.write_log_in_file("error",
                                                     f"{version_data['id']} version {version_data['version']} - File couldn't download. Status "
-                                                    + f"code {filecontent.status_code}. Filename {file['name']}. Folder will be deleted.", True)
+                                                    + f"code {status_code}. Filename {file['name']}. Folder will be deleted.", True)
                         delete_folder = True
                         break
 
