@@ -334,7 +334,7 @@ class Article:
 
                     status_code = -1
                     with requests.get(file['download_url'], stream=True, allow_redirects=True,
-                                       headers={'Authorization': 'token ' + self.api_token}) as r:
+                                      headers={'Authorization': 'token ' + self.api_token}) as r:
                         r.raise_for_status()
                         try:
                             with open(file_name_with_path, 'wb') as f:
@@ -345,6 +345,7 @@ class Article:
                             status_code = e.response.status_code
                         except Exception as e:
                             status_code = -1
+                            self.logs.write_log_in_file("error", str(e), True)
 
                     if (status_code == 200):
                         file_no = file_no + 1
@@ -361,7 +362,7 @@ class Article:
                             delete_folder = True
                             break
                         else:
-                            self.logs.write_log_in_file("info","Download ok", True)
+                            self.logs.write_log_in_file("info", "Download ok", True)
                     else:
                         self.logs.write_log_in_file("error",
                                                     f"{version_data['id']} version {version_data['version']} - File couldn't download. Status "
