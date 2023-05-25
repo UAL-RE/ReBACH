@@ -350,14 +350,7 @@ class Article:
                     if (status_code == 200):
                         file_no = file_no + 1
                         self.logs.write_log_in_file("info", "Checking hash")
-                        hash = hashlib.md5()
-                        with open(file_name_with_path, "rb") as f:
-                            for chunk in iter(lambda: f.read(8192), ""):
-                                if (chunk):
-                                    hash.update(chunk)
-                                else:
-                                    break
-                        existing_file_hash = hash.hexdigest()
+                        existing_file_hash = self.__get_single_file_hash(file_name_with_path)
                         compare_hash = file['supplied_md5']
                         if (compare_hash == ""):
                             compare_hash = file['computed_md5']
@@ -541,7 +534,7 @@ class Article:
 
                     if (file_exists is True):
                         # checking md5 values to check if existing file is same or not.
-                        existing_file_hash = hashlib.md5(open(file_path, 'rb').read()).hexdigest()
+                        existing_file_hash = self.__get_single_file_hash(file_path)
                         if (existing_file_hash != compare_hash):
                             delete_folder = True
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
@@ -567,6 +560,21 @@ class Article:
             self.delete_folder(preservation_storage_location + folder_path)
 
         return process_article
+    
+    def __get_single_file_hash(filepath):
+        """
+        Calculates the has of the given file. Calculation is chunked to save memory
+        :param filepath string
+        :return string
+        """
+        hash = hashlib.md5()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), ""):
+                if (chunk):
+                    hash.update(chunk)
+                else:
+                    break
+        return hash.hexdigest()
 
     """
     Save json data for each article in related directory
