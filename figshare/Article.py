@@ -560,7 +560,7 @@ class Article:
             self.delete_folder(preservation_storage_location + folder_path)
 
         return process_article
-    
+
     def __get_single_file_hash(filepath):
         """
         Calculates the has of the given file. Calculation is chunked to save memory
