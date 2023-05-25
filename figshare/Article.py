@@ -350,7 +350,14 @@ class Article:
                     if (status_code == 200):
                         file_no = file_no + 1
                         self.logs.write_log_in_file("info", "Checking hash")
-                        existing_file_hash = hashlib.md5(open(file_name_with_path, 'rb').read()).hexdigest()
+                        hash = hashlib.md5()
+                        with open(file_name_with_path, "rb") as f:
+                            for chunk in iter(lambda: f.read(8192), ""):
+                                if (chunk):
+                                    hash.update(chunk)
+                                else:
+                                    break
+                        existing_file_hash = hash.hexdigest()
                         compare_hash = file['supplied_md5']
                         if (compare_hash == ""):
                             compare_hash = file['computed_md5']
