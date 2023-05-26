@@ -20,7 +20,7 @@ body:
     attributes:
       label: Description
       description: Tell us how the software behaves now. Then, tell us the changes you would like to see and why.
-      placeholder: Example: Currently, the software does X when I press button Y. It would be great that instead of doing X, it would do Z because doing Y sometimes slows down data transfers.
+      placeholder: E.g., Currently, the software does X when I press button Y. It would be great that instead of doing X, it would do Z because doing Y sometimes slows down data transfers.
     validations:
       required: true
   - type: textarea
