@@ -1,0 +1,33 @@
+name: Feature
+description: Suggest an enhancement here
+title: "<short description of the enhancement>"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+  - type: checkboxes
+    id: new-feat
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the feature you are suggesting.
+      options:
+      - label: I have searched the existing issues
+        required: true
+  - type: textarea
+    id: feat-description
+    attributes:
+      label: Description
+      description: Tell us how the software behaves now. Then, tell us the changes you would like to see and why.
+      placeholder: Example: Currently, the software does X when I press button Y. It would be great that instead of doing X, it would do Z because doing Y sometimes slows down data transfers.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-solution
+    attributes:
+      label: Suggested Implementation
+      description: Suggest a solution or provide implementation ideas
+      placeholder: Tell us how you might implement your suggestion, referencing the appropriate files/lines if possible. If you do not know, leave this box blank.
+    validations:
+      required: false
