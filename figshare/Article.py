@@ -561,7 +561,7 @@ class Article:
 
         return process_article
 
-    def __get_single_file_hash(filepath):
+    def __get_single_file_hash(self, filepath):
         """
         Calculates the has of the given file. Calculation is chunked to save memory
         :param filepath string

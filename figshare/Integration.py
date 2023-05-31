@@ -57,7 +57,7 @@ class Integration:
             preservation_package_name = os.path.basename(preservation_package_path)
             bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
                             delete=args.delete, dart_command=args.dart_command,
-                            config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
+                            config=config, log=log, overwrite=args.overwrite, dryrun=False)
 
             if args.batch:
                 self.logs.write_log_in_file("Info", "Batch mode", True)
@@ -65,12 +65,12 @@ class Integration:
                 for _path in next(os.walk(args.path))[1]:
                     bagger.run_dart(Path(args.path, _path))
             else:
-                self.logs.write_log_in_file("Info", f"Trying to upload preservation package '{preservation_package_name}' to Wasabi. ", True)
+                self.logs.write_log_in_file("Info", f"Processing preservation package '{preservation_package_name}' ", True)
                 status = bagger.run_dart(args.path)
                 self.logs.write_log_in_file("Info", f"Status: {status.name}.", True)
                 self.logs.write_log_in_file("Info", f"Exit code: {status}.", True)
                 if (status == 0):
-                    self.logs.write_log_in_file("Info", f"Preservation package '{preservation_package_name}' successfully uploaded to Wasabi", True)
+                    self.logs.write_log_in_file("Info", f"Preservation package '{preservation_package_name}' processed successfully", True)
                     return 0
                 elif (status == 3):
                     return 0
