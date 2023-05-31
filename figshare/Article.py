@@ -679,22 +679,22 @@ class Article:
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
-                            
+
         if (self.article_match_info):
-            self.logs.write_log_in_file('Info', f"Curation folder found for below articles", True)
+            self.logs.write_log_in_file('info', "Curation folder found for below articles", True)
             # log articles id, version and dir name if matched.
             for index in self.article_match_info:
                 self.logs.write_log_in_file('info', self.article_match_info[index], True)
-                
+
         if (self.article_non_match_info):
-            self.logs.write_log_in_file('Warning', f"Curation folder not found for below articles", True)
+            self.logs.write_log_in_file('Warning', "Curation folder not found for below articles", True)
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
                 self.logs.write_log_in_file('info', self.article_non_match_info[index], True)
 
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
-        
+
         return article_data
 
     """
