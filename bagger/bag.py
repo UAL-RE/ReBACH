@@ -95,11 +95,11 @@ class Bagger:
         bag_name = f'{package_name}.tar'
 
         article_id, version, metadata_hash = self.decompose_name(package_name)
-        metadata_dir = f'v{version}/METADATA/'
-        metadata_filename = f'preservation_final_{article_id}.json'
+        metadata_dir = f'{version}/METADATA/'
+        metadata_filename = f'{article_id}.json'
         metadata_path = Path(package_path, metadata_dir, metadata_filename)
 
-        if not Path(package_path).exists():
+        if not metadata_path.exists():
             return Status.INVALID_PATH
 
         folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
