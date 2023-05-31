@@ -25,9 +25,9 @@
     "allowFetchTxt": false,
     "bagItProfileInfo": {
       "bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/rebach-v1.0.json",
-      "bagItProfileVersion": "",
-      "contactEmail": "frios@arizona.edu",
-      "contactName": "Fernando Rios",
+      "bagItProfileVersion": "1.0",
+      "contactEmail": "redata@arizona.edu",
+      "contactName": "ReDATA Administrator",
       "externalDescription": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
       "sourceOrganization": "redata.arizona.edu",
       "version": "1.0"
