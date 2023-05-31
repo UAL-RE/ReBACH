@@ -57,7 +57,7 @@ class Integration:
             preservation_package_name = os.path.basename(preservation_package_path)
             bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
                             delete=args.delete, dart_command=args.dart_command,
-                            config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
+                            config=config, log=log, overwrite=args.overwrite, dryrun=False)
 
             if args.batch:
                 self.logs.write_log_in_file("Info", "Batch mode", True)
