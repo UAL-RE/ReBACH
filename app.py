@@ -76,6 +76,7 @@ def main():
     preservation_storage_location = system_config["preservation_storage_location"]
     figshare_api_token = figshare_config["token"]
     curation_storage_location = system_config["curation_storage_location"]
+    post_process_script_command = system_config["post_process_script_command"]
     institution = figshare_config["institution"] if ("institution" in figshare_config and figshare_config["institution"] is not None) else 0
 
     # Check required env variables exist.
@@ -93,6 +94,9 @@ def main():
 
     if (curation_storage_location == ""):
         log.write_log_in_file('error', "Curation storage location path is required.", True, True)
+
+    if (post_process_script_command == ""):
+        log.write_log_in_file('error', "post process script command is required.", True, True)
 
     if (institution is None or institution == ''):
         log.write_log_in_file('error', "Institution Id is required.", True, True)
@@ -115,6 +119,16 @@ def main():
                               "The curation storage location specified in the config file could"
                               + "not be reached or read.",
                               True, True)
+
+    # Check if the path to the post-processing external script exists and if the folder is accessible
+    if (post_process_script_command != "Bagger"):
+        post_process_script_path_exists = os.path.exists(post_process_script_command)
+        post_process_script_folder_access = os.access(post_process_script_command, os.W_OK)
+        if (post_process_script_path_exists is False or post_process_script_folder_access is False):
+            log.write_log_in_file('error',
+                                  "The post process script location specified in the config file could"
+                                  + "not be reached or read.",
+                                  True, True)
 
     return env_file
 
