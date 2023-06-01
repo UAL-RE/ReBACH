@@ -10,6 +10,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Python >= 3.9
 - requests Python library >= 2.18.4
 - Ubuntu >= 20.04
+- Slugify >= 7.0.0
 
 ## Requirements:
 - Figshare organization number

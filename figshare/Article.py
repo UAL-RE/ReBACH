@@ -8,6 +8,7 @@ import hashlib
 from Log import Log
 from Config import Config
 from figshare.Integration import Integration
+from slugify import slugify
 
 
 class Article:
@@ -780,8 +781,10 @@ class Article:
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
                     version_no = "v" + str(version_data["version"]).zfill(2)
+                    first_depositor_full_name = version_data['authors'][0]['full_name']
+                    formatted_depositor_full_name = slugify(first_depositor_full_name, separator="_", lowercase=False)
                     folder_name = str(version_data["id"]) + "_" + version_no + "_" \
-                        + version_data['authors'][0]['url_name'] + "_" + version_data['version_md5']
+                        + formatted_depositor_full_name + "_" + version_data['version_md5']
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"Processing article {article} version {version_data['version']}.", True)
