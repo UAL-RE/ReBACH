@@ -687,7 +687,7 @@ class Article:
                 self.logs.write_log_in_file('info', self.article_match_info[index], True)
 
         if (self.article_non_match_info):
-            self.logs.write_log_in_file('Warning', "Curation folder not found for below articles", True)
+            self.logs.write_log_in_file('warning', "Curation folder not found for below articles", True)
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
                 self.logs.write_log_in_file('info', self.article_non_match_info[index], True)
