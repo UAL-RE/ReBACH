@@ -5,6 +5,7 @@ import sys
 import time
 import requests
 import hashlib
+import re
 from Log import Log
 from Config import Config
 from figshare.Integration import Integration
@@ -698,16 +699,37 @@ class Article:
 
         if (self.article_match_info):
             self.logs.write_log_in_file('info', "Curation folder found for below articles", True)
+            matched_articles = []
+            
             # log articles id, version and dir name if matched.
             for index in self.article_match_info:
                 self.logs.write_log_in_file('info', self.article_match_info[index], True)
+                
+                matched_id = re.search(r'article\s(.*?)\sv0', self.article_match_info[index])
+                if matched_id:
+                    matched_article_id = matched_id.group(1).strip()
+                    matched_articles.append(matched_article_id)
+                else:
+                    self.logs.write_log_in_file('error', f"Unable to fetch matched article id - {self.article_match_info[index]}", True)
 
         if (self.article_non_match_info):
             self.logs.write_log_in_file('warning', "Curation folder not found for below articles", True)
+            unmatched_articles = []            
+            
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
                 self.logs.write_log_in_file('info', self.article_non_match_info[index], True)
+                
+                unmatched_id = re.search(r'article\s(.*?)\sv0', self.article_non_match_info[index])
+                if unmatched_id:
+                    unmatched_article_id = unmatched_id.group(1).strip()
+                    unmatched_articles.append(unmatched_article_id)
+                else:
+                    self.logs.write_log_in_file('error', f"Unable to fetch unmatched article id - {self.article_non_match_info[index]}", True)
 
+        self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
+        self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
+ 
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
 
