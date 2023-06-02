@@ -127,8 +127,8 @@ def main():
         if (post_process_script_path_exists is False or post_process_script_folder_access is False):
             log.write_log_in_file('error',
                                   "The post process script location specified in the config file could"
-                                  + "not be reached or read.",
-                                  True, True)
+                                  + " not be reached or read.",
+                                  True, False)
 
     return env_file
 
