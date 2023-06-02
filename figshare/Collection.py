@@ -63,7 +63,14 @@ class Collection:
                             self.logs.write_log_in_file("info", "Page of collections is empty.", True)
                             break
 
-                        collection_data = self.collections_loop(collections, page_size, page, collection_data)
+                        collection_ids = Integration.get_id_list(self)
+                        if (collection_ids):
+                            filtered_data = [item for item in collections if item['id'] in collection_ids]
+                            filtered_json = json.dumps(filtered_data)
+                            filtered_collections = json.loads(filtered_json)
+                            collection_data = self.collections_loop(filtered_collections, page_size, page, collection_data)
+                        else:
+                            collection_data = self.collections_loop(collections, page_size, page, collection_data)
                         success = True
                     else:
                         success = False
