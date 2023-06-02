@@ -795,6 +795,11 @@ class Article:
             curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
 
         required_space = curation_folder_size + self.total_all_articles_file_size
+        
+        self.logs.write_log_in_file("info", f"Total size of aritcles to be processed: {self.total_all_articles_file_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total size of the curated folders for the matched articles: {curation_folder_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total space required: {required_space} bytes", True)
+        
         # check required space after curation process, it will stop process if there isn't sufficient space.
         self.check_required_space(required_space)
 
