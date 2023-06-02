@@ -41,6 +41,7 @@ class Article:
         self.article_match_info = {}
         self.article_non_match_info = {}
         self.input_articles_id = False
+        self.matched_curation_folder_list = []
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -690,6 +691,8 @@ class Article:
                             article_data[version_data['id']].append(data)
                             no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
+                            if(self.input_articles_id):
+                                self.matched_curation_folder_list.append(data['author_dir'])
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
 
