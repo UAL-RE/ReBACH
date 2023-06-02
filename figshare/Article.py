@@ -784,8 +784,16 @@ class Article:
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
-        # calculate space for given path.
-        curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+        # Calculate the size of the curation folder
+        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders. Otherwise, it is calculated considering all curation folders.
+        if(self.matched_curation_folder_list):
+            curation_folder_size = 0
+            for folder in self.matched_curation_folder_list:
+                path = curation_storage_location + folder
+                curation_folder_size += self.get_file_size_of_given_path(path) 
+        else: 
+            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+
         required_space = curation_folder_size + self.total_all_articles_file_size
         # check required space after curation process, it will stop process if there isn't sufficient space.
         self.check_required_space(required_space)
