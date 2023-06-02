@@ -40,6 +40,7 @@ class Article:
             self.curation_storage_location = self.curation_storage_location + "/"
         self.article_match_info = {}
         self.article_non_match_info = {}
+        self.input_articles_id = False
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -79,7 +80,18 @@ class Article:
                             self.logs.write_log_in_file("info",
                                                         f"Page {page} is empty.", True)
                             break
-                        article_data = self.article_loop(articles, page_size, page, article_data)
+                          
+                        article_ids = Integration.get_id_list(self)
+
+                        if (article_ids):
+                            self.input_articles_id = True               # Set to True when article ids are explicitly passed
+                            filtered_data = [item for item in articles if item['id'] in article_ids]
+                            filtered_json = json.dumps(filtered_data)
+                            filtered_articles = json.loads(filtered_json)
+                            article_data = self.article_loop(filtered_articles, page_size, page, article_data)
+                        else:
+                            article_data = self.article_loop(articles, page_size, page, article_data)
+
                         success = True
                     else:
                         retries = self.retries_if_error(
