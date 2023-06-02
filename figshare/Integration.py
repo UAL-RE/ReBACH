@@ -79,3 +79,29 @@ class Integration:
         else:
             self.logs.write_log_in_file("Info", f"Executing post-processing script Command: {post_process_script_command}.", True)
             return 0
+
+    def get_id_list(self):
+
+        """
+        Get the list of article and collection IDs from command-line arguments.
+
+        If the command-line argument count is greater than 2, extract the argument string
+        representing the list of IDs from sys.argv[3]. Parse the argument string into a list
+        using ast.literal_eval() and return the resulting ID list.
+
+        Returns:
+        list: A list of article and collection IDs extracted from command-line arguments.
+        """
+
+        id_list = []
+
+        if len(sys.argv) > 2:
+            if "--Ids" in sys.argv:
+                index = sys.argv.index("--Ids")
+                if len(sys.argv) > index + 1:
+                    arg_str = sys.argv[index + 1]
+                    id_list = ast.literal_eval(arg_str)  # Parse the argument string into a list
+                else:
+                    self.logs.write_log_in_file("error", "No value provided after --Ids", True, True)
+
+        return id_list
