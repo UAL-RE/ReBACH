@@ -74,6 +74,6 @@ def get_args(path: Optional[PathLike] = None,
                         help='Log execution steps without actually executing. (default: False)',
                         action='store_true')
     parser.add_argument('path', help='Path to the package or batch directory.')
-    args = parser.parse_args(remaining_argv)
+    args, remaining_argv = parser.parse_known_args(remaining_argv)
 
     return args, config

@@ -1,10 +1,26 @@
 import os
+import argparse
 from Log import Log
 from figshare.Article import Article
 from time import asctime
 from Config import Config
 from figshare.Collection import Collection
-import sys
+from pathlib import Path
+
+args = None
+
+
+def get_args():
+    """
+    Parse command line arguments
+    """
+    global args
+    parser = argparse.ArgumentParser(description='ReDATA preservation software (ReBACH)', prog='ReBACH', allow_abbrev=False)
+    parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
+    parser.add_argument('--xfg', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
+    parser.add_argument('--ids', type=lambda s: [int(item) for item in s.split(',')],
+                        help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
+    args = parser.parse_args()
 
 
 def check_logs_path_access(config_file):
@@ -33,37 +49,19 @@ def check_logs_path_access(config_file):
         exit()
 
 
-def get_config_file_path():
-    args = sys.argv
-
-    if (len(args) == 1 or args[1] == ''):
-        print(asctime() + ":ERROR: Log - " + "First parameter must be configuration (.ini) file.")
-        exit()
-
-    path_val = args[1]
-    path_val = path_val.strip()
-    check_path = path_val.split('.')[-1]
-    if (check_path != 'ini'):
-        print(asctime() + ":ERROR: Log - " + "Configuration file extension must be .ini .")
-        exit()
-
-    file_exists = os.path.exists(path_val)
-
-    if (file_exists is False):
-        print(asctime() + ":ERROR: Log - " + "Configuration file is missing on the given path.")
-        exit()
-
-    return path_val
-
-
 def main():
-    print(asctime() + ":Info: Log - ReBACH script has started.")
     """
     This function will be called first.
     Setting up required variables and conditions.
     """
+    global args
+    print(asctime() + ":Info: Log - ReBACH script has started.")
+
     # Check .env file exists.
-    env_file = get_config_file_path()
+    if not args.xfg.is_file():
+        print(asctime() + ":ERROR: Log - " + "Configuration file is missing or cannot be read.")
+        exit()
+    env_file = str(args.xfg)
     print(asctime() + ":Info: Log - " + "Env file:" + env_file)
     print(asctime() + ":Info: Log - " + "Checking configuration file.")
     config_obj = Config(env_file)
@@ -134,6 +132,7 @@ def main():
 
 
 if __name__ == "__main__":
+    get_args()
     config_file_path = main()
     log = Log(config_file_path)
 
