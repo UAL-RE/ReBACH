@@ -15,9 +15,9 @@ def get_args():
     Parse command line arguments
     """
     global args
-    parser = argparse.ArgumentParser(description='ReDATA preservation software (ReBACH)', prog='ReBACH')
+    parser = argparse.ArgumentParser(description='ReDATA preservation software (ReBACH)', prog='ReBACH', allow_abbrev=False)
     parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
-    parser.add_argument('--config', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
+    parser.add_argument('--xfg', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
     parser.add_argument('--ids', type=lambda s: [int(item) for item in s.split(',')],
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
     args = parser.parse_args()
@@ -58,10 +58,10 @@ def main():
     print(asctime() + ":Info: Log - ReBACH script has started.")
 
     # Check .env file exists.
-    if not args.config.is_file():
+    if not args.xfg.is_file():
         print(asctime() + ":ERROR: Log - " + "Configuration file is missing or cannot be read.")
         exit()
-    env_file = str(args.config)
+    env_file = str(args.xfg)
     print(asctime() + ":Info: Log - " + "Env file:" + env_file)
     print(asctime() + ":Info: Log - " + "Checking configuration file.")
     config_obj = Config(env_file)
