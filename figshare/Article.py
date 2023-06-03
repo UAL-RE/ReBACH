@@ -91,7 +91,7 @@ class Article:
                             filtered_json = json.dumps(filtered_data)
                             filtered_articles = json.loads(filtered_json)
                             article_data = self.article_loop(filtered_articles, page_size, page, article_data)
-                        else:  
+                        else:
                             article_data = self.article_loop(articles, page_size, page, article_data)
 
                         success = True
@@ -729,7 +729,7 @@ class Article:
 
         self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
- 
+
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
 
@@ -807,21 +807,22 @@ class Article:
         article_data = self.find_matched_articles(articles)
 
         # Calculate the size of the curation folder
-        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders. Otherwise, it is calculated considering all curation folders.
-        if(self.matched_curation_folder_list):
+        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders. 
+        # Otherwise, it is calculated considering all curation folders.
+        if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
                 path = curation_storage_location + folder
-                curation_folder_size += self.get_file_size_of_given_path(path) 
-        else: 
+                curation_folder_size += self.get_file_size_of_given_path(path)
+        else:
             curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
 
         required_space = curation_folder_size + self.total_all_articles_file_size
-        
+
         self.logs.write_log_in_file("info", f"Total size of aritcles to be processed: {self.total_all_articles_file_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total size of the curated folders for the matched articles: {curation_folder_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total space required: {required_space} bytes", True)
-        
+
         # check required space after curation process, it will stop process if there isn't sufficient space.
         self.check_required_space(required_space)
 
