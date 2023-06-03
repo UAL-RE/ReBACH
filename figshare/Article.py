@@ -19,11 +19,11 @@ class Article:
     """
     Class constructor.
     Defined required variables that will be used in whole class.
-    
+
     :param config: configuration
     :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
-    def __init__(self, config):
+    def __init__(self, config, ids):
         self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()

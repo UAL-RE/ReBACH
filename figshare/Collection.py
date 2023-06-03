@@ -14,11 +14,11 @@ class Collection:
     """
     Class constructor.
     Defined variables that will be used in whole class
-    
+ 
     :param config: configuration
     :param ids: list of ids to process. If None or an empty list is passed, all collections will be processed
     """
-    def __init__(self, config):
+    def __init__(self, config, ids):
         self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
@@ -34,7 +34,6 @@ class Collection:
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"
         self.input_collection_ids = ids
-
 
     """
     API get request sent to '/collections'.
