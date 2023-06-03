@@ -807,7 +807,7 @@ class Article:
         article_data = self.find_matched_articles(articles)
 
         # Calculate the size of the curation folder
-        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders. 
+        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
         # Otherwise, it is calculated considering all curation folders.
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
