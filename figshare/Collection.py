@@ -14,7 +14,7 @@ class Collection:
     """
     Class constructor.
     Defined variables that will be used in whole class
- 
+
     :param config: configuration
     :param ids: list of ids to process. If None or an empty list is passed, all collections will be processed
     """
