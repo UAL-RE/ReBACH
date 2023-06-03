@@ -68,8 +68,6 @@ def get_args(path: Optional[PathLike] = None,
                         help='Path to workflow file.')
     parser.add_argument('--dart_command', metavar='dart_command',
                         help='Command to invoke DART Runner.')
-    parser.add_argument('--Ids', metavar='id_list',
-                        help='Id.')
     parser.add_argument('--overwrite',
                         help='Overwrite duplicate bags.', action=BooleanOptionalAction)
     parser.add_argument('--dry-run', '--dryrun',
