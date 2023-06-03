@@ -82,18 +82,18 @@ class Article:
                             self.logs.write_log_in_file("info",
                                                         f"Page {page} is empty.", True)
                             break
-                            
+
                         article_ids = Integration.get_id_list(self)
-                        
+
                         if (article_ids):
                             self.input_articles_id = True               # Set to True to indicate article ids are explicitly passed
                             filtered_data = [item for item in articles if item['id'] in article_ids]
                             filtered_json = json.dumps(filtered_data)
                             filtered_articles = json.loads(filtered_json)
                             article_data = self.article_loop(filtered_articles, page_size, page, article_data)
-                        else:                   
+                        else:  
                             article_data = self.article_loop(articles, page_size, page, article_data)
-                        
+
                         success = True
                     else:
                         retries = self.retries_if_error(
@@ -692,19 +692,19 @@ class Article:
                             article_data[version_data['id']].append(data)
                             no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
-                            if(self.input_articles_id):
+                            if (self.input_articles_id):
                                 self.matched_curation_folder_list.append(data['author_dir'])
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
 
+        matched_articles = []
         if (self.article_match_info):
             self.logs.write_log_in_file('info', "Curation folder found for below articles", True)
-            matched_articles = []
-            
+
             # log articles id, version and dir name if matched.
             for index in self.article_match_info:
                 self.logs.write_log_in_file('info', self.article_match_info[index], True)
-                
+
                 matched_id = re.search(r'article\s(.*?)\sv0', self.article_match_info[index])
                 if matched_id:
                     matched_article_id = matched_id.group(1).strip()
@@ -712,14 +712,14 @@ class Article:
                 else:
                     self.logs.write_log_in_file('error', f"Unable to fetch matched article id - {self.article_match_info[index]}", True)
 
+        unmatched_articles = []
         if (self.article_non_match_info):
             self.logs.write_log_in_file('warning', "Curation folder not found for below articles", True)
-            unmatched_articles = []            
-            
+
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
                 self.logs.write_log_in_file('info', self.article_non_match_info[index], True)
-                
+
                 unmatched_id = re.search(r'article\s(.*?)\sv0', self.article_non_match_info[index])
                 if unmatched_id:
                     unmatched_article_id = unmatched_id.group(1).strip()
@@ -785,7 +785,7 @@ class Article:
     """
     Called before articles processing.
     """
-    def __initial_process(self, total_file_size):
+    def __initial_process(self):
         # get curation directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
@@ -802,7 +802,7 @@ class Article:
     Process all articles after fetching from API.
     """
     def process_articles(self, articles, total_file_size):
-        curation_storage_location = self.__initial_process(total_file_size)
+        curation_storage_location = self.__initial_process()
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
