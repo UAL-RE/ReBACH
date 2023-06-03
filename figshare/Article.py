@@ -19,6 +19,9 @@ class Article:
     """
     Class constructor.
     Defined required variables that will be used in whole class.
+    
+    :param config: configuration
+    :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
     def __init__(self, config):
         self.config_obj = Config(config)
@@ -41,7 +44,7 @@ class Article:
             self.curation_storage_location = self.curation_storage_location + "/"
         self.article_match_info = {}
         self.article_non_match_info = {}
-        self.input_articles_id = False
+        self.input_articles_id = ids
         self.matched_curation_folder_list = []
 
     """
@@ -83,11 +86,8 @@ class Article:
                                                         f"Page {page} is empty.", True)
                             break
 
-                        article_ids = Integration.get_id_list(self)
-
-                        if (article_ids):
-                            self.input_articles_id = True               # Set to True to indicate article ids are explicitly passed
-                            filtered_data = [item for item in articles if item['id'] in article_ids]
+                        if (self.input_articles_id):
+                            filtered_data = [item for item in articles if item['id'] in self.input_articles_id]
                             filtered_json = json.dumps(filtered_data)
                             filtered_articles = json.loads(filtered_json)
                             article_data = self.article_loop(filtered_articles, page_size, page, article_data)
