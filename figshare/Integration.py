@@ -80,7 +80,7 @@ class Integration:
         else:
             self.logs.write_log_in_file("Info", f"Executing post-processing script Command: {post_process_script_command}.", True)
             return 0
-
+        
     def get_id_list(self):
 
         """
