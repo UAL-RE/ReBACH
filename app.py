@@ -139,7 +139,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Fetching articles...",
                           True)
-    article_obj = Article(config_file_path)
+    article_obj = Article(config_file_path, args.ids)
     article_data = article_obj.get_articles()
     log.write_log_in_file('info',
                           f"Total articles fetched: {len(article_data)}.",
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Fetching collections...",
                           True)
-    collection_obj = Collection(config_file_path)
+    collection_obj = Collection(config_file_path, args.ids)
     collection_data = collection_obj.get_collections()
     log.write_log_in_file('info',
                           f"Total collections fetched: {len(collection_data)}.",

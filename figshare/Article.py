@@ -5,6 +5,7 @@ import sys
 import time
 import requests
 import hashlib
+import re
 from Log import Log
 from Config import Config
 from figshare.Integration import Integration
@@ -18,8 +19,11 @@ class Article:
     """
     Class constructor.
     Defined required variables that will be used in whole class.
+
+    :param config: configuration
+    :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
-    def __init__(self, config):
+    def __init__(self, config, ids):
         self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
@@ -40,6 +44,8 @@ class Article:
             self.curation_storage_location = self.curation_storage_location + "/"
         self.article_match_info = {}
         self.article_non_match_info = {}
+        self.input_articles_id = ids
+        self.matched_curation_folder_list = []
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -79,7 +85,15 @@ class Article:
                             self.logs.write_log_in_file("info",
                                                         f"Page {page} is empty.", True)
                             break
-                        article_data = self.article_loop(articles, page_size, page, article_data)
+
+                        if (self.input_articles_id):
+                            filtered_data = [item for item in articles if item['id'] in self.input_articles_id]
+                            filtered_json = json.dumps(filtered_data)
+                            filtered_articles = json.loads(filtered_json)
+                            article_data = self.article_loop(filtered_articles, page_size, page, article_data)
+                        else:
+                            article_data = self.article_loop(articles, page_size, page, article_data)
+
                         success = True
                     else:
                         retries = self.retries_if_error(
@@ -678,20 +692,43 @@ class Article:
                             article_data[version_data['id']].append(data)
                             no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
+                            if (self.input_articles_id):
+                                self.matched_curation_folder_list.append(data['author_dir'])
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
 
+        matched_articles = []
         if (self.article_match_info):
             self.logs.write_log_in_file('info', "Curation folder found for below articles", True)
+
             # log articles id, version and dir name if matched.
             for index in self.article_match_info:
                 self.logs.write_log_in_file('info', self.article_match_info[index], True)
 
+                matched_id = re.search(r'article\s(.*?)\sv0', self.article_match_info[index])
+                if matched_id:
+                    matched_article_id = matched_id.group(1).strip()
+                    matched_articles.append(matched_article_id)
+                else:
+                    self.logs.write_log_in_file('error', f"Unable to fetch matched article id - {self.article_match_info[index]}", True)
+
+        unmatched_articles = []
         if (self.article_non_match_info):
             self.logs.write_log_in_file('warning', "Curation folder not found for below articles", True)
+
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
                 self.logs.write_log_in_file('info', self.article_non_match_info[index], True)
+
+                unmatched_id = re.search(r'article\s(.*?)\sv0', self.article_non_match_info[index])
+                if unmatched_id:
+                    unmatched_article_id = unmatched_id.group(1).strip()
+                    unmatched_articles.append(unmatched_article_id)
+                else:
+                    self.logs.write_log_in_file('error', f"Unable to fetch unmatched article id - {self.article_non_match_info[index]}", True)
+
+        self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
+        self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
 
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
@@ -748,7 +785,7 @@ class Article:
     """
     Called before articles processing.
     """
-    def __initial_process(self, total_file_size):
+    def __initial_process(self):
         # get curation directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
@@ -765,13 +802,27 @@ class Article:
     Process all articles after fetching from API.
     """
     def process_articles(self, articles, total_file_size):
-        curation_storage_location = self.__initial_process(total_file_size)
+        curation_storage_location = self.__initial_process()
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
-        # calculate space for given path.
-        curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+        # Calculate the size of the curation folder
+        # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
+        # Otherwise, it is calculated considering all curation folders.
+        if (self.matched_curation_folder_list):
+            curation_folder_size = 0
+            for folder in self.matched_curation_folder_list:
+                path = curation_storage_location + folder
+                curation_folder_size += self.get_file_size_of_given_path(path)
+        else:
+            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+
         required_space = curation_folder_size + self.total_all_articles_file_size
+
+        self.logs.write_log_in_file("info", f"Total size of aritcles to be processed: {self.total_all_articles_file_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total size of the curated folders for the matched articles: {curation_folder_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total space required: {required_space} bytes", True)
+
         # check required space after curation process, it will stop process if there isn't sufficient space.
         self.check_required_space(required_space)
 
