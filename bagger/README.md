@@ -152,12 +152,11 @@ logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 
 ### Wasabi
 
-Both DART and ReBACH-Bagger use the `access_key` and `secret_key` credentials defined in the
-configuration to authenticate to Wasabi (see [DART Workflow]("#dart-workflow") for details on how
-these variables are used in DART). However, only ReBACH-Bagger uses the other variables defined
-here to access the endpoint for the purpose of checking for duplicate bags. DART uses the storage
-configuration embedded in the workflow JSON file for selecting the correct endpoint. Verify that
-these values match.
+Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi. 
+ReBACH-Bagger checks Wasabi for duplicate bags. See [DART Workflow]("#dart-workflow") for details on how
+these variables are used in DART. If the `dart_workflow_hostbucket_override` variable is set to `true` 
+(default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the 
+`workflow` variable above. If set to `false`, the values defined in the workflow are used instead.
 
 ```toml
 [Wasabi]
@@ -167,6 +166,7 @@ bucket = "***override***"
 host_bucket = "***override***"
 access_key = "***override***"
 secret_key = "***override***"
+dart_workflow_hostbucket_override = true
 ```
 
 ## Metadata Configuration
