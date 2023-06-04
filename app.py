@@ -1,5 +1,6 @@
 import os
 import argparse
+from version import __version__, __commit__
 from Log import Log
 from figshare.Article import Article
 from time import asctime
@@ -16,7 +17,7 @@ def get_args():
     """
     global args
     parser = argparse.ArgumentParser(description='ReDATA preservation software (ReBACH)', prog='ReBACH', allow_abbrev=False)
-    parser.add_argument('--version', action='version', version='%(prog)s 1.0.0')
+    parser.add_argument('--version', action='version', version='%(prog)s ' + __version__ + ' Git-SHA: ' + __commit__)
     parser.add_argument('--xfg', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
     parser.add_argument('--ids', type=lambda s: [int(item) for item in s.split(',')],
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
