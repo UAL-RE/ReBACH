@@ -44,6 +44,7 @@ class Bagger:
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
                              secret_key=config['Wasabi']['secret_key'],
                              s3host=config['Wasabi']['host'],
+                             s3bucket=config['Wasabi']['bucket']
                              s3hostbucket=config['Wasabi']['host_bucket'],
                              dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
@@ -103,7 +104,7 @@ class Bagger:
         if not metadata_path.exists():
             return Status.INVALID_PATH
 
-        folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
+        folder_to_list = f"s3://{self.wasabi.s3bucket}"
         wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
 
         if wasabi_error:
