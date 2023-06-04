@@ -44,7 +44,7 @@ class Bagger:
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
                              secret_key=config['Wasabi']['secret_key'],
                              s3host=config['Wasabi']['host'],
-                             s3bucket=config['Wasabi']['bucket']
+                             s3bucket=config['Wasabi']['bucket'],
                              s3hostbucket=config['Wasabi']['host_bucket'],
                              dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
