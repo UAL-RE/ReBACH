@@ -44,7 +44,8 @@ class Bagger:
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
                              secret_key=config['Wasabi']['secret_key'],
                              s3host=config['Wasabi']['host'],
-                             s3hostbucket=config['Wasabi']['host_bucket'])
+                             s3hostbucket=config['Wasabi']['host_bucket'],
+                             dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
     @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:

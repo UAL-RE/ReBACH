@@ -6,7 +6,7 @@ from bagger import Dryable
 class Wasabi:
 
     def __init__(self, access_key: str, secret_key: str, s3host: str,
-                 s3hostbucket: str) -> None:
+                 s3hostbucket: str, dart_hostbucket_override: bool) -> None:
         """
         Initialize Wasabi class with Wasabi connection information
 
@@ -14,11 +14,13 @@ class Wasabi:
         :param secret_key: Wasabi secret key
         :param s3host: Wasabi s3 host
         :param s3hostbucket: Template for accessing s3 bucket
+        :param dart_hostbucket_override: Override the host and bucket specified in a DART workflow
         """
         self.s3host = s3host
         self.secret_key = secret_key
         self.access_key = access_key
         self.s3hostbucket = s3hostbucket
+        self.dart_hostbucket_override = dart_hostbucket_override
 
     def __str__(self):
         _access_key, _secret_key = 'unset', 'unset'
@@ -28,7 +30,8 @@ class Wasabi:
             _secret_key = 'set'
 
         return f"Wasabi( access_key={_access_key}, secret_key={_secret_key}, " \
-               f"s3host='{self.s3host}', s3hostbucket='{self.s3hostbucket}' )"
+               f"s3host='{self.s3host}', s3hostbucket='{self.s3hostbucket}', " \
+               f"dart_hostbucket_override='{self.dart_hostbucket_override})"
 
     @Dryable(dry_return=('', ''))
     def list_bucket(self, folder_to_list: str) -> tuple[str, str]:
