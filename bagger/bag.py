@@ -134,7 +134,7 @@ class Bagger:
         if self.wasabi.dart_hostbucket_override:
             with open(self.workflow, 'r') as f:
                 wkfl_json = json.load(f)
-                if not 'storageServices' in wkfl_json:
+                if 'storageServices' not in wkfl_json:
                     print('storageServices key not found in DART workflow file')
                     return Status.INVALID_CONFIG
                 for item in wkfl_json['storageServices']:
@@ -142,7 +142,7 @@ class Bagger:
                     item['bucket'] = self.wasabi.s3bucket
                     self.workflow_file = NamedTemporaryFile(prefix="rebach", mode="w", delete=True)
                     self.workflow_file.write(json.dumps(wkfl_json))
-                    self.workflow_file.flush()            
+                    self.workflow_file.flush()
             self.workflow = self.workflow_file.name
 
         return bag_name, metadata_tags

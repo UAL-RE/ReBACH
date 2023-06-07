@@ -1,4 +1,6 @@
-import os, tempfile, gc
+import os
+import tempfile
+import gc
 
 
 class TemporaryFile:
