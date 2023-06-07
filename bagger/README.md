@@ -154,9 +154,12 @@ logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 
 Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi. 
 ReBACH-Bagger checks Wasabi for duplicate bags. See [DART Workflow]("#dart-workflow") for details on how
-these variables are used in DART. If the `dart_workflow_hostbucket_override` variable is set to `true` 
+these variables are used in DART. 
+
+If the `dart_workflow_hostbucket_override` variable is set to `true` 
 (default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the 
-`workflow` variable above. If set to `false`, the values defined in the workflow are used instead.
+`workflow` variable above. If set to `false`, the values defined in the workflow itself are used instead. This
+option can only be set in the configuration file.
 
 ```toml
 [Wasabi]
