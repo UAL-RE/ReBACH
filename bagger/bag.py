@@ -8,6 +8,7 @@ from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
 from bagger.wasabi import Wasabi, get_filenames_from_ls
+from bagger.ntf import NamedTemporaryFile, TemporaryFile
 
 
 # TODO: Create BaggerInit class to initialize the Bagger environment. Bagger
@@ -34,6 +35,7 @@ class Bagger:
         self.delete: bool = delete
         self.output_dir: PathLike = output_dir
         self.workflow: PathLike = workflow
+        self.workflow_file: TemporaryFile = None
         self.overwrite: bool = overwrite
         self.dryrun: bool = dryrun
 
@@ -44,7 +46,9 @@ class Bagger:
         self.wasabi = Wasabi(access_key=config['Wasabi']['access_key'],
                              secret_key=config['Wasabi']['secret_key'],
                              s3host=config['Wasabi']['host'],
-                             s3hostbucket=config['Wasabi']['host_bucket'])
+                             s3bucket=config['Wasabi']['bucket'],
+                             s3hostbucket=config['Wasabi']['host_bucket'],
+                             dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
     @staticmethod
     def decompose_name(package_name: str) -> tuple[str, str, str]:
@@ -85,7 +89,9 @@ class Bagger:
 
     def _init_dart(self, package_path: PathLike) -> Union[Status, tuple[str, list]]:
         """
-        Perform initial error checks and return data for DART data structure
+        Perform initial error checks and return data for DART data structure.
+        Also overrides the workflow file host and bucket if the dart_hostbucket_override
+        flag is set in the configuration file.
 
         :param package_path: Path to preservation package
         :return: Status if errors are encountered, otherwise bag name and tags
@@ -102,7 +108,7 @@ class Bagger:
         if not metadata_path.exists():
             return Status.INVALID_PATH
 
-        folder_to_list = f"s3://{self.config['Wasabi']['bucket']}"
+        folder_to_list = f"s3://{self.wasabi.s3bucket}"
         wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
 
         if wasabi_error:
@@ -124,6 +130,20 @@ class Bagger:
 
         if not metadata_tags:
             return Status.INVALID_CONFIG
+
+        if self.wasabi.dart_hostbucket_override:
+            with open(self.workflow, 'r') as f:
+                wkfl_json = json.load(f)
+                if 'storageServices' not in wkfl_json:
+                    print('storageServices key not found in DART workflow file')
+                    return Status.INVALID_CONFIG
+                for item in wkfl_json['storageServices']:
+                    item['host'] = self.wasabi.s3host
+                    item['bucket'] = self.wasabi.s3bucket
+                    self.workflow_file = NamedTemporaryFile(prefix="rebach", mode="w", delete=True)
+                    self.workflow_file.write(json.dumps(wkfl_json))
+                    self.workflow_file.flush()
+            self.workflow = self.workflow_file.name
 
         return bag_name, metadata_tags
 
