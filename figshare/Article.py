@@ -553,12 +553,12 @@ class Article:
                         existing_file_hash = self.__get_single_file_hash(file_path)
                         if (existing_file_hash != compare_hash):
                             delete_folder = True
-                            self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)                            
+                            self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
+                            break                            
                         else:
                             self.logs.write_log_in_file('info', f"{file_path.replace(preservation_storage_location + article_files_folder, '')} "
                                                         + "file exists (hash match).", True)                        
-                        process_article = False
-                        break
+                        process_article = False                        
                     else:
                         self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
                         delete_folder = True
