@@ -12,7 +12,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Submit the issue first, then follow the steps below to create a new release.        
+        Submit the issue, then follow the steps below to create a new release.        
   - type: checkboxes
     id: release-steps
     attributes:
