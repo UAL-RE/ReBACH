@@ -14,7 +14,7 @@ This pull request updates ReQUIAM v0.xx.x -> v0.xx.0. Closes #<insert associated
 **Begin a new release**
 :warning: Do not publish the release until this PR is merged :warning:
 - [ ] Go to the [New Release](../releases/new) page
-- [ ] In the `Choose a tag` dropdown, enter a new tag name corresponding to the new version. E.g., `v.1.0.1`. Then click "Create new tag on publish"
+- [ ] In the `Choose a tag` dropdown, enter a new tag name corresponding to the new version. E.g., `v1.0.1`. Then click "Create new tag on publish"
 - [ ] The `Target` should be the main or master branch.
 - [ ] Click the `Generate release notes` button. Review the notes for accuracy
 - [ ] Save the release as Draft.
