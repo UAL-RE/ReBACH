@@ -1,0 +1,25 @@
+name: Release
+description: Release a new version of the software
+title: "Release: v0.xx.0"
+labels: ["release"]
+body:
+  - type: checkboxes
+    id: prelims
+    attributes:
+      label: Name the Issue
+      options:
+        - label: I have named this issue using the new version number.
+  - type: markdown
+    attributes:
+      value: |
+        Submit the issue first, then follow the steps below to create a new release.        
+  - type: checkboxes
+    id: release-steps
+    attributes:
+      label: Steps
+      description: All these steps can be done in GitHub itself. After completing the final step here, follow the steps from the pull request (PR) template.
+      options:
+      - label: Check that the title of this issue reflects the new version number.
+      - label: Create a new branch by clicking on `create branch` on the right-hand sidebar (as shown in the [GitHub docs](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-a-branch-for-an-issue)). Leave all options as default.
+      - label: In the new branch, update `version.py` with the new version number and commit.
+      - label: Create a [new PR](../pulls). Ensure the base branch is `main` or `master` and the comparison branch is the new branch. Use the "Release" PR template.
