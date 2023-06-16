@@ -73,12 +73,12 @@ class Integration:
                     self.logs.write_log_in_file("info", f"Preservation package '{preservation_package_name}' processed successfully", True)
                     return 0
                 elif (status == 3):
-                    self.logs.write_log_in_file("warning", 
-                                                f"'{preservation_package_name}' already exists in " \
+                    self.logs.write_log_in_file("warning",
+                                                f"'{preservation_package_name}' already exists in " +
                                                 f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
                     return 0
                 else:
                     return status
         else:
-            self.logs.write_log_in_file("info", f"Executing post-processing script Command: {post_process_script_command}.", True)
+            self.logs.write_log_in_file("info", f"[not implemented] Executing post-processing script Command: {post_process_script_command}.", True)
             return 0

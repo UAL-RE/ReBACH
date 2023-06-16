@@ -554,11 +554,11 @@ class Article:
                         if (existing_file_hash != compare_hash):
                             delete_folder = True
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
-                            break                            
+                            break
                         else:
                             self.logs.write_log_in_file('info', f"{file_path.replace(preservation_storage_location + article_files_folder, '')} "
-                                                        + "file exists (hash match).", True)                        
-                        process_article = False                        
+                                                        + "file exists (hash match).", True)
+                        process_article = False
                     else:
                         self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
                         delete_folder = True
@@ -870,7 +870,8 @@ class Article:
                                     break
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
-                            self.logs.write_log_in_file("info", f"Checking required files exist in associated curation folder {curation_storage_location}.", True)
+                            self.logs.write_log_in_file("info", f"Checking required files exist in associated curation " +
+                                                        f"folder {curation_storage_location}.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
                         else:
