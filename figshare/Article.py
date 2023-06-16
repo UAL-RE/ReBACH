@@ -46,6 +46,7 @@ class Article:
         self.article_non_match_info = {}
         self.input_articles_id = ids
         self.matched_curation_folder_list = []
+        self.processor = Integration(self.config_obj, self.logs)
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -771,7 +772,7 @@ class Article:
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
-                value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                 True)
@@ -781,7 +782,7 @@ class Article:
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each matched item.
-            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
@@ -863,21 +864,21 @@ class Article:
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
                                     # call post process script function for each matched item.
-                                    value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
-                            self.logs.write_log_in_file("info", f"Checking required files exist in associated curation " +
-                                                        f"folder {curation_storage_location}.", True)
+                            self.logs.write_log_in_file("info", "Checking required files exist in associated curation "
+                                                        + f"folder {curation_storage_location}.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)

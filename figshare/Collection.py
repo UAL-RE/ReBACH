@@ -34,6 +34,7 @@ class Collection:
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"
         self.input_collection_ids = ids
+        self.processor = Integration(self.config_obj, self.logs)
 
     """
     API get request sent to '/collections'.
@@ -254,7 +255,7 @@ class Collection:
                 self.logs.write_log_in_file("info", f"Processing collection {collection} version {version['version']}.", True)
                 self.__save_json_in_metadata(collection, version, folder_name)
                 collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
-                value_post_process = Integration.post_process_script_function(self, "Collection", collection_preservation_path)
+                value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
 
