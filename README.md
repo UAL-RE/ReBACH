@@ -28,10 +28,10 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
     - institution - required: The Figshare Institution ID for your organization
     - preservation_storage_location - required: The file system location where the preservation folders/packages should be created
-    - logs_location - required: The file system location where logs should be created
-    - additional_precentage_required - required: How much extra space the preservation storage location should have in order to handle files as a percent. This percent is applied to the total storage needed for all files. I.e. if the value of this field is 10 and the amount of storage needed for files is 1 GB, the script will make sure that the preservation storage location has at least 1.1 GB free. Defaults to 10 
+    - logs_location - required: The file system location where logs should be created. This value will override the one in `bagger/config/default.toml` when bagger is used for post-processing (see post_process_script_command setting below).
+    - additional_precentage_required - required: How much extra space the preservation storage location should have in order to handle files as a percent. This percent is applied to the total storage needed for all files. I.e. if the value of this field is 10 and the amount of storage needed for files is 1 GB, the script will make sure that the preservation storage location has at least 1.1 GB free. Defaults to 10
     - pre_process_script_command - optional: The terminal command (including arguments) to invoke a script to be run BEFORE the files are copied and logic applied to the preservation storage (note: this action is not currently implemented)
-    - post_process_script_command - required: Specifies the method of performing post-processing steps. This can take only two values: the string 'Bagger', or the path to an external script. If the value is set to 'Bagger', the post-processing steps will be executed internally in the function 'post_process_script_function'. If the value is set to a path to an external script, the post-processing steps will be executed by invoking the external script through the function 'post_process_script_function'. The post-processing steps are executed AFTER the files are copied and logic applied to the preservation storage.
+    - post_process_script_command - required: Specifies the method of performing post-processing steps. This can take only two values: the string 'Bagger', or the path to an external script. If the value is set to 'Bagger', the post-processing steps will consist of running the internal `bagger` module. If the value is set to a path to an external script, the post-processing steps will be executed by invoking the external script through the function 'post_process_script_function'. The post-processing steps are executed AFTER the files are copied and logic applied to the preservation storage.
     - curation_storage_location - required: The file system location where the Curation files reside
 - Ensure the aforementioned Dependencies and Requirements are met
 - Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py /path/of/.env.ini` or `python app.py /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
@@ -39,7 +39,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
 
 ## Execution notes
-- ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored. 
-- Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed. 
+- ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.
+- Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed.
 - When processing collections, ReBACH records which items are part of the collection by appending them to collection's JSON as returned by the Figshare API.
 - If an item encounters errors, it will not be processed and any partial files are deleted in preservation staging storage.
