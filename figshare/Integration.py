@@ -61,7 +61,7 @@ class Integration:
                 # Override the log directory specified in the toml config of bagger with the main ReBACH config, if available.
                 log_dir = self._config.system_config()["logs_location"]
                 self._rebachlogger.write_log_in_file("info", f"Overriding bagger log file location {config['Logging']['log_dir']} with "
-                                                           + f"{log_dir} from ReBACH Env file", True)
+                                                     + f"{log_dir} from ReBACH Env file", True)
 
             logfile_prefix = config['Logging']['logfile_prefix']
 
@@ -93,10 +93,11 @@ class Integration:
                     return 0
                 elif (status == 3):
                     self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "
-                                                + f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
+                                                         + f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
                     return 0
                 else:
                     return status
         else:
-            self._rebachlogger.write_log_in_file("info", f"[not implemented] Executing post-processing script Command: {post_process_script_command}.", True)
+            self._rebachlogger.write_log_in_file("info",
+                                                 f"[not implemented] Executing post-processing script Command: {post_process_script_command}.", True)
             return 0
