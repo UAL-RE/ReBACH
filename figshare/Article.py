@@ -46,6 +46,7 @@ class Article:
         self.article_non_match_info = {}
         self.input_articles_id = ids
         self.matched_curation_folder_list = []
+        self.processor = Integration(self.config_obj, self.logs)
 
     """
     This function is sending requests to 'account/institution/articles api.
@@ -540,7 +541,7 @@ class Article:
         if (article_files_path_exists is True):
             get_files = os.listdir(article_folder_path)
             if (len(get_files) > 0):
-                self.logs.write_log_in_file('info', "Checking hashes of files against existing files.", True)
+                self.logs.write_log_in_file('info', "Comparing Figshare file hashes against existing local files.", True)
                 for file in files:
                     file_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
                     file_exists = os.path.exists(file_path)
@@ -554,20 +555,22 @@ class Article:
                         if (existing_file_hash != compare_hash):
                             delete_folder = True
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
+                            break
                         else:
-                            self.logs.write_log_in_file('info', f"{file_path} hash matched, file already exists.", True)
-
+                            self.logs.write_log_in_file('info', f"{file_path.replace(preservation_storage_location + article_files_folder, '')} "
+                                                        + "file exists (hash match).", True)
                         process_article = False
-                        break
                     else:
                         self.logs.write_log_in_file('error', f"{file_path} does not exist.", True)
                         delete_folder = True
                         process_article = False
                         break
             else:
+                self.logs.write_log_in_file("info", f"{article_folder_path} is empty")
                 process_article = True
 
         else:
+            self.logs.write_log_in_file("info", f"{article_folder_path} not found")
             process_article = True
 
         # delete directory if validation failed.
@@ -746,6 +749,7 @@ class Article:
                                         + "files in curation storage. Folder will be deleted.", True)
             copy_files = False
         else:
+            self.logs.write_log_in_file("info", "Curation files exist", True)
             copy_files = True
 
         return copy_files
@@ -768,7 +772,7 @@ class Article:
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 self.__save_json_in_metadata(version_data, folder_name)
-                value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                 True)
@@ -778,7 +782,7 @@ class Article:
                 self.delete_folder(check_dir)
         else:
             # call post process script function for each matched item.
-            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
 
@@ -828,7 +832,6 @@ class Article:
 
         for article in article_data:
             article_versions_list = article_data[article]
-            # article_data[article] = []
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
                     version_no = "v" + str(version_data["version"]).zfill(2)
@@ -849,30 +852,33 @@ class Article:
                             check_main_folder = os.path.exists(check_dir)
                             check_files = True
                             copy_files = True
-                            self.logs.write_log_in_file("info", "Checking that folder already exists in preservation storage directory.", True)
+                            self.logs.write_log_in_file("info", f"Checking if {check_dir} exists.", True)
                             if (check_main_folder is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
+                                    self.logs.write_log_in_file("info", "Exists and is not empty.", True)
                                     check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
                                 else:
+                                    self.logs.write_log_in_file("info", "Exists and is empty", True)
                                     check_files = False
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
                                     # call post process script function for each matched item.
-                                    value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
                                     break
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
-                            self.logs.write_log_in_file("info", "Checking required files exist in curation UAL_RDM folder.", True)
+                            self.logs.write_log_in_file("info", "Checking required files exist in associated curation "
+                                                        + f"folder {curation_storage_location}.", True)
                             copy_files = self.__can_copy_files(version_data)
                             self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = Integration.post_process_script_function(self, "Article", check_dir, value_pre_process)
+                            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
