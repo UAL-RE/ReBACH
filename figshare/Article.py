@@ -765,13 +765,23 @@ class Article:
     Final process for matched articles.
     """
     def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
-        if (check_files is True and copy_files is True):
+        success = True
+        if copy_files and not check_files:
+            # check and create empty directories for each version
+            self.logs.write_log_in_file("info", "Checking and creating empty directories.", True)
+            success = success & self.create_required_folders(version_data, folder_name)
+            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+            self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder.", True)
+            success = success & self.__copy_files_ual_rdm(version_data, folder_name)
+            # save json in metadata folder for each version
+            self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
+            success = success & self.__save_json_in_metadata(version_data, folder_name)
+
+        if check_files and copy_files:
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
             # check if download process has error or not.
             if (delete_now is False):
-                success = True
-
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
                 self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder for each version.", True)
                 success = success & self.__copy_files_ual_rdm(version_data, folder_name)
@@ -798,10 +808,18 @@ class Article:
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
-            # call post process script function for each matched item.
-            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-            if (value_post_process != 0):
-                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+            if check_files or copy_files:
+                if success:
+                    # call post process script function for each matched item.
+                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                    if (value_post_process != 0):
+                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+                else:
+                    self.logs.write_log_in_file("info",
+                                                f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
+                                                True)
+            else:
+                self.logs.write_log_in_file("error", "Unexpected condidion in final processing. No further actions taken.", True)
 
     """
     Called before articles processing.
@@ -924,7 +942,6 @@ class Article:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
-        self.logs.write_log_in_file("info", "Creating UAL_RDM and DATA folders in preservation storage.", True)
         preservation_storage_location = self.preservation_storage_location
         version_no = "v" + str(version_data["version"]).zfill(2)
         # setup UAL_RDM directory
