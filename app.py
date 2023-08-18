@@ -188,4 +188,8 @@ if __name__ == "__main__":
         log.write_log_in_file('warning',
                               'The number of articles versions or collections versions sucessfully processed is different'
                               + ' than the number fetched. Check the log for details.', True)
-    log.write_log_in_file('info', "ReBACH script has finished.", True, True)
+
+    log.write_log_in_file('info',
+                        f"ReBACH finished with {log.warnings_count} warnings and {log.errors_count} errors",
+                        True)
+
