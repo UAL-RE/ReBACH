@@ -22,7 +22,7 @@ class Log:
         if (in_terminal):
             file_path = ''
         logging.basicConfig(filename=file_path,
-                            format="%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+                            format="%(asctime)s:%(levelname)s: %(message)s")
 
     def show_log_in_terminal(self, type, message, stop_script=False):
         # Show log in terminal
@@ -61,3 +61,4 @@ class Log:
             logger.setLevel(logging.ERROR)
             logger.error(message)
             del logger
+
