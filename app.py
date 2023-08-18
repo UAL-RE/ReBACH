@@ -143,8 +143,14 @@ if __name__ == "__main__":
                           True)
     article_obj = Article(config_file_path, log, args.ids)
     article_data = article_obj.get_articles()
+
+    articles_count = 0
+    articles_versions_count = 0
+    for i, (k, v) in enumerate(article_data.items()):
+        articles_count += 1
+        articles_versions_count += len(v)
     log.write_log_in_file('info',
-                          f"Total articles fetched: {len(article_data)}.",
+                          f"Total articles fetched: {len(article_data)}. Total articles versions fetched: {articles_versions_count}.",
                           True)
     print(" ")
 
@@ -153,8 +159,15 @@ if __name__ == "__main__":
                           True)
     collection_obj = Collection(config_file_path, log, args.ids)
     collection_data = collection_obj.get_collections()
+
+    collections_count = 0
+    collections_versions_count = 0
+    for i, (k, v) in enumerate(collection_data.items()):
+        collections_count += 1
+        collections_versions_count += len(v['versions'])
+
     log.write_log_in_file('info',
-                          f"Total collections fetched: {len(collection_data)}.",
+                          f"Total collections fetched: {collections_count}. Total collections versions fetched: {collections_versions_count}.",
                           True)
     print(" ")
 
