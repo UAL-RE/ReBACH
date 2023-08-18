@@ -774,12 +774,11 @@ class Article:
                 self.create_required_folders(version_data, folder_name)
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
-<<<<<<< HEAD
                 self.__save_json_in_metadata(version_data, folder_name)
                 value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
-=======
+                                                True)
                 success = success & self.__save_json_in_metadata(version_data, folder_name)
 
                 # only run the postprocessor if all above steps succeeded
@@ -795,7 +794,6 @@ class Article:
                 else:
                     self.logs.write_log_in_file("info",
                                                 f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
->>>>>>> 3a7b267 (Count the number of fetched vs processed items and output message upon mismatch)
                                                 True)
                     success = False
             else:
@@ -804,12 +802,10 @@ class Article:
                 self.delete_folder(check_dir)
                 success = False
         else:
-<<<<<<< HEAD
             # call post process script function for each matched item.
             value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
             if (value_post_process != 0):
                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
-=======
             if check_files or copy_files:
                 if success:
                     # call post process script function for each matched item.
@@ -831,7 +827,6 @@ class Article:
                 success = False
         return success
 
->>>>>>> 3a7b267 (Count the number of fetched vs processed items and output message upon mismatch)
 
     """
     Called before articles processing.
