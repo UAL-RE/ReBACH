@@ -842,7 +842,7 @@ class Article:
         return curation_storage_location
 
     """
-    Process all articles after fetching from API.
+    Process all articles after fetching from API. Returns the number of successfully processed articles
     """
     def process_articles(self, articles, total_file_size):
         curation_storage_location = self.__initial_process()
@@ -862,7 +862,7 @@ class Article:
 
         required_space = curation_folder_size + self.total_all_articles_file_size
 
-        self.logs.write_log_in_file("info", f"Total size of aritcles to be processed: {self.total_all_articles_file_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total size of articles to be processed: {self.total_all_articles_file_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total size of the curated folders for the matched articles: {curation_folder_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total space required: {required_space} bytes", True)
 
