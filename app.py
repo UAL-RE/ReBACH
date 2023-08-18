@@ -3,7 +3,7 @@ import argparse
 from version import __version__, __commit__
 from Log import Log
 from figshare.Article import Article
-from time import asctime
+from datetime import datetime
 from Config import Config
 from figshare.Collection import Collection
 from pathlib import Path
@@ -41,12 +41,14 @@ def check_logs_path_access(config_file):
 
         logs_access = os.access(log_location, os.W_OK)
         if (logs_access is False):
-            print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: "
+                  + "The logs location specified in the config file could not be reached or read.")
             exit()
 
     except OSError as error:
         print(error)
-        print(asctime() + ":ERROR: Log - " + "The logs location specified in the config file could not be reached or read.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: "
+              + "The logs location specified in the config file could not be reached or read.")
         exit()
 
 
@@ -56,15 +58,15 @@ def main():
     Setting up required variables and conditions.
     """
     global args
-    print(asctime() + ":Info: Log - ReBACH script has started.")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: ReBACH script has started.")
 
     # Check .env file exists.
     if not args.xfg.is_file():
-        print(asctime() + ":ERROR: Log - " + "Configuration file is missing or cannot be read.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Configuration file is missing or cannot be read.")
         exit()
     env_file = str(args.xfg)
-    print(asctime() + ":Info: Log - " + "Env file:" + env_file)
-    print(asctime() + ":Info: Log - " + "Checking configuration file.")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Env file:" + env_file)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Checking configuration file.")
     config_obj = Config(env_file)
 
     figshare_config = config_obj.figshare_config()
@@ -80,10 +82,10 @@ def main():
 
     # Check required env variables exist.
     if (log_location == ""):
-        print(asctime() + ":ERROR: Log - " + "Logs file path missing in .env.ini file.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Logs file path missing in .env.ini file.")
         exit()
 
-    log.write_log_in_file('info', "Logs location is accessible. Logging will now start.", True)
+    log.write_log_in_file('info', "Logs location is accessible. Logging to file will now start.", True)
 
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
@@ -129,18 +131,17 @@ def main():
                                   + " not be reached or read.",
                                   True, False)
 
-    return env_file
+    return env_file, log
 
 
 if __name__ == "__main__":
     get_args()
-    config_file_path = main()
-    log = Log(config_file_path)
+    config_file_path, log = main()
 
     log.write_log_in_file('info',
                           "Fetching articles...",
                           True)
-    article_obj = Article(config_file_path, args.ids)
+    article_obj = Article(config_file_path, log, args.ids)
     article_data = article_obj.get_articles()
     log.write_log_in_file('info',
                           f"Total articles fetched: {len(article_data)}.",
@@ -150,7 +151,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Fetching collections...",
                           True)
-    collection_obj = Collection(config_file_path, args.ids)
+    collection_obj = Collection(config_file_path, log, args.ids)
     collection_data = collection_obj.get_collections()
     log.write_log_in_file('info',
                           f"Total collections fetched: {len(collection_data)}.",
