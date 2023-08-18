@@ -19,17 +19,17 @@ class Integration:
         """
         self._config = config
         self._rebachlogger = log
+        self.duplicate_bag_in_preservation_storage_count = 0
 
     """
     Post-processing script command function.
     """
     def post_process_script_function(self, *args):
         """
-        Execute a post-processing script on an article or collection package and return the result.
-
         If the 'post_process_script_command' value in the configuration file is set to 'Bagger', this function
-        will execute the post-processing script internally. Otherwise, it will expect the value to be a path
-        to an external script, which will be called.
+        will execute. Returns the return code of bagger.
+
+        Otherwise, The code will expect the value to be a path to an external script, which will be called *TODO*.
 
         :param args: Variable-length arguments passed to the function.
                      args[0]: 'Article' or 'Collection' to indicate whether the function is called from an Article or Collection.
@@ -90,13 +90,13 @@ class Integration:
                 self._rebachlogger.write_log_in_file("info", f"Exit code: {status}.", True)
                 if (status == 0):
                     self._rebachlogger.write_log_in_file("info", f"Preservation package '{preservation_package_name}' processed successfully", True)
-                    return 0
                 elif (status == 3):
+                    # code 3 is special since we don't want to cause the calling code to interpret duplicates as an error since it will happen a lot
                     self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "
                                                          + f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
-                    return 0
-                else:
-                    return status
+                    self.duplicate_bag_in_preservation_storage_count += 1
+                    status = 0
+                return status
         else:
             self._rebachlogger.write_log_in_file("info",
                                                  f"[not implemented] Executing post-processing script Command: {post_process_script_command}.", True)
