@@ -3,7 +3,7 @@ import argparse
 from version import __version__, __commit__
 from Log import Log
 from figshare.Article import Article
-from time import asctime
+from datetime import datetime
 from Config import Config
 from figshare.Collection import Collection
 from pathlib import Path
@@ -41,12 +41,12 @@ def check_logs_path_access(config_file):
 
         logs_access = os.access(log_location, os.W_OK)
         if (logs_access is False):
-            print(asctime() + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
+            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
             exit()
 
     except OSError as error:
         print(error)
-        print(asctime() + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
         exit()
 
 
@@ -56,15 +56,15 @@ def main():
     Setting up required variables and conditions.
     """
     global args
-    print(asctime() + ":INFO: ReBACH script has started.")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: ReBACH script has started.")
 
     # Check .env file exists.
     if not args.xfg.is_file():
-        print(asctime() + ":ERROR: " + "Configuration file is missing or cannot be read.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Configuration file is missing or cannot be read.")
         exit()
     env_file = str(args.xfg)
-    print(asctime() + ":INFO: " + "Env file:" + env_file)
-    print(asctime() + ":INFO: " + "Checking configuration file.")
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Env file:" + env_file)
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Checking configuration file.")
     config_obj = Config(env_file)
 
     figshare_config = config_obj.figshare_config()
@@ -80,7 +80,7 @@ def main():
 
     # Check required env variables exist.
     if (log_location == ""):
-        print(asctime() + ":ERROR: " + "Logs file path missing in .env.ini file.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Logs file path missing in .env.ini file.")
         exit()
 
     log.write_log_in_file('info', "Logs location is accessible. Logging will now start.", True)
