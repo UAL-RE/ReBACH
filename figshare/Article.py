@@ -23,7 +23,7 @@ class Article:
     :param config: configuration
     :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
-    def __init__(self, config, ids):
+    def __init__(self, config, log, ids):
         self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
@@ -31,7 +31,7 @@ class Article:
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
-        self.logs = Log(config)
+        self.logs = log
         self.errors = []
         self.exclude_dirs = [".DS_Store"]
         self.total_all_articles_file_size = 0

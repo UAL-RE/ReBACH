@@ -18,7 +18,7 @@ class Collection:
     :param config: configuration
     :param ids: list of ids to process. If None or an empty list is passed, all collections will be processed
     """
-    def __init__(self, config, ids):
+    def __init__(self, config, log, ids):
         self.config_obj = Config(config)
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
@@ -27,9 +27,9 @@ class Collection:
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
         self.institution = int(figshare_config["institution"])
-        self.logs = Log(config)
+        self.logs = log
         self.errors = []
-        self.article_obj = Article(config, ids)
+        self.article_obj = Article(config, log, ids)
         self.preservation_storage_location = self.system_config["preservation_storage_location"]
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"

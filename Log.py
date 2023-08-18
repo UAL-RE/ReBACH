@@ -7,20 +7,23 @@ from Config import Config
 class Log:
     def __init__(self, config):
         self.config = config
+        file_name = "log-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
 
-    def log_config(self, in_terminal: bool = False):
         # Setup log configration
         config_obj = Config(self.config)
         system_config = config_obj.system_config()
         log_location = system_config["logs_location"]
 
-        file_name = "log-" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".log"
         if (log_location[-1] != "/"):
             log_location = log_location + '/'
-        file_path = log_location + file_name
+        self.file_path = log_location + file_name
+
+    def log_config(self, in_terminal: bool = False):
         if (in_terminal):
-            file_path = ''
-        logging.basicConfig(filename=file_path,
+            f = ''
+        else:
+            f = self.file_path
+        logging.basicConfig(filename=f, force=True,
                             format="%(asctime)s:%(levelname)s: %(message)s")
 
     def show_log_in_terminal(self, type, message, stop_script=False):
