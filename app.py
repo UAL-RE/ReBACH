@@ -41,12 +41,14 @@ def check_logs_path_access(config_file):
 
         logs_access = os.access(log_location, os.W_OK)
         if (logs_access is False):
-            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
+            print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " \
+                  + "The logs location specified in the config file could not be reached or read.")
             exit()
 
     except OSError as error:
         print(error)
-        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "The logs location specified in the config file could not be reached or read.")
+        print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " \
+              + "The logs location specified in the config file could not be reached or read.")
         exit()
 
 
