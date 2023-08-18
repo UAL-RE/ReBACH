@@ -813,7 +813,9 @@ class Article:
                     # call post process script function for each matched item.
                     value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                     if (value_post_process != 0):
-                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+                        self.logs.write_log_in_file("error",
+                                                    f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                    True)
                 else:
                     self.logs.write_log_in_file("info",
                                                 f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
