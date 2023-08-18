@@ -35,7 +35,7 @@ class Log:
         # Show log in file
         self.log_config(False)
         if (show_in_terminal is True):
-            print(asctime() + ":" + type.upper() + ":Log - " + message)
+            print(asctime() + ":" + type.upper() + ": " + message)
         self.message(type, message)
         if (stop_script is True):
             exit()
