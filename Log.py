@@ -73,21 +73,22 @@ class Log:
             del logger
 
     def _format_messagetype_ansi(self, type):
-            '''
-            Returns a colorized version of the given message type string. If no ANSI support is detected, the same string is returned unchanged.
-            '''
-            if not self.ansi_terminal:
-                return type
-            if (type.lower() == 'error'):
-                return '\033[2;30;41m' + type + '\033[0;0m'
-            elif (type.lower() == 'warning'):
-                return '\033[2;31;43m' + type + '\033[0;0m'
-            elif (type.lower() == 'info'):
-                return type
-            elif (type.lower() == 'debug'):
-                return type
-            else:
-                return type
+        '''
+        Returns a colorized version of the given message type string. If no ANSI support is detected, the same string is returned unchanged.
+        '''
+        if not self.ansi_terminal:
+            return type
+        if (type.lower() == 'error'):
+            return '\033[2;30;41m' + type + '\033[0;0m'
+        elif (type.lower() == 'warning'):
+            return '\033[2;31;43m' + type + '\033[0;0m'
+        elif (type.lower() == 'info'):
+            return type
+        elif (type.lower() == 'debug'):
+            return type
+        else:
+            return type
+
 
 def _check_ansi():
     '''
@@ -95,8 +96,8 @@ def _check_ansi():
     Based on: https://gist.github.com/ssbarnea/1316877
     '''
     for handle in [sys.stdout, sys.stderr]:
-        if (hasattr(handle, "isatty") and handle.isatty()) or ('TERM' in os.environ and os.environ['TERM']=='ANSI'):
-            if platform.system()=='Windows' and not ('TERM' in os.environ and os.environ['TERM']=='ANSI'):
+        if (hasattr(handle, "isatty") and handle.isatty()) or ('TERM' in os.environ and os.environ['TERM'] == 'ANSI'):
+            if platform.system() == 'Windows' and not ('TERM' in os.environ and os.environ['TERM'] == 'ANSI'):
                 if _is_wt():
                     # Windows terminal does support ANSI
                     return True
