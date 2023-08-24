@@ -3,6 +3,7 @@ output_dir = "out"
 workflow = "bagger/config/default_workflow.json"
 dart_command = "dart-runner"
 overwrite = false
+delete = true
 
 [Logging]
 log_dir = "logs"
