@@ -131,19 +131,22 @@ class Bagger:
         if not metadata_tags:
             return Status.INVALID_CONFIG
 
-        if self.wasabi.dart_hostbucket_override:
-            with open(self.workflow, 'r') as f:
-                wkfl_json = json.load(f)
-                if 'storageServices' not in wkfl_json:
-                    print('storageServices key not found in DART workflow file')
-                    return Status.INVALID_CONFIG
-                for item in wkfl_json['storageServices']:
-                    item['host'] = self.wasabi.s3host
-                    item['bucket'] = self.wasabi.s3bucket
+        with open(self.workflow, 'r') as f:
+            wkfl_json = json.load(f)
+            if 'storageServices' in wkfl_json:
+                if self.wasabi.dart_hostbucket_override:
                     self.workflow_file = NamedTemporaryFile(prefix="rebach", mode="w", delete=True)
+                    for item in wkfl_json['storageServices']:
+                        if item:
+                            item['host'] = self.wasabi.s3host
+                            item['bucket'] = self.wasabi.s3bucket
+                        else:
+                            self.log.warning('item in storageServices key in DART workflow file is not valid. Bag upload disabled.')
                     self.workflow_file.write(json.dumps(wkfl_json))
                     self.workflow_file.flush()
-            self.workflow = self.workflow_file.name
+                    self.workflow = self.workflow_file.name
+            else:
+                self.log.warning('storageServices key not found in DART workflow file. Bag upload disabled.')
 
         return bag_name, metadata_tags
 
@@ -182,7 +185,8 @@ class Bagger:
 
             errors = data_json['packageResult']['errors']
             errors |= data_json['validationResult']['errors']
-            errors |= data_json['uploadResults'][0]['errors']
+            if len(data_json['uploadResults']) > 0:
+                errors |= data_json['uploadResults'][0]['errors']
 
             if errors:
                 self.log.warning(errors)
