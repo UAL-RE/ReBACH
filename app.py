@@ -177,7 +177,7 @@ if __name__ == "__main__":
     processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info',
-                          f"Total articles versions processed/fetched: \t\t\t"
+                          "Total articles versions processed/fetched: \t\t\t"
                           + f'{processed_articles_versions_count} / {articles_versions_count}',
                           True)
     log.write_log_in_file('info',
@@ -185,7 +185,7 @@ if __name__ == "__main__":
                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
     log.write_log_in_file('info',
-                          f"Total collections versions processed/fetched: \t\t\t"
+                          "Total collections versions processed/fetched: \t\t\t"
                           + f'{processed_collections_versions_count} / {collections_versions_count}',
                           True)
     log.write_log_in_file('info',
