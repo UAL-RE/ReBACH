@@ -171,7 +171,7 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
+    article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
     collection_obj.process_collections(collection_data)

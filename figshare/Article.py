@@ -844,7 +844,7 @@ class Article:
     """
     Process all articles after fetching from API. Returns the number of successfully processed articles.
     """
-    def process_articles(self, articles, total_file_size):
+    def process_articles(self, articles):
         curation_storage_location = self.__initial_process()
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
