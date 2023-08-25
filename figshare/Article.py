@@ -738,9 +738,12 @@ class Article:
 
         self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
-
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
+
+        if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
+            self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
+                                        + f"Check {self.curation_storage_location} for each of the unmatched items.", True)
 
         return article_data
 
@@ -761,7 +764,7 @@ class Article:
         return copy_files
 
     """
-    Final process for matched articles.
+    Final process for matched articles. Returns True if succeeded.
     """
     def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
         success = True
@@ -798,14 +801,19 @@ class Article:
                         self.logs.write_log_in_file("error",
                                                     f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                     True)
+                        success = False
+                    else:
+                        success = True
                 else:
                     self.logs.write_log_in_file("info",
                                                 f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
                                                 True)
+                    success = False
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
+                success = False
         else:
             if check_files or copy_files:
                 if success:
@@ -815,12 +823,18 @@ class Article:
                         self.logs.write_log_in_file("error",
                                                     f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
                                                     True)
+                        success = False
+                    else:
+                        success = True
                 else:
                     self.logs.write_log_in_file("info",
                                                 f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
                                                 True)
+                    success = False
             else:
                 self.logs.write_log_in_file("error", "Unexpected condidion in final processing. No further actions taken.", True)
+                success = False
+        return success
 
     """
     Called before articles processing.
@@ -839,9 +853,10 @@ class Article:
         return curation_storage_location
 
     """
-    Process all articles after fetching from API.
+    Process all articles after fetching from API. Returns the number of successfully processed articles.
     """
-    def process_articles(self, articles, total_file_size):
+    def process_articles(self, articles):
+        processed_count = 0
         curation_storage_location = self.__initial_process()
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
@@ -859,7 +874,7 @@ class Article:
 
         required_space = curation_folder_size + self.total_all_articles_file_size
 
-        self.logs.write_log_in_file("info", f"Total size of aritcles to be processed: {self.total_all_articles_file_size} bytes", True)
+        self.logs.write_log_in_file("info", f"Total size of articles to be processed: {self.total_all_articles_file_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total size of the curated folders for the matched articles: {curation_folder_size} bytes", True)
         self.logs.write_log_in_file("info", f"Total space required: {required_space} bytes", True)
 
@@ -905,12 +920,14 @@ class Article:
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
                                     break
+
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
                             self.logs.write_log_in_file("info", "Checking required files exist in associated curation "
                                                         + f"folder {curation_storage_location}.", True)
                             copy_files = self.__can_copy_files(version_data)
-                            self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process)
+                            if self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
+                                processed_count += 1
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
@@ -918,6 +935,7 @@ class Article:
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
+        return processed_count
 
     """
     Preservation and Curation directory access check while processing.

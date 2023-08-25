@@ -235,10 +235,11 @@ class Collection:
         return coll_articles_api
 
     """
-    Function to process collections and its articles with collection versions.
+    Function to process collections and its articles with collection versions. Returns the number of successfully processed collections.
     :param collections object
     """
     def process_collections(self, collections):
+        processed_count = 0
         self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
             data = collections[collection]
@@ -251,12 +252,15 @@ class Collection:
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
                 folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
-                self.logs.write_log_in_file("info", f"Processing collection {collection} version {version['version']}.", True)
+                self.logs.write_log_in_file("info", f"------- Processing collection {collection} version {version['version']}.", True)
                 self.__save_json_in_metadata(collection, version, folder_name)
                 collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
                 value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                 if (value_post_process != 0):
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
+                else:
+                    processed_count += 1
+        return processed_count
 
     """
     Save json data for each collection version in related directory

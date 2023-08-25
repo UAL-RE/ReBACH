@@ -143,8 +143,14 @@ if __name__ == "__main__":
                           True)
     article_obj = Article(config_file_path, log, args.ids)
     article_data = article_obj.get_articles()
+
+    articles_count = 0
+    articles_versions_count = 0
+    for i, (k, v) in enumerate(article_data.items()):
+        articles_count += 1
+        articles_versions_count += len(v)
     log.write_log_in_file('info',
-                          f"Total articles fetched: {len(article_data)}.",
+                          f"Total articles fetched: {len(article_data)}. Total articles versions fetched: {articles_versions_count}.",
                           True)
     print(" ")
 
@@ -153,15 +159,45 @@ if __name__ == "__main__":
                           True)
     collection_obj = Collection(config_file_path, log, args.ids)
     collection_data = collection_obj.get_collections()
+
+    collections_count = 0
+    collections_versions_count = 0
+    for i, (k, v) in enumerate(collection_data.items()):
+        collections_count += 1
+        collections_versions_count += len(v['versions'])
     log.write_log_in_file('info',
-                          f"Total collections fetched: {len(collection_data)}.",
+                          f"Total collections fetched: {collections_count}. Total collections versions fetched: {collections_versions_count}.",
                           True)
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    article_obj.process_articles(article_data, article_obj.total_all_articles_file_size)
+    processed_articles_versions_count = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    collection_obj.process_collections(collection_data)
+    processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
-    log.write_log_in_file('info', "ReBACH script has successfully finished.", True, True)
+    log.write_log_in_file('info',
+                          "Total articles versions processed/fetched: \t\t\t"
+                          + f'{processed_articles_versions_count} / {articles_versions_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total processed articles bags already in preservation storage: \t"
+                          + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total collections versions processed/fetched: \t\t\t"
+                          + f'{processed_collections_versions_count} / {collections_versions_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total processed collections bags already in preservation storage: "
+                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
+
+    if processed_articles_versions_count != articles_versions_count or processed_collections_versions_count != collections_versions_count:
+        log.write_log_in_file('warning',
+                              'The number of articles versions or collections versions sucessfully processed is different'
+                              + ' than the number fetched. Check the log for details.', True)
+
+    log.write_log_in_file('info',
+                          f"ReBACH finished with {log.warnings_count} warnings and {log.errors_count} errors",
+                          True)

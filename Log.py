@@ -23,6 +23,8 @@ class Log:
         self.file_path = log_location + file_name
 
         self.ansi_terminal = _check_ansi()
+        self.warnings_count = 0
+        self.errors_count = 0
 
     def log_config(self, in_terminal: bool = False):
         if (in_terminal):
@@ -37,6 +39,7 @@ class Log:
     def show_log_in_terminal(self, type, message, stop_script=False):
         # Show log in terminal
         self.log_config(True)
+        self._count_errorwarning(type)
         self.message(type, message)
         if (stop_script is True):
             exit()
@@ -44,6 +47,7 @@ class Log:
     def write_log_in_file(self, type, message, show_in_terminal=False, stop_script=False):
         # Show log in file
         self.log_config(False)
+        self._count_errorwarning(type)
         if (show_in_terminal is True):
             print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":" + self._format_messagetype_ansi(type.upper()) + ": " + message)
         self.message(type, message)
@@ -71,6 +75,15 @@ class Log:
             logger.setLevel(logging.ERROR)
             logger.error(message)
             del logger
+
+    def _count_errorwarning(self, msgtype):
+        '''
+        Counts how many times a message type (string) of warning or error is passed in
+        '''
+        if msgtype.lower() == 'warning':
+            self.warnings_count += 1
+        if msgtype.lower() == 'error':
+            self.errors_count += 1
 
     def _format_messagetype_ansi(self, type):
         '''
