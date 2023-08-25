@@ -738,9 +738,12 @@ class Article:
 
         self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
-
         self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
+
+        if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
+            self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
+                                        + f"Check {self.curation_storage_location} for each of the unmatched items.", True)
 
         return article_data
 
