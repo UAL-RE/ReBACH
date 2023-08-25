@@ -76,16 +76,14 @@ class Log:
             logger.error(message)
             del logger
 
-
-    def _count_errorwarning(self, type):
+    def _count_errorwarning(self, msgtype):
         '''
         Counts how many times a message type (string) of warning or error is passed in
         '''
-        if(type.lower() == 'warning'):
+        if(msgtype.lower() == 'warning'):
             self.warnings_count += 1
-        if(type.lower() == 'error'):
+        if(msgtype.lower() == 'error'):
             self.errors_count += 1
-
 
     def _format_messagetype_ansi(self, type):
         '''
@@ -103,7 +101,6 @@ class Log:
             return type
         else:
             return type
-
 
 def _check_ansi():
     '''
@@ -125,7 +122,6 @@ def _check_ansi():
         else:
             # no ANSI available
             return False
-
 
 def _is_wt():
     '''

@@ -836,7 +836,6 @@ class Article:
                 success = False
         return success
 
-
     """
     Called before articles processing.
     """
@@ -937,7 +936,6 @@ class Article:
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
         return processed_count
-
 
     """
     Preservation and Curation directory access check while processing.

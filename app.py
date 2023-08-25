@@ -177,19 +177,19 @@ if __name__ == "__main__":
     processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info',
-                        f"Total articles versions processed/fetched: \t\t\t{processed_articles_versions_count} / {articles_versions_count}",
-                        True)
+                          f"Total articles versions processed/fetched: \t\t\t{processed_articles_versions_count} / {articles_versions_count}",
+                          True)
     log.write_log_in_file('info',
-                        "Total processed articles bags already in preservation storage: \t"
-                        + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
-                        True)
+                          "Total processed articles bags already in preservation storage: \t"
+                          + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
     log.write_log_in_file('info',
-                        f"Total collections versions processed/fetched: \t\t\t{processed_collections_versions_count} / {collections_versions_count}",
-                        True)
+                          f"Total collections versions processed/fetched: \t\t\t{processed_collections_versions_count} / {collections_versions_count}",
+                          True)
     log.write_log_in_file('info',
-                        "Total processed collections bags already in preservation storage: "
-                        + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
-                        True)
+                          "Total processed collections bags already in preservation storage: "
+                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
 
     if processed_articles_versions_count != articles_versions_count or processed_collections_versions_count != collections_versions_count:
         log.write_log_in_file('warning',
@@ -197,6 +197,5 @@ if __name__ == "__main__":
                               + ' than the number fetched. Check the log for details.', True)
 
     log.write_log_in_file('info',
-                        f"ReBACH finished with {log.warnings_count} warnings and {log.errors_count} errors",
-                        True)
-
+                          f"ReBACH finished with {log.warnings_count} warnings and {log.errors_count} errors",
+                          True)
