@@ -171,9 +171,20 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    article_obj.process_articles(article_data)
+    processed_articles_versions_count = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    collection_obj.process_collections(collection_data)
+    processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
-    log.write_log_in_file('info', "ReBACH script has successfully finished.", True, True)
+    log.write_log_in_file('info',
+                        f"Total articles versions processed/fetched: \t\t\t{processed_articles_versions_count} / {articles_versions_count}",
+                        True)
+    log.write_log_in_file('info',
+                        f"Total collections versions processed/fetched: \t\t\t{processed_collections_versions_count} / {collections_versions_count}",
+                        True)
+
+    if processed_articles_versions_count != articles_versions_count or processed_collections_versions_count != collections_versions_count:
+        log.write_log_in_file('warning',
+                              'The number of articles versions or collections versions sucessfully processed is different'
+                              + ' than the number fetched. Check the log for details.', True)
+    log.write_log_in_file('info', "ReBACH script has finished.", True, True)
