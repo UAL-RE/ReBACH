@@ -180,7 +180,15 @@ if __name__ == "__main__":
                         f"Total articles versions processed/fetched: \t\t\t{processed_articles_versions_count} / {articles_versions_count}",
                         True)
     log.write_log_in_file('info',
+                        "Total processed articles bags already in preservation storage: \t"
+                        + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                        True)
+    log.write_log_in_file('info',
                         f"Total collections versions processed/fetched: \t\t\t{processed_collections_versions_count} / {collections_versions_count}",
+                        True)
+    log.write_log_in_file('info',
+                        "Total processed collections bags already in preservation storage: "
+                        + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
                         True)
 
     if processed_articles_versions_count != articles_versions_count or processed_collections_versions_count != collections_versions_count:
