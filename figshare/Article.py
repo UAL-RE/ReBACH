@@ -565,11 +565,11 @@ class Article:
                         process_article = False
                         break
             else:
-                self.logs.write_log_in_file("info", f"{article_folder_path} is empty")
+                self.logs.write_log_in_file("info", f"{article_folder_path} is empty, nothing to check.", True)
                 process_article = True
 
         else:
-            self.logs.write_log_in_file("info", f"{article_folder_path} not found")
+            self.logs.write_log_in_file("info", f"{article_folder_path} not found, nothing to check.", True)
             process_article = True
 
         # delete directory if validation failed.
@@ -605,33 +605,38 @@ class Article:
         preservation_storage_location = self.preservation_storage_location
         complete_path = preservation_storage_location + json_folder_path
         check_path_exists = os.path.exists(complete_path)
-        if (check_path_exists is False):
-            os.makedirs(complete_path, exist_ok=True)
-        # Remove extra indexes from version data before saving in json file
-        # These indexes were created in code while fetching data from APIs for further processing
-        if ("matched" in version_data):
-            del (version_data["matched"])
-        if ("curation_info" in version_data):
-            del (version_data["curation_info"])
-        if ("total_num_files" in version_data):
-            del (version_data["total_num_files"])
-        if ("file_size_sum" in version_data):
-            del (version_data["file_size_sum"])
-        if ("version_md5" in version_data):
-            del (version_data["version_md5"])
-        if ("redata_deposit_review_file" in version_data):
-            del (version_data["redata_deposit_review_file"])
-        if ("deposit_agreement_file" in version_data):
-            del (version_data["deposit_agreement_file"])
-        if ("trello_file" in version_data):
-            del (version_data["trello_file"])
-        if ("author_dir" in version_data):
-            del (version_data["author_dir"])
-        json_data = json.dumps(version_data, indent=4)
-        filename_path = complete_path + "/" + str(version_data['id']) + ".json"
-        # Writing to json file
-        with open(filename_path, "w") as outfile:
-            outfile.write(json_data)
+        try:
+            if (check_path_exists is False):
+                os.makedirs(complete_path, exist_ok=True)
+            # Remove extra indexes from version data before saving in json file
+            # These indexes were created in code while fetching data from APIs for further processing
+            if ("matched" in version_data):
+                del (version_data["matched"])
+            if ("curation_info" in version_data):
+                del (version_data["curation_info"])
+            if ("total_num_files" in version_data):
+                del (version_data["total_num_files"])
+            if ("file_size_sum" in version_data):
+                del (version_data["file_size_sum"])
+            if ("version_md5" in version_data):
+                del (version_data["version_md5"])
+            if ("redata_deposit_review_file" in version_data):
+                del (version_data["redata_deposit_review_file"])
+            if ("deposit_agreement_file" in version_data):
+                del (version_data["deposit_agreement_file"])
+            if ("trello_file" in version_data):
+                del (version_data["trello_file"])
+            if ("author_dir" in version_data):
+                del (version_data["author_dir"])
+            json_data = json.dumps(version_data, indent=4)
+            filename_path = complete_path + "/" + str(version_data['id']) + ".json"
+            # Writing to json file
+            with open(filename_path, "w") as outfile:
+                outfile.write(json_data)
+        except Exception as e:
+            self.logs.write_log_in_file('error', f"{folder_name}: {e}", True)
+            return False
+        return True
 
     """
     Copying UAL_RDM folder files to storage directory in related article version folder
@@ -669,7 +674,9 @@ class Article:
                                     # copying files to preservation version folder
                                     shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
                                 except Exception as e:
-                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} error while copying file.", True)
+                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} error while copying files.", True)
+                                    return False
+        return True
 
     """
     Find matched articles from the fetched data and curation dir
@@ -757,33 +764,63 @@ class Article:
     Final process for matched articles.
     """
     def __final_process(self, check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
-        if (check_files is True and copy_files is True):
+        success = True
+        if copy_files and not check_files:
+            # check and create empty directories for each version
+            self.logs.write_log_in_file("info", "Checking and creating empty directories.", True)
+            success = success & self.create_required_folders(version_data, folder_name)
+            # copy curation UAL_RDM files in storage UAL_RDM folder for each version
+            self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder.", True)
+            success = success & self.__copy_files_ual_rdm(version_data, folder_name)
+            # save json in metadata folder for each version
+            self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
+            success = success & self.__save_json_in_metadata(version_data, folder_name)
+
+        if check_files and copy_files:
             # download all files and verify hash with downloaded file.
             delete_now = self.__download_files(version_data['files'], version_data, folder_name)
             # check if download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
                 self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder for each version.", True)
-                self.__copy_files_ual_rdm(version_data, folder_name)
+                success = success & self.__copy_files_ual_rdm(version_data, folder_name)
                 # check and create empty directories for each version
                 self.logs.write_log_in_file("info", "Checking and creating empty directories for each version.", True)
-                self.create_required_folders(version_data, folder_name)
+                success = success & self.create_required_folders(version_data, folder_name)
                 # save json in metadata folder for each version
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
-                self.__save_json_in_metadata(version_data, folder_name)
-                value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-                if (value_post_process != 0):
-                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                success = success & self.__save_json_in_metadata(version_data, folder_name)
+
+                # only run the postprocessor if all above steps succeeded
+                if success:
+                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                    if (value_post_process != 0):
+                        self.logs.write_log_in_file("error",
+                                                    f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                    True)
+                else:
+                    self.logs.write_log_in_file("info",
+                                                f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
                                                 True)
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
         else:
-            # call post process script function for each matched item.
-            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-            if (value_post_process != 0):
-                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - Post-processing script failed.", True)
+            if check_files or copy_files:
+                if success:
+                    # call post process script function for each matched item.
+                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                    if (value_post_process != 0):
+                        self.logs.write_log_in_file("error",
+                                                    f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                    True)
+                else:
+                    self.logs.write_log_in_file("info",
+                                                f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
+                                                True)
+            else:
+                self.logs.write_log_in_file("error", "Unexpected condidion in final processing. No further actions taken.", True)
 
     """
     Called before articles processing.
@@ -840,7 +877,7 @@ class Article:
                         + formatted_depositor_full_name + "_" + version_data['version_md5']
 
                     if (version_data["matched"] is True):
-                        self.logs.write_log_in_file("info", f"Processing article {article} version {version_data['version']}.", True)
+                        self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
                         # call pre process script function for each matched item.
                         value_pre_process = self.pre_process_script_function()
                         if (value_pre_process == 0):
@@ -855,7 +892,7 @@ class Article:
                             if (check_main_folder is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
-                                    self.logs.write_log_in_file("info", "Exists and is not empty.", True)
+                                    self.logs.write_log_in_file("info", "Exists and is not empty, checking contents.", True)
                                     check_files = self.__check_file_hash(version_data['files'], version_data, folder_name)
                                 else:
                                     self.logs.write_log_in_file("info", "Exists and is empty", True)
@@ -906,22 +943,26 @@ class Article:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
-        self.logs.write_log_in_file("info", "Creating UAL_RDM and DATA folders in preservation storage.", True)
         preservation_storage_location = self.preservation_storage_location
         version_no = "v" + str(version_data["version"]).zfill(2)
         # setup UAL_RDM directory
         ual_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
         ual_path_exists = os.path.exists(ual_folder_name)
-        if (ual_path_exists is False):
-            # create UAL_RDM directory if not exist
-            os.makedirs(ual_folder_name, exist_ok=True)
+        try:
+            if (ual_path_exists is False):
+                # create UAL_RDM directory if not exist
+                os.makedirs(ual_folder_name, exist_ok=True)
 
-        # setup DATA directory
-        data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
-        data_path_exists = os.path.exists(data_folder_name)
-        if (data_path_exists is False):
-            # create DATA directory if it does not exist
-            os.makedirs(data_folder_name, exist_ok=True)
+            # setup DATA directory
+            data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
+            data_path_exists = os.path.exists(data_folder_name)
+            if (data_path_exists is False):
+                # create DATA directory if it does not exist
+                os.makedirs(data_folder_name, exist_ok=True)
+        except Exception as e:
+            self.logs.write_log_in_file('error', f"{folder_name}: {e}", True)
+            return False
+        return True
 
     """
     Pre-processing script command function.
