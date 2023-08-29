@@ -1,0 +1,85 @@
+{
+  "Accept-BagIt-Version": [
+    "0.97",
+    "1.0"
+  ],
+  "Accept-Serialization": [
+    "application/tar"
+  ],
+  "Allow-Fetch.txt": false,
+  "Serialization": "required",
+  "Manifests-Allowed": [
+    "md5",
+    "sha256"
+  ],
+  "Tag-Manifests-Allowed": [
+    "md5",
+    "sha256"
+  ],
+  "Manifests-Required": [
+    "md5"
+  ],
+  "Tag-Manifests-Required": [],
+  "Tag-Files-Allowed": [
+    "*"
+  ],
+  "BagIt-Profile-Info": {
+    "BagIt-Profile-Identifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-v2.0.json",
+    "BagIt-Profile-Version": "",
+    "Contact-Email": "redata@arizona.edu",
+    "Contact-Name": "ReDATA Administrator",
+    "External-Description": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
+    "Source-Organization": "redata.arizona.edu",
+    "Version": "2.0"
+  },
+  "Bag-Info": {
+    "Source-Organization": {
+      "required": true
+    },
+    "Bag-Count": {
+      "required": false
+    },
+    "Bagging-Date": {
+      "required": false
+    },
+    "Bagging-Software": {
+      "required": false
+    },
+    "Bag-Group-Identifier": {
+      "required": false
+    },
+    "Internal-Sender-Description": {
+      "required": false
+    },
+    "Internal-Sender-Identifier": {
+      "required": false
+    },
+    "Payload-Oxum": {
+      "required": false
+    },
+    "DOI": {
+      "required": true
+    },
+    "License-Name": {
+      "required": false,
+      "values": [
+        "CC0",
+        "CC BY 4.0",
+        "CC BY-NC 4.0",
+        "CC BY-NC-SA 4.0",
+        "MIT",
+        "BSD 3-Clause",
+        "Apache 2.0",
+        "GPL 3.0+",
+        "LGPL-3.0",
+        "In Copyright"
+      ]
+    },
+    "Published-Date": {
+      "required": false
+    }
+  },
+  "Tag-Files-Required": [
+    "aptrust-info.txt"
+  ]
+}
