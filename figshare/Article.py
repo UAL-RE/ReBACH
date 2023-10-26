@@ -361,7 +361,7 @@ class Article:
 
                     status_code = -1
                     with http.get(file['download_url'], stream=True, allow_redirects=True,
-                                      headers={'Authorization': 'token ' + self.api_token}) as r:
+                                  headers={'Authorization': 'token ' + self.api_token}) as r:
                         r.raise_for_status()
                         try:
                             with open(file_name_with_path, 'wb') as f:
