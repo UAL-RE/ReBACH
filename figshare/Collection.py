@@ -279,14 +279,14 @@ class Collection:
             json_data = json.dumps(version_data, indent=4)
             filename_path = complete_path + "/" + str(collection_id) + ".json"
             # Writing to json file
-            self.logs.write_log_in_file("info", "Saving collection data in json.", True)
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
+            self.logs.write_log_in_file("info", "Saved collection data in json.", True)
         else:
             storage_collection_version_dir = os.listdir(complete_path)
             file_name = f"{str(collection_id)}.json"
             if (len(storage_collection_version_dir) == 0 or file_name not in storage_collection_version_dir):
-                self.logs.write_log_in_file("info", f"{complete_path} path already exists but missing {file_name} file.")
+                self.logs.write_log_in_file("warning", f"{complete_path} path already exists but missing {file_name} file.")
 
     def get_collection_api_url(self):
         collections_api_url = self.api_endpoint + '/collections'
