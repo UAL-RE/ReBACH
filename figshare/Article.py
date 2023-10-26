@@ -9,6 +9,7 @@ import re
 from Config import Config
 from figshare.Integration import Integration
 from slugify import slugify
+from requests.adapters import HTTPAdapter, Retry
 
 
 class Article:
@@ -330,6 +331,16 @@ class Article:
     def __download_files(self, files, version_data, folder_name):
         delete_folder = False
         self.logs.write_log_in_file('info', "Downloading files.", True)
+
+        retry_strategy = Retry(
+            total=3,
+            status_forcelist=[429, 500, 502, 503, 504]
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        http = requests.Session()
+        http.mount("https://", adapter)
+        http.mount("http://", adapter)
+
         if (len(files) > 0):
             version_no = "v" + str(version_data["version"]).zfill(2)
             article_folder = folder_name + "/" + version_no
@@ -349,8 +360,8 @@ class Article:
                                                 + f"version {version_data['version']}", True)
 
                     status_code = -1
-                    with requests.get(file['download_url'], stream=True, allow_redirects=True,
-                                      headers={'Authorization': 'token ' + self.api_token}) as r:
+                    with http.get(file['download_url'], stream=True, allow_redirects=True,
+                                  headers={'Authorization': 'token ' + self.api_token}) as r:
                         r.raise_for_status()
                         try:
                             with open(file_name_with_path, 'wb') as f:
