@@ -24,9 +24,8 @@ dart_workflow_hostbucket_override = true
 aptrust-info.Title = { tag_path = "title" }
 aptrust-info.Description = { tag_path = "description", strip_html = true }
 
-bag-info.Source-Organization = "University of Arizona"
-bag-info.Contact-Name = "Fernando Rios"
-bag-info.Contact-Email = "frios@arizona.edu"
+bag-info.Contact-Name = "ReDATA Administrator"
+bag-info.Contact-Email = "redata@arizona.edu"
 bag-info.DOI = { tag_path = "doi" }
 bag-info.License-Name = { tag_path = "license.name" }
 bag-info.Published-Date = { tag_path = "published_date" }
