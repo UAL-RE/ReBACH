@@ -144,13 +144,19 @@ if __name__ == "__main__":
     article_obj = Article(config_file_path, log, args.ids)
     article_data = article_obj.get_articles()
 
-    articles_count = 0
-    articles_versions_count = 0
+    published_articles_count = 0
+    published_articles_versions_count = 0
+    published_unpublished_count = 0
     for i, (k, v) in enumerate(article_data.items()):
-        articles_count += 1
-        articles_versions_count += len(v)
-    log.write_log_in_file('info',
-                          f"Total articles fetched: {len(article_data)}. Total articles versions fetched: {articles_versions_count}.",
+        published_unpublished_count += 1
+        if len(v) > 0:
+            published_articles_count += 1
+            published_articles_versions_count += len(v)
+        print(k)
+    log.write_log_in_file('info', "Fetched: "
+                          + f"Total articles: {published_unpublished_count}, "
+                          + f"Published articles: {published_articles_count}, "
+                          + f"Published article versions: {published_articles_versions_count}",
                           True)
     print(" ")
 
@@ -178,7 +184,7 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info',
                           "Total articles versions processed/fetched: \t\t\t"
-                          + f'{processed_articles_versions_count} / {articles_versions_count}',
+                          + f'{processed_articles_versions_count} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
                           "Total processed articles bags already in preservation storage: \t"
@@ -193,7 +199,7 @@ if __name__ == "__main__":
                           + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
 
-    if processed_articles_versions_count != articles_versions_count or processed_collections_versions_count != collections_versions_count:
+    if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
         log.write_log_in_file('warning',
                               'The number of articles versions or collections versions sucessfully processed is different'
                               + ' than the number fetched. Check the log for details.', True)
