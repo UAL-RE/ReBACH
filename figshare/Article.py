@@ -600,6 +600,8 @@ class Article:
     :param folder_name string
     """
     def __save_json_in_metadata(self, version_data, folder_name):
+        result = False
+
         version_no = "v" + str(version_data["version"]).zfill(2)
         json_folder_path = folder_name + "/" + version_no + "/METADATA"
         preservation_storage_location = self.preservation_storage_location
@@ -633,10 +635,14 @@ class Article:
             # Writing to json file
             with open(filename_path, "w") as outfile:
                 outfile.write(json_data)
+            result = True
         except Exception as e:
             self.logs.write_log_in_file('error', f"{folder_name}: {e}", True)
-            return False
-        return True
+            result = False
+
+        if not result:
+            self.logs.write_log_in_file("info", "json not saved.", True)
+        return result
 
     """
     Copying UAL_RDM folder files to storage directory in related article version folder
@@ -644,6 +650,8 @@ class Article:
     :param folder_name string
     """
     def __copy_files_ual_rdm(self, version_data, folder_name):
+        result = False
+
         version_no = "v" + str(version_data["version"]).zfill(2)
         curation_storage_location = self.curation_storage_location
         # check curation dir is reachable
@@ -667,16 +675,19 @@ class Article:
                                 # check preservation dir is reachable
                                 self.check_access_of_directories(preservation_storage_location, "preservation")
                                 try:
-                                    self.logs.write_log_in_file("info", "Copying files to preservation folder.", True)
                                     check_path_exists = os.path.exists(complete_folder_name)
                                     if (check_path_exists is False):
                                         os.makedirs(complete_folder_name, exist_ok=True)
                                     # copying files to preservation version folder
                                     shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
+                                    self.logs.write_log_in_file("info", "Copied curation files to preservation folder.", True)
+                                    result = True
                                 except Exception as e:
-                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name} error while copying files.", True)
-                                    return False
-        return True
+                                    self.logs.write_log_in_file('error', f"{e} - {complete_folder_name}.", True)
+                                    result = False
+        if not result:
+            self.logs.write_log_in_file("info", "No files copied to preservation folder.", True)
+        return result
 
     """
     Find matched articles from the fetched data and curation dir
@@ -758,7 +769,7 @@ class Article:
                                         + "files in curation storage. Folder will be deleted.", True)
             copy_files = False
         else:
-            self.logs.write_log_in_file("info", "Curation files exist", True)
+            self.logs.write_log_in_file("info", "Curation files exist. Continuing execution.", True)
             copy_files = True
 
         return copy_files
@@ -770,7 +781,7 @@ class Article:
         success = True
         if copy_files and not check_files:
             # check and create empty directories for each version
-            self.logs.write_log_in_file("info", "Checking and creating empty directories.", True)
+            self.logs.write_log_in_file("info", "Checking and creating empty directories in preservation storage.", True)
             success = success & self.create_required_folders(version_data, folder_name)
             # copy curation UAL_RDM files in storage UAL_RDM folder for each version
             self.logs.write_log_in_file("info", "Copying curation UAL_RDM files to preservation UAL_RDM folder.", True)
@@ -970,6 +981,8 @@ class Article:
             if (ual_path_exists is False):
                 # create UAL_RDM directory if not exist
                 os.makedirs(ual_folder_name, exist_ok=True)
+            else:
+                self.logs.write_log_in_file("info", "UAL_RDM directory already exists. Folder not created", True)
 
             # setup DATA directory
             data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
@@ -977,6 +990,8 @@ class Article:
             if (data_path_exists is False):
                 # create DATA directory if it does not exist
                 os.makedirs(data_folder_name, exist_ok=True)
+            else:
+                self.logs.write_log_in_file("info", "DATA directory already exists. Folder not created", True)
         except Exception as e:
             self.logs.write_log_in_file('error', f"{folder_name}: {e}", True)
             return False
