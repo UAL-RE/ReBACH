@@ -56,8 +56,8 @@ def check_logs_path_access(config_file):
 
 def main():
     """
-    This function will be called first.
-    Setting up required variables and conditions.
+    This function will be called first, after parsing the command line.
+    Set up required variables and conditions.
     """
     global args
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: ReBACH script has started.")
@@ -135,17 +135,17 @@ def main():
                                   + " not be reached or read.",
                                   True, False)
 
-    return env_file, log
+    return config_obj, log
 
 
 if __name__ == "__main__":
     get_args()
-    config_file_path, log = main()
+    config, log = main()
 
     log.write_log_in_file('info',
                           "Fetching articles...",
                           True)
-    article_obj = Article(config_file_path, log, args.ids)
+    article_obj = Article(config, log, args.ids)
     article_data = article_obj.get_articles()
 
     published_articles_count = 0
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Fetching collections...",
                           True)
-    collection_obj = Collection(config_file_path, log, args.ids)
+    collection_obj = Collection(config, log, args.ids)
     collection_data = collection_obj.get_collections()
 
     collections_count = 0

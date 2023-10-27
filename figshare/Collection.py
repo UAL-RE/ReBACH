@@ -18,7 +18,7 @@ class Collection:
     :param ids: list of ids to process. If None or an empty list is passed, all collections will be processed
     """
     def __init__(self, config, log, ids):
-        self.config_obj = Config(config)
+        self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]

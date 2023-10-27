@@ -24,7 +24,7 @@ class Article:
     :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
     def __init__(self, config, log, ids):
-        self.config_obj = Config(config)
+        self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
@@ -808,6 +808,7 @@ class Article:
             except Exception as e:
                 self.logs.write_log_in_file("error", str(e), True)
                 if self.system_config['continue-on-error'] == "False":
+                    self.logs.write_log_in_file("info", "Aborting execution.", True)
                     exit()
                 delete_now = True
 
@@ -1032,4 +1033,4 @@ class Article:
         check_exists = os.path.exists(folder_path)
         if (check_exists is True):
             shutil.rmtree(folder_path)
-            self.logs.write_log_in_file("error", f"{folder_path} deleted due to failed validations.")
+            self.logs.write_log_in_file("info", f"{folder_path} deleted due to failed validations.", True)
