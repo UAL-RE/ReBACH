@@ -35,14 +35,30 @@ class Integration:
                      args[0]: 'Article' or 'Collection' to indicate whether the function is called from an Article or Collection.
                      args[1]: Path to the article or collection package.
                      args[2]: (optional, for article only): Result of the pre-processing script.
+                     args[3]: (optional, for article only): If non-zero, indicates an error occured during processing.
         """
         package = args[0]
         preservation_package_path = args[1]
 
-        if (package == "Article"):
-            # Acting on value_pre_process is not currently implemented and is commented out until needed.
-            # value_pre_process = args[2]
+        if len(args) >= 3:
+            value_pre_process = args[2]
+        else:
+            value_pre_process = 0
+
+        if len(args) >= 4:
+            processing_status_code = args[3]
+        else:
+            processing_status_code = 0
+
+        # Acting on value_pre_process is not currently implemented
+        if value_pre_process != 0:
             pass
+
+        # Code 5 corresponds to step 5 of S4.4 in the spec.
+        if processing_status_code != 0:
+            self._rebachlogger.write_log_in_file("info", f"Processing encountered an error (code {processing_status_code}) for {package}"
+                                                 + f" {preservation_package_path}. Post-processing will not continue.", True)
+            return processing_status_code
 
         post_process_script_command = self._config.system_config()["post_process_script_command"]
 
