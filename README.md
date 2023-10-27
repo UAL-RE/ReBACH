@@ -39,11 +39,12 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
 
 ## Command line
+These parameters are only available on the command line.
 |Parameter| Description |
 |---------|-------------|
 |`--xfg`  | The path to the configuration file to use.|
 |`--ids`  | A comma-separated list of article IDs to process. E.g., 12345,12356|
-|`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item|
+|`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item.|
 
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.
