@@ -807,7 +807,7 @@ class Article:
                 # download all files and verify hash with downloaded file.
                 delete_now = self.__download_files(version_data['files'], version_data, folder_name)
             except Exception as e:
-                self.logs.write_log_in_file("error", str(e), True)
+                self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(p).split('_')[0:-1])}" , True)
                 if self.system_config['continue-on-error'] == "False":
                     self.logs.write_log_in_file("info", "Aborting execution.", True)
                     exit()
