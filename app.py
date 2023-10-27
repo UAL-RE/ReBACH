@@ -21,6 +21,8 @@ def get_args():
     parser.add_argument('--xfg', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
     parser.add_argument('--ids', type=lambda s: [int(item) for item in s.split(',')],
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
+    parser.add_argument('--continue-on-error', action='store_true',
+                        help='If an item encounters an error during the processing stage, continue to the next item.')
     args = parser.parse_args()
 
 
@@ -54,8 +56,8 @@ def check_logs_path_access(config_file):
 
 def main():
     """
-    This function will be called first.
-    Setting up required variables and conditions.
+    This function will be called first, after parsing the command line.
+    Set up required variables and conditions.
     """
     global args
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: ReBACH script has started.")
@@ -68,6 +70,8 @@ def main():
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Env file:" + env_file)
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Checking configuration file.")
     config_obj = Config(env_file)
+
+    config_obj.add_setting(name='continue-on-error', value=args.continue_on_error)
 
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
@@ -131,17 +135,17 @@ def main():
                                   + " not be reached or read.",
                                   True, False)
 
-    return env_file, log
+    return config_obj, log
 
 
 if __name__ == "__main__":
     get_args()
-    config_file_path, log = main()
+    config, log = main()
 
     log.write_log_in_file('info',
                           "Fetching articles...",
                           True)
-    article_obj = Article(config_file_path, log, args.ids)
+    article_obj = Article(config, log, args.ids)
     article_data = article_obj.get_articles()
 
     published_articles_count = 0
@@ -163,7 +167,7 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Fetching collections...",
                           True)
-    collection_obj = Collection(config_file_path, log, args.ids)
+    collection_obj = Collection(config, log, args.ids)
     collection_data = collection_obj.get_collections()
 
     collections_count = 0

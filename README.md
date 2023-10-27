@@ -34,9 +34,17 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - post_process_script_command - required: Specifies the method of performing post-processing steps. This can take only two values: the string 'Bagger', or the path to an external script. If the value is set to 'Bagger', the post-processing steps will consist of running the internal `bagger` module. If the value is set to a path to an external script, the post-processing steps will be executed by invoking the external script through the function 'post_process_script_function'. The post-processing steps are executed AFTER the files are copied and logic applied to the preservation storage.
     - curation_storage_location - required: The file system location where the Curation files reside
 - Ensure the aforementioned Dependencies and Requirements are met
-- Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py /path/of/.env.ini` or `python app.py /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
+- Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py --xfg /path/of/.env.ini` or `python app.py --xfg /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
 - Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
+
+## Command line
+These parameters are only available on the command line.
+|Parameter| Description |
+|---------|-------------|
+|`--xfg`  | The path to the configuration file to use.|
+|`--ids`  | A comma-separated list of article IDs to process. E.g., 12345,12356|
+|`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item.|
 
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.

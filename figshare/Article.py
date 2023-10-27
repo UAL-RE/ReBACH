@@ -6,7 +6,6 @@ import time
 import requests
 import hashlib
 import re
-from Config import Config
 from figshare.Integration import Integration
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
@@ -24,7 +23,7 @@ class Article:
     :param ids: a list of ids to process. If None or an empty list is passed, all will be processed
     """
     def __init__(self, config, log, ids):
-        self.config_obj = Config(config)
+        self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
@@ -333,7 +332,7 @@ class Article:
         self.logs.write_log_in_file('info', "Downloading files.", True)
 
         retry_strategy = Retry(
-            total=3,
+            total=self.retries,
             status_forcelist=[429, 500, 502, 503, 504]
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -396,6 +395,8 @@ class Article:
                                                     + f"code {status_code}. Filename {file['name']}. Folder will be deleted.", True)
                         delete_folder = True
                         break
+        else:
+            self.logs.write_log_in_file("info", "No files to download.", True)
 
         return delete_folder
 
@@ -802,8 +803,16 @@ class Article:
             success = success & self.__save_json_in_metadata(version_data, folder_name)
 
         if check_files and copy_files:
-            # download all files and verify hash with downloaded file.
-            delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+            try:
+                # download all files and verify hash with downloaded file.
+                delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+            except Exception as e:
+                self.logs.write_log_in_file("error", str(e), True)
+                if self.system_config['continue-on-error'] == "False":
+                    self.logs.write_log_in_file("info", "Aborting execution.", True)
+                    exit()
+                delete_now = True
+
             # check if download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
@@ -1025,4 +1034,4 @@ class Article:
         check_exists = os.path.exists(folder_path)
         if (check_exists is True):
             shutil.rmtree(folder_path)
-            self.logs.write_log_in_file("error", f"{folder_path} deleted due to failed validations.")
+            self.logs.write_log_in_file("info", f"{folder_path} deleted due to failed validations.", True)
