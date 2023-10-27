@@ -11,3 +11,6 @@ class Config:
 
     def system_config(self):
         return self.config['system']
+
+    def add_setting(self, name, value, section='system'):
+        self.config[section][name] = str(value)

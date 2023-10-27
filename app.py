@@ -71,6 +71,8 @@ def main():
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: " + "Checking configuration file.")
     config_obj = Config(env_file)
 
+    config_obj.add_setting(name='continue-on-error', value=args.continue_on_error)
+
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
     figshare_api_url = figshare_config["url"]
