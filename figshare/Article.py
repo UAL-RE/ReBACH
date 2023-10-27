@@ -588,6 +588,7 @@ class Article:
         if (delete_folder is True):
             self.logs.write_log_in_file("error", f"Validation failed, deleting {preservation_storage_location + folder_path}.", True)
             self.delete_folder(preservation_storage_location + folder_path)
+            process_article = True
 
         return process_article
 
@@ -931,11 +932,10 @@ class Article:
                             # check main folder exists in preservation storage.
                             preservation_storage_location = self.preservation_storage_location
                             check_dir = preservation_storage_location + folder_name
-                            check_main_folder = os.path.exists(check_dir)
                             check_files = True
                             copy_files = True
                             self.logs.write_log_in_file("info", f"Checking if {check_dir} exists.", True)
-                            if (check_main_folder is True):
+                            if (os.path.exists(check_dir) is True):
                                 get_dirs = os.listdir(check_dir)
                                 if (len(get_dirs) > 0):
                                     self.logs.write_log_in_file("info", "Exists and is not empty, checking contents.", True)
@@ -945,12 +945,14 @@ class Article:
                                     check_files = False
                                     # delete folder if validation fails
                                     self.delete_folder(check_dir)
-                                    # call post process script function for each matched item.
-                                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                                    # call post process script function for each matched item. Code 5 corresponds to step 5 of S4.4 in the spec.
+                                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process, 5)
                                     if (value_post_process != 0):
                                         self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                     + "Post-processing script error found.", True)
                                     break
+                            else:
+                                self.logs.write_log_in_file("info", "Does not exist. Folder will be created", True)
 
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
