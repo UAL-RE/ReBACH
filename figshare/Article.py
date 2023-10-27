@@ -333,7 +333,7 @@ class Article:
         self.logs.write_log_in_file('info', "Downloading files.", True)
 
         retry_strategy = Retry(
-            total=3,
+            total=self.retries,
             status_forcelist=[429, 500, 502, 503, 504]
         )
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -802,8 +802,15 @@ class Article:
             success = success & self.__save_json_in_metadata(version_data, folder_name)
 
         if check_files and copy_files:
-            # download all files and verify hash with downloaded file.
-            delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+            try:
+                # download all files and verify hash with downloaded file.
+                delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+            except Exception as e:
+                self.logs.write_log_in_file("error", str(e), True)
+                if self.system_config['continue-on-error'] == "False":
+                    exit()
+                delete_now = True
+
             # check if download process has error or not.
             if (delete_now is False):
                 # copy curation UAL_RDM files in storage UAL_RDM folder for each version
