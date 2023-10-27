@@ -40,7 +40,6 @@ class Integration:
         package = args[0]
         preservation_package_path = args[1]
 
-        # Acting on value_pre_process is not currently implemented
         if len(args) >= 3:
             value_pre_process = args[2]
         else:
@@ -50,6 +49,10 @@ class Integration:
             processing_status_code = args[3]
         else:
             processing_status_code = 0
+
+        # Acting on value_pre_process is not currently implemented
+        if value_pre_process != 0:
+            pass
 
         # Code 5 corresponds to step 5 of S4.4 in the spec.
         if processing_status_code != 0:
