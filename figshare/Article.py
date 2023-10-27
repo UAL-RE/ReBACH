@@ -6,7 +6,6 @@ import time
 import requests
 import hashlib
 import re
-from Config import Config
 from figshare.Integration import Integration
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry

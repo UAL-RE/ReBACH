@@ -3,7 +3,6 @@ import os
 import requests
 import hashlib
 import re
-from Config import Config
 from figshare.Article import Article
 from figshare.Integration import Integration
 
