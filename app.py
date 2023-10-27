@@ -21,6 +21,8 @@ def get_args():
     parser.add_argument('--xfg', required=True, type=Path, help='Path to the ReBACH configuration file. E.g., .env.ini')
     parser.add_argument('--ids', type=lambda s: [int(item) for item in s.split(',')],
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
+    parser.add_argument('--continue-on-error', action='store_true',
+                        help='If an item encounters an error during the processing stage, continue to the next item.')
     args = parser.parse_args()
 
 
