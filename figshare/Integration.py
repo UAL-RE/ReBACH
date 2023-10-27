@@ -57,7 +57,7 @@ class Integration:
         # Code 5 corresponds to step 5 of S4.4 in the spec.
         if processing_status_code != 0:
             self._rebachlogger.write_log_in_file("info", f"Processing encountered an error (code {processing_status_code}) for {package}"
-                                                    + f" {preservation_package_path}. Post-processing will not continue.", True)
+                                                + f" {preservation_package_path}. Post-processing will not continue.", True)
             return processing_status_code
 
         post_process_script_command = self._config.system_config()["post_process_script_command"]
