@@ -152,7 +152,7 @@ if __name__ == "__main__":
         if len(v) > 0:
             published_articles_count += 1
             published_articles_versions_count += len(v)
-        print(k)
+
     log.write_log_in_file('info', "Fetched: "
                           + f"Total articles: {published_unpublished_count}, "
                           + f"Published articles: {published_articles_count}, "
