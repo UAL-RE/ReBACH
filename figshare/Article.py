@@ -396,6 +396,8 @@ class Article:
                                                     + f"code {status_code}. Filename {file['name']}. Folder will be deleted.", True)
                         delete_folder = True
                         break
+        else:
+            self.logs.write_log_in_file("info", "No files to download.", True)
 
         return delete_folder
 
