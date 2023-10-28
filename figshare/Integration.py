@@ -101,7 +101,12 @@ class Integration:
                     bagger.run_dart(Path(args.path, _path))
             else:
                 self._rebachlogger.write_log_in_file("info", f"Processing preservation package '{preservation_package_name}' ", True)
-                status = bagger.run_dart(args.path)
+                try:
+                    status = bagger.run_dart(args.path)
+                except Exception as e:
+                    status = Status(1)
+                    self._rebachlogger.write_log_in_file("error", f"bagger: {e.__class__.__name__}: {str(e)}.", True)
+
                 self._rebachlogger.write_log_in_file("info", f"Status: {status.name}.", True)
                 self._rebachlogger.write_log_in_file("info", f"Exit code: {status}.", True)
                 if (status == 0):

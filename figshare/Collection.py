@@ -1,4 +1,5 @@
 import json
+import shutil
 import os
 import requests
 import hashlib
@@ -251,6 +252,10 @@ class Collection:
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
                 folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
+
+                # Collections don't have an explicit license. Make them CC0
+                version["license"] = json.loads('{"value": 2,"name": "CC0","url": "https://creativecommons.org/publicdomain/zero/1.0/"}')
+
                 self.logs.write_log_in_file("info", f"------- Processing collection {collection} version {version['version']}.", True)
                 self.__save_json_in_metadata(collection, version, folder_name)
                 collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
@@ -272,20 +277,17 @@ class Collection:
         self.article_obj.check_access_of_directories(preservation_storage_location, "preservation")
 
         complete_path = preservation_storage_location + folder_name
-        check_path_exists = os.path.exists(complete_path)
-        if (check_path_exists is False):
-            os.makedirs(complete_path, exist_ok=True)
-            json_data = json.dumps(version_data, indent=4)
-            filename_path = complete_path + "/" + str(collection_id) + ".json"
-            # Writing to json file
-            with open(filename_path, "w") as outfile:
-                outfile.write(json_data)
-            self.logs.write_log_in_file("info", "Saved collection data in json.", True)
-        else:
-            storage_collection_version_dir = os.listdir(complete_path)
-            file_name = f"{str(collection_id)}.json"
-            if (len(storage_collection_version_dir) == 0 or file_name not in storage_collection_version_dir):
-                self.logs.write_log_in_file("warning", f"{complete_path} path already exists but missing {file_name} file.")
+        if (os.path.exists(complete_path)):
+            self.delete_folder(complete_path)
+
+        os.makedirs(complete_path, exist_ok=True)
+        json_data = json.dumps(version_data, indent=4)
+        filename_path = complete_path + "/" + str(collection_id) + ".json"
+        # Writing to json file
+        with open(filename_path, "w") as outfile:
+            outfile.write(json_data)
+        self.logs.write_log_in_file("info", "Saved collection data in json.", True)
+
 
     def get_collection_api_url(self):
         collections_api_url = self.api_endpoint + '/collections'
@@ -313,3 +315,12 @@ class Collection:
                 retries = self.article_obj.retries_if_error(e, 500, retries)
                 if (retries > self.retries):
                     break
+
+    """
+    Delete folder
+    """
+    def delete_folder(self, folder_path):
+        check_exists = os.path.exists(folder_path)
+        if (check_exists is True):
+            shutil.rmtree(folder_path)
+            self.logs.write_log_in_file("info", f"Deleted {folder_path}", True)
