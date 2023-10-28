@@ -288,7 +288,6 @@ class Collection:
             outfile.write(json_data)
         self.logs.write_log_in_file("info", "Saved collection data in json.", True)
 
-
     def get_collection_api_url(self):
         collections_api_url = self.api_endpoint + '/collections'
         if self.api_endpoint[-1] == "/":
