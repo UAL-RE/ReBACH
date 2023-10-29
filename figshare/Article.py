@@ -716,6 +716,15 @@ class Article:
                 for version_data in article_versions_list:
                     # check curation folder for required files and setup data for further processing.
                     if (version_data is not None and len(version_data) > 0):
+                        # check whether the current version is already in preservation storage
+                        # 1. Search for item in preservation storage using only the article_id and version
+                        # 2. If found, check the metadata hash
+                        # 3.   If hash is the same, it means the item in figshare is unchanged
+                        # 4.     add this item to the exclusion list
+                        # 5.   If hash is different, it means the item changed in figshare and has not been preserved yet.
+                        # 6.     continue processing using the existing code
+                        # 7. If not found, item has not been preserved, continue processing using existing code
+
                         data = self.__check_curation_dir(version_data)
                         version_no = "v" + str(data["version"]).zfill(2)
                         i += 1
