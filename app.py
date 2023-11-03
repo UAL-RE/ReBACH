@@ -187,26 +187,45 @@ if __name__ == "__main__":
     processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info',
-                          "Total articles versions processed/fetched: \t\t\t"
-                          + f'{processed_articles_versions_count} / {published_articles_versions_count}',
+                          "Total articles versions matchable/fetched: \t\t\t\t\t"
+                          + f'{published_articles_versions_count - article_obj.no_preserved} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total processed articles bags already in preservation storage: \t"
-                          + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          "Total articles versions matched/matchable: \t\t\t\t\t"
+                          + f'{article_obj.no_matched} / {published_articles_versions_count - article_obj.no_preserved}',
                           True)
     log.write_log_in_file('info',
-                          "Total collections versions processed/fetched: \t\t\t"
+                          "Total articles versions processed/matched: \t\t\t\t\t"
+                          + f'{processed_articles_versions_count} / {article_obj.no_matched}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total articles versions umatched (matchable-matched): \t\t\t\t"
+                          + f'{article_obj.no_unmatched}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total articles versions already preserved (skipped matching, processing): \t"
+                          + f'{article_obj.no_preserved}',
+                          True)
+#    log.write_log_in_file('info',
+#                           "Total articles versions already preserved (processed but bag not uploaded): \t"
+#                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+#                           True)
+    log.write_log_in_file('info',
+                          "Total collections versions processed/fetched: \t\t\t\t\t"
                           + f'{processed_collections_versions_count} / {collections_versions_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total processed collections bags already in preservation storage: "
+                          "Total collections already preserved: \t\t\t\t\t\t"
                           + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
 
-    if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
+    if article_obj.no_matched != published_articles_versions_count - article_obj.no_preserved:
+        log.write_log_in_file('warning',
+                              'The number of matchable articles versions is different than the number matched. Check the log for details.', True)
+    if processed_articles_versions_count != article_obj.no_matched or processed_collections_versions_count != collections_versions_count:
         log.write_log_in_file('warning',
                               'The number of articles versions or collections versions sucessfully processed is different'
-                              + ' than the number fetched. Check the log for details.', True)
+                              + ' than the number matched. Check the log for details.', True)
 
     log.write_log_in_file('info',
                           f"ReBACH finished with {log.warnings_count} warnings and {log.errors_count} errors",
