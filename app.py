@@ -186,8 +186,13 @@ if __name__ == "__main__":
     # Start collections processing after completing fetching data from API and articles processing.
     processed_collections_versions_count = collection_obj.process_collections(collection_data)
 
+    log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
-                          "Total articles versions matchable/fetched: \t\t\t\t\t"
+                          "Total unique articles published/fetched: \t\t\t\t\t"
+                          + f'{published_articles_count} / {published_unpublished_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total articles versions matchable/published: \t\t\t\t\t"
                           + f'{published_articles_versions_count - article_obj.no_preserved} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
@@ -199,7 +204,7 @@ if __name__ == "__main__":
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
-                          "Total articles versions umatched (matchable-matched): \t\t\t\t"
+                          "Total articles versions unmatched (matchable-matched): \t\t\t\t"
                           + f'{article_obj.no_unmatched}',
                           True)
     log.write_log_in_file('info',
@@ -211,7 +216,11 @@ if __name__ == "__main__":
 #                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
 #                           True)
     log.write_log_in_file('info',
-                          "Total collections versions processed/fetched: \t\t\t\t\t"
+                          "Total unique collections published/fetched: \t\t\t\t\t"
+                          + f'{collections_count} / {collections_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total collections versions processed/published: \t\t\t\t\t"
                           + f'{processed_collections_versions_count} / {collections_versions_count}',
                           True)
     log.write_log_in_file('info',
@@ -224,7 +233,7 @@ if __name__ == "__main__":
                               'The number of matchable articles versions is different than the number matched. Check the log for details.', True)
     if processed_articles_versions_count != article_obj.no_matched or processed_collections_versions_count != collections_versions_count:
         log.write_log_in_file('warning',
-                              'The number of articles versions or collections versions sucessfully processed is different'
+                              'The number of articles versions or collections versions successfully processed is different'
                               + ' than the number matched. Check the log for details.', True)
 
     log.write_log_in_file('info',
