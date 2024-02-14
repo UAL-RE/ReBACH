@@ -1,5 +1,5 @@
 {
-	"80dda49d-96c9-46dd-91bf-7f57053854d4": {
+    "80dda49d-96c9-46dd-91bf-7f57053854d4": {
 		"id": "80dda49d-96c9-46dd-91bf-7f57053854d4",
 		"userCanDelete": true,
 		"required": [
@@ -18,13 +18,13 @@
 		],
 		"allowFetchTxt": false,
 		"bagItProfileInfo": {
-			"bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-v2.0.json",
+			"bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-dart-v2.1.json",
 			"bagItProfileVersion": "",
 			"contactEmail": "redata@arizona.edu",
 			"contactName": "ReDATA Administrator",
 			"externalDescription": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
 			"sourceOrganization": "redata.arizona.edu",
-			"version": "2.0"
+			"version": "2.1"
 		},
 		"manifestsRequired": [
 			"md5"
@@ -177,17 +177,16 @@
 				"id": "018c0706-5597-4406-a705-205c608d827f",
 				"tagFile": "bag-info.txt",
 				"tagName": "Internal-Sender-Identifier",
-				"required": false,
+				"required": true,
 				"values": [],
-				"defaultValue": null,
+				"defaultValue": "",
 				"userValue": "",
 				"help": "A unique identifier for this bag inside your organization.",
 				"isBuiltIn": true,
 				"isUserAddedFile": false,
 				"isUserAddedTag": false,
 				"wasAddedForJob": false,
-				"errors": {},
-				"emptyOk": true
+				"errors": {}
 			},
 			{
 				"id": "de2c8f3e-fadb-4811-88a2-83aafa44fb50",
