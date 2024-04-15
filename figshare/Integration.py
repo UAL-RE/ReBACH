@@ -112,7 +112,7 @@ class Integration:
                 self._rebachlogger.write_log_in_file("info", f"Exit code: {status}.", True)
                 if (status == 0):
                     self._rebachlogger.write_log_in_file("info", f"Preservation package '{preservation_package_name}' processed successfully", True)
-                    self.bag_preserved_count +=1
+                    self.bag_preserved_count += 1
                 elif (status == 3):
                     # code 3 is special since we don't want to cause the calling code to interpret duplicates as an error since it will happen a lot
                     self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "

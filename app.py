@@ -196,7 +196,7 @@ if __name__ == "__main__":
                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total articles versions matched/published: \t\t\t\t\t" # todo: exclude already-preserved bags from processing
+                          "Total articles versions matched/published: \t\t\t\t\t"  # todo: exclude already-preserved bags from processing
                           + f'{article_obj.no_matched} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
