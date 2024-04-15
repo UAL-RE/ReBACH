@@ -45,6 +45,8 @@ class Article:
         self.article_non_match_info = {}
         self.input_articles_id = ids
         self.matched_curation_folder_list = []
+        self.no_matched = 0
+        self.no_unmatched = 0
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -707,7 +709,8 @@ class Article:
     """
     def find_matched_articles(self, articles):
         article_data = {}
-        no_matched = 0
+        self.no_matched = 0
+        self.no_unmatched = 0
         i = 0
         for article in articles:
             if (articles[article] is not None):
@@ -723,7 +726,7 @@ class Article:
                             total_file_size = version_data['size']
                             self.total_all_articles_file_size += total_file_size
                             article_data[version_data['id']].append(data)
-                            no_matched += 1
+                            self.no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
                             if (self.input_articles_id):
                                 self.matched_curation_folder_list.append(data['author_dir'])
@@ -746,8 +749,9 @@ class Article:
                     self.logs.write_log_in_file('error', f"Unable to fetch matched article id - {self.article_match_info[index]}", True)
 
         unmatched_articles = []
+        self.no_unmatched = len(self.article_non_match_info)
         if (self.article_non_match_info):
-            self.logs.write_log_in_file('warning', "Curation folder not found for below articles", True)
+            self.logs.write_log_in_file('info', "Curation folder not found for below articles", True)
 
             # log unmatched articles id, and version
             for index in self.article_non_match_info:
@@ -762,8 +766,8 @@ class Article:
 
         self.logs.write_log_in_file("info", f"Total matched unique articles: {len(set(matched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
-        self.logs.write_log_in_file("info", f"Total matched article versions: {no_matched}.", True)
-        self.logs.write_log_in_file("info", f"Total unmatched article versions: {len(self.article_non_match_info)}.", True)
+        self.logs.write_log_in_file("info", f"Total matched article versions: {self.no_matched}.", True)
+        self.logs.write_log_in_file("info", f"Total unmatched article versions: {self.no_unmatched}.", True)
 
         if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
             self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
