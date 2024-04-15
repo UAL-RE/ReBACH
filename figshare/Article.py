@@ -729,7 +729,7 @@ class Article:
                             self.no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
                             if (self.input_articles_id):
-                                self.matched_curation_folder_list.append(data['author_dir'])
+                                self.matched_curation_folder_list.append(os.path.join(data['author_dir'], version_no))
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
 
@@ -900,6 +900,7 @@ class Article:
         # Calculate the size of the curation folder
         # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
         # Otherwise, it is calculated considering all curation folders.
+        breakpoint()
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
