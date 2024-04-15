@@ -504,14 +504,16 @@ class Article:
     """
     Get size of files of the given directory path
     :param dir_path string  path of dir where file size require to calculate.
+    :param include_only string include in the total only paths that contain this string. If ommitted, includes all paths.
     :return size integer
     """
-    def get_file_size_of_given_path(self, dir_path):
+    def get_file_size_of_given_path(self, dir_path, include_only=""):
         size = 0
         for path, dirs, files in os.walk(dir_path):
-            for f in files:
-                fp = os.path.join(path, f)
-                size += os.path.getsize(fp)
+            if include_only in path:
+                for f in files:
+                    fp = os.path.join(path, f)
+                    size += os.path.getsize(fp)
 
         return size
 
@@ -900,14 +902,13 @@ class Article:
         # Calculate the size of the curation folder
         # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
         # Otherwise, it is calculated considering all curation folders.
-        breakpoint()
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
                 path = curation_storage_location + folder
-                curation_folder_size += self.get_file_size_of_given_path(path)
+                curation_folder_size += self.get_file_size_of_given_path(path, "UAL_RDM")
         else:
-            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location, "UAL_RDM")
 
         required_space = curation_folder_size + self.total_all_articles_file_size
 
