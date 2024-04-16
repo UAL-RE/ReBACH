@@ -513,7 +513,10 @@ class Article:
             if include_only in path:
                 for f in files:
                     fp = os.path.join(path, f)
-                    size += os.path.getsize(fp)
+                    try:
+                        size += os.path.getsize(fp)
+                    except:
+                        pass
 
         return size
 
@@ -675,7 +678,7 @@ class Article:
         self.check_access_of_directories(curation_storage_location, "curation")
 
         preservation_storage_location = self.preservation_storage_location
-        complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        complete_folder_name = os.path.join(preservation_storage_location, folder_name, version_no, "UAL_RDM")
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -688,7 +691,7 @@ class Article:
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
                             if (dir == version_no):
-                                curation_dir_name = article_dir_in_curation + "/" + dir + "/UAL_RDM"
+                                curation_dir_name = os.path.join(article_dir_in_curation, dir, "UAL_RDM")
                                 # check preservation dir is reachable
                                 self.check_access_of_directories(preservation_storage_location, "preservation")
                                 try:
@@ -696,7 +699,7 @@ class Article:
                                     if (check_path_exists is False):
                                         os.makedirs(complete_folder_name, exist_ok=True)
                                     # copying files to preservation version folder
-                                    shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
+                                    shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True, ignore_dangling_symlinks=False)
                                     self.logs.write_log_in_file("info", "Copied curation files to preservation folder.", True)
                                     result = True
                                 except Exception as e:
