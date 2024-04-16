@@ -504,14 +504,19 @@ class Article:
     """
     Get size of files of the given directory path
     :param dir_path string  path of dir where file size require to calculate.
+    :param include_only string include in the total only paths that contain this string. If ommitted, includes all paths.
     :return size integer
     """
-    def get_file_size_of_given_path(self, dir_path):
+    def get_file_size_of_given_path(self, dir_path, include_only=""):
         size = 0
         for path, dirs, files in os.walk(dir_path):
-            for f in files:
-                fp = os.path.join(path, f)
-                size += os.path.getsize(fp)
+            if include_only in path:
+                for f in files:
+                    fp = os.path.join(path, f)
+                    try:
+                        size += os.path.getsize(fp)
+                    except Exception:
+                        pass
 
         return size
 
@@ -673,7 +678,7 @@ class Article:
         self.check_access_of_directories(curation_storage_location, "curation")
 
         preservation_storage_location = self.preservation_storage_location
-        complete_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        complete_folder_name = os.path.join(preservation_storage_location, folder_name, version_no, "UAL_RDM")
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -686,7 +691,7 @@ class Article:
                     for dir in read_dirs:
                         if dir not in self.exclude_dirs:
                             if (dir == version_no):
-                                curation_dir_name = article_dir_in_curation + "/" + dir + "/UAL_RDM"
+                                curation_dir_name = os.path.join(article_dir_in_curation, dir, "UAL_RDM")
                                 # check preservation dir is reachable
                                 self.check_access_of_directories(preservation_storage_location, "preservation")
                                 try:
@@ -694,7 +699,7 @@ class Article:
                                     if (check_path_exists is False):
                                         os.makedirs(complete_folder_name, exist_ok=True)
                                     # copying files to preservation version folder
-                                    shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True)
+                                    shutil.copytree(curation_dir_name, complete_folder_name, dirs_exist_ok=True, ignore_dangling_symlinks=False)
                                     self.logs.write_log_in_file("info", "Copied curation files to preservation folder.", True)
                                     result = True
                                 except Exception as e:
@@ -729,7 +734,7 @@ class Article:
                             self.no_matched += 1
                             self.article_match_info[i] = f"article {data['id']} {version_no} ----- {data['author_dir']}"
                             if (self.input_articles_id):
-                                self.matched_curation_folder_list.append(data['author_dir'])
+                                self.matched_curation_folder_list.append(os.path.join(data['author_dir'], version_no))
                         else:
                             self.article_non_match_info[i] = f"article {data['id']} {version_no}"
 
@@ -904,9 +909,9 @@ class Article:
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
                 path = curation_storage_location + folder
-                curation_folder_size += self.get_file_size_of_given_path(path)
+                curation_folder_size += self.get_file_size_of_given_path(path, "UAL_RDM")
         else:
-            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location)
+            curation_folder_size = self.get_file_size_of_given_path(curation_storage_location, "UAL_RDM")
 
         required_space = curation_folder_size + self.total_all_articles_file_size
 
