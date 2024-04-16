@@ -515,7 +515,7 @@ class Article:
                     fp = os.path.join(path, f)
                     try:
                         size += os.path.getsize(fp)
-                    except:
+                    except Exception as e:
                         pass
 
         return size
