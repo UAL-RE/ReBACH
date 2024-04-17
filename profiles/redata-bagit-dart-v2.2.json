@@ -18,13 +18,13 @@
 		],
 		"allowFetchTxt": false,
 		"bagItProfileInfo": {
-			"bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-dart-v2.1.json",
+			"bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-dart-v2.2.json",
 			"bagItProfileVersion": "",
 			"contactEmail": "redata@arizona.edu",
 			"contactName": "ReDATA Administrator",
 			"externalDescription": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
 			"sourceOrganization": "redata.arizona.edu",
-			"version": "2.1"
+			"version": "2.2"
 		},
 		"manifestsRequired": [
 			"md5"
@@ -181,7 +181,7 @@
 				"values": [],
 				"defaultValue": "",
 				"userValue": "",
-				"help": "A unique identifier for this bag inside your organization.",
+				"help": "A unique identifier for this bag inside your organization. For ReDATA, it is the DOI.",
 				"isBuiltIn": true,
 				"isUserAddedFile": false,
 				"isUserAddedTag": false,
@@ -277,21 +277,6 @@
 				"isBuiltIn": true,
 				"isUserAddedFile": false,
 				"isUserAddedTag": false,
-				"wasAddedForJob": false,
-				"errors": {}
-			},
-			{
-				"id": "d2e29c7a-0d33-4e72-8e37-2d994b6bfe9f",
-				"tagFile": "bag-info.txt",
-				"tagName": "DOI",
-				"required": true,
-				"values": [],
-				"defaultValue": "",
-				"userValue": "",
-				"help": "Digital Object Identifier assigned to the item in ReDATA.",
-				"isBuiltIn": false,
-				"isUserAddedFile": false,
-				"isUserAddedTag": true,
 				"wasAddedForJob": false,
 				"errors": {}
 			},
