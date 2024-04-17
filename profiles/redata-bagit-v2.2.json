@@ -24,13 +24,13 @@
     "*"
   ],
   "BagIt-Profile-Info": {
-    "BagIt-Profile-Identifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-v2.1.json",
+    "BagIt-Profile-Identifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-v2.2.json",
     "BagIt-Profile-Version": "",
     "Contact-Email": "redata@arizona.edu",
     "Contact-Name": "ReDATA Administrator",
     "External-Description": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
     "Source-Organization": "redata.arizona.edu",
-    "Version": "2.1"
+    "Version": "2.2"
   },
   "Bag-Info": {
     "Source-Organization": {
@@ -56,9 +56,6 @@
     },
     "Payload-Oxum": {
       "required": false
-    },
-    "DOI": {
-      "required": true
     },
     "License-Name": {
       "required": false,
