@@ -6,6 +6,7 @@ import time
 import requests
 import hashlib
 import re
+from figshare.Utils import *
 from figshare.Integration import Integration
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
@@ -25,6 +26,7 @@ class Article:
     def __init__(self, config, log, ids):
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
+        self.aptrust_config = self.config_obj.aptrust_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
@@ -47,6 +49,8 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
+        self.ap_trust_preserved_versions = 0
+        self.wasabi_preserved_versions = 0
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -149,7 +153,12 @@ class Article:
                                 self.logs.write_log_in_file("info",
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
+                                if version_data == "Skip":
+                                    self.ap_trust_preserved_versions += 1
+                                    continue
                                 metadata.append(version_data)
+                            self.logs.write_log_in_file("info",
+                                                        f"Total already preserved (skipped) versions: {self.ap_trust_preserved_versions}.", True)
                         else:
                             # This branch is for cases where the item has a total embargo and no versions are available via the public API
                             version_data = self.private_article_for_data(private_url, article['id'])
@@ -258,14 +267,33 @@ class Article:
                             files = version_data['files']
 
                         version_md5 = ''
+                        version_data = standardize_api_result(version_data)
+                        version_data = sorter_api_result(version_data)
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
+                        preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+                        wasabi_preserved_version_md5 = check_wasabi(article_id, version['version'])
+
+                        if compare_hash(version_md5, wasabi_preserved_version_md5):
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} initially preserved in Wasabi. Skipping...",
+                                                        True)
+                        else:
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} not in Wasabi", True)
+
+                        # Compare hash here
+                        if compare_hash(version_md5, preserved_version_md5):
+                            if total_file_size == preserved_version_size:
+                                self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} initially preserved. Skipping...", True)
+                                return "Skip"
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
                         version_data['file_size_sum'] = total_file_size
                         version_data['version_md5'] = version_md5
-                        if (error):
+
+                        if error:
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
 
@@ -977,7 +1005,7 @@ class Article:
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
-        return processed_count
+        return processed_count, self.ap_trust_preserved_versions, self.wasabi_preserved_versions
 
     """
     Preservation and Curation directory access check while processing.

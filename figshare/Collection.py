@@ -6,6 +6,7 @@ import hashlib
 import re
 from figshare.Article import Article
 from figshare.Integration import Integration
+from figshare.Utils import *
 
 
 class Collection:
@@ -21,6 +22,7 @@ class Collection:
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
+        self.aptrust_config = self.config_obj.aptrust_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
@@ -240,15 +242,27 @@ class Collection:
     """
     def process_collections(self, collections):
         processed_count = 0
+        already_preserved_collection_versions = 0
         self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
             versions = data['versions']
             for version in versions:
-                json_data = json.dumps(version).encode("utf-8")
+                dict_data = version
+                dict_data = standardize_api_result(dict_data)
+                dict_data = sorter_api_result(dict_data)
+                json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
+                preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config,
+                                                                                                    version['id'],
+                                                                                                    version_no)
+                if compare_hash(version_md5, preserved_version_md5):
+                    already_preserved_collection_versions += 1
+                    self.logs.write_log_in_file("info", f"{collection} version {version['version']} initially preserved. Skipping...")
+                    continue
+
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
                 folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
                 version["articles"] = articles
@@ -264,7 +278,7 @@ class Collection:
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
                 else:
                     processed_count += 1
-        return processed_count
+        return processed_count, already_preserved_collection_versions
 
     """
     Save json data for each collection version in related directory
