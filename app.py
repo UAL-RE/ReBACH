@@ -181,16 +181,17 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    processed_articles_versions_count = article_obj.process_articles(article_data)
+    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    processed_collections_versions_count = collection_obj.process_collections(collection_data)
+    processed_collections_versions_count, already_preserved_collection_versions_count = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
                           "Total articles/published articles: \t\t\t\t\t\t"
                           + f'{published_unpublished_count} / {published_articles_count}',
                           True)
+
     log.write_log_in_file('info',
                           "Total processed articles bags already in preservation storage: \t\t\t"
                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
@@ -202,6 +203,14 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Total articles versions processed/matched: \t\t\t\t\t"
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total count of already preserved articles versions in AP Trust: \t\t\t\t\t\t"
+                          + f'{ap_trust_preserved_article_version_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total count of already preserved articles versions in Wasabi: \t\t\t\t\t\t"
+                          + f'{wasabi_preserved_versions}',
                           True)
     log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
@@ -222,6 +231,10 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Total collections already preserved: \t\t\t\t\t\t"
                           + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total count of already preserved collections versions: \t\t\t\t\t\t"
+                          + f'{already_preserved_collection_versions_count}',
                           True)
 
     if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
