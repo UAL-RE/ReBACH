@@ -274,6 +274,7 @@ class Article:
                         preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
                         wasabi_preserved_version_md5 = check_wasabi(article_id, version['version'])
 
+                        # Compare hashes
                         if compare_hash(version_md5, wasabi_preserved_version_md5):
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} initially preserved in Wasabi. Skipping...",
@@ -282,7 +283,6 @@ class Article:
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} not in Wasabi", True)
 
-                        # Compare hash here
                         if compare_hash(version_md5, preserved_version_md5):
                             if total_file_size == preserved_version_size:
                                 self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} initially preserved. Skipping...", True)

@@ -1,4 +1,3 @@
-import sys
 import requests
 from typing import Any
 from operator import itemgetter
@@ -26,9 +25,11 @@ def sorter_api_result(json_dict_: Any) -> Any:
     """
     Sorts a dict and its items recursively
 
-    :param  json_dict_:  a dict or a list to be sorted
-    :type: any
-    :rtype: dict
+    :param  json_dict_:  Any data type to be sorted, preferably a list or a dictionary
+    :type: Any
+
+    :return: a sorted dict or a sorted list depending on the data type of the parameter
+    :rtype: dict or list
     """
     sorted_dict = {}
 
@@ -51,7 +52,7 @@ def sorter_api_result(json_dict_: Any) -> Any:
     return sorted_dict
 
 
-def get_preserved_version_hash_and_size(config, article_id: str, version_no: int) -> tuple:
+def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> tuple:
     """
     Extracts md5 hash and size from preserved article version metadata.
     If version is already preserved, it returns a tuple containing
@@ -61,10 +62,12 @@ def get_preserved_version_hash_and_size(config, article_id: str, version_no: int
     :param  config:  Configuration to use for extraction (where to extract)
     :type config: dict
     :param article_id: id number of article in Figshare
-    :type article_id: str
+    :type article_id: int
     :param version_no: version number of article
     :type version_no: int
 
+    :return: A tuple containing md5 hash and size of preserved package version in AP Trust.
+             if the package version has been initially preserved.
     :rtype: tuple
     """
 
@@ -108,10 +111,39 @@ def get_preserved_version_hash_and_size(config, article_id: str, version_no: int
 
 
 def compare_hash(article_version_hash: str, preserved_pkg_hash: str) -> bool:
+    """
+    Compares two strings
+
+    :param article_version_hash: A string containing md5 hash of the current article
+                                version been prepared for bagging
+    :type article_version_hash: str
+
+    :param preserved_pkg_hash: A string containing md5 hash of the current article
+                               version already in AP Trust
+    :type preserved_pkg_hash: str
+
+    :return: True or False
+    :rtype: bool
+    """
+
     return article_version_hash == preserved_pkg_hash
 
 
-def check_wasabi(article_id, version_no):
+def check_wasabi(article_id: int, version_no: int) -> str:
+    """
+    Checks Wasabi preservation bucket if current article version has been bagged into Wasabi
+
+    :param article_id: Article id of current article been prepared for bagging
+    :type article_id: int
+
+    :param version_no: Version number of current article been prepared for bagging
+    :type version_no: int
+
+    :return: Returns a string containing md5 hash of the article version if article version
+             package exists in Wasabi else it returns empty string
+    :rtype: str
+    """
+
     preserved_article_hash = ''
     config = configparser.ConfigParser()
     config.read('bagger/config/default.toml')
@@ -145,4 +177,4 @@ def check_wasabi(article_id, version_no):
         if str(article_id) in package and version_no in package:
             preserved_article_hash = package.split('_')[-1].replace('.tar', '')
             return preserved_article_hash
-    return False
+    return preserved_article_hash
