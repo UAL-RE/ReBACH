@@ -184,7 +184,7 @@ if __name__ == "__main__":
     processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    processed_collections_versions_count, already_preserved_collection_versions_count = collection_obj.process_collections(collection_data)
+    processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
@@ -233,8 +233,13 @@ if __name__ == "__main__":
                           + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved collections versions: \t\t\t\t\t\t"
+                          "Total count of already preserved collections versions in AP Trust: \t\t\t\t\t\t"
                           + f'{already_preserved_collection_versions_count}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved collections versions in Wasabi: \t\t\t\t\t\t"
+                          + f'{preserved_collection_versions_in_wasabi}',
                           True)
 
     if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:

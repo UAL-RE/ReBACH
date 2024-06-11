@@ -276,8 +276,9 @@ class Article:
 
                         # Compare hashes
                         if compare_hash(version_md5, wasabi_preserved_version_md5):
+                            self.wasabi_preserved_versions += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} initially preserved in Wasabi. Skipping...",
+                                                        f"Article {article_id} version {version['version']} initially preserved in Wasabi. ",
                                                         True)
                         else:
                             self.logs.write_log_in_file("info",

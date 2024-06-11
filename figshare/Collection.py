@@ -243,6 +243,8 @@ class Collection:
     def process_collections(self, collections):
         processed_count = 0
         already_preserved_collection_versions = 0
+        preserved_versions_in_wasabi = 0
+
         self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
             data = collections[collection]
@@ -258,6 +260,18 @@ class Collection:
                 preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config,
                                                                                                     version['id'],
                                                                                                     version_no)
+                wasabi_preserved_version_md5 = check_wasabi(version['id'], version_no)
+
+                if compare_hash(version_md5, wasabi_preserved_version_md5):
+                    preserved_versions_in_wasabi += 1
+                    self.logs.write_log_in_file("info",
+                                                f"Collection {version['id']} version {version['version']} initially preserved in Wasabi. Skipping...",
+                                                True)
+                else:
+                    self.logs.write_log_in_file("info",
+                                                f"Collection {version['id']} version {version['version']} not in Wasabi",
+                                                True)
+
                 if compare_hash(version_md5, preserved_version_md5):
                     already_preserved_collection_versions += 1
                     self.logs.write_log_in_file("info", f"{collection} version {version['version']} initially preserved. Skipping...")
@@ -278,7 +292,7 @@ class Collection:
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
                 else:
                     processed_count += 1
-        return processed_count, already_preserved_collection_versions
+        return processed_count, already_preserved_collection_versions, preserved_versions_in_wasabi
 
     """
     Save json data for each collection version in related directory
