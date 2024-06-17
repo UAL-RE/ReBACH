@@ -181,10 +181,12 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions = article_obj.process_articles(article_data)
+    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions \
+        = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi = collection_obj.process_collections(collection_data)
+    processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi \
+        = collection_obj.process_collections(collection_data)
 
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',

@@ -6,7 +6,8 @@ import hashlib
 import re
 from figshare.Article import Article
 from figshare.Integration import Integration
-from figshare.Utils import *
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
+from figshare.Utils import compare_hash, check_wasabi
 
 
 class Collection:

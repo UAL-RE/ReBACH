@@ -6,8 +6,9 @@ import time
 import requests
 import hashlib
 import re
-from figshare.Utils import *
 from figshare.Integration import Integration
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
+from figshare.Utils import compare_hash, check_wasabi
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -271,7 +272,8 @@ class Article:
                         version_data = sorter_api_result(version_data)
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
-                        preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+                        preserved_version_md5, preserved_version_size \
+                            = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
                         wasabi_preserved_version_md5 = check_wasabi(article_id, version['version'])
 
                         # Compare hashes
@@ -286,7 +288,9 @@ class Article:
 
                         if compare_hash(version_md5, preserved_version_md5):
                             if total_file_size == preserved_version_size:
-                                self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} initially preserved. Skipping...", True)
+                                self.logs.write_log_in_file("info",
+                                                            f"Article {article_id} version {version['version']} initially preserved. Skipping...",
+                                                            True)
                                 return "Skip"
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
