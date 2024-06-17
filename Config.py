@@ -9,6 +9,9 @@ class Config:
     def figshare_config(self):
         return self.config['figshare_api']
 
+    def aptrust_config(self):
+        return self.config['aptrust_api']
+
     def system_config(self):
         return self.config['system']
 
