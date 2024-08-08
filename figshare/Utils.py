@@ -48,6 +48,9 @@ def sorter_api_result(json_dict_: Any) -> Any:
         sorted_dict = {}
         json_dict_keys = sorted(list(json_dict_.keys()))
         for key in json_dict_keys:
+            if key == 'authors':
+                sorted_dict[key] = json_dict_[key]
+                continue
             sorted_dict[key] = sorter_api_result(json_dict_[key])
     return sorted_dict
 
