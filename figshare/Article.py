@@ -278,20 +278,14 @@ class Article:
 
                         # Compare hashes
                         if compare_hash(version_md5, wasabi_preserved_version_md5):
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} already in Wasabi.")
                             self.wasabi_preserved_versions += 1
-                            self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} initially preserved in Wasabi. ",
-                                                        True)
-                        else:
-                            self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} not in Wasabi", True)
 
                         if compare_hash(version_md5, preserved_version_md5):
-                            if total_file_size == preserved_version_size:
-                                self.logs.write_log_in_file("info",
-                                                            f"Article {article_id} version {version['version']} initially preserved. Skipping...",
-                                                            True)
-                                return "Skip"
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} hash match in AP Trust", True)
+                            return "Skip"
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
