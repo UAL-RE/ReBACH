@@ -50,8 +50,9 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        self.ap_trust_preserved_versions = 0
-        self.wasabi_preserved_versions = 0
+        # self.ap_trust_preserved_versions = 0
+        # self.wasabi_preserved_versions = 0
+        self.already_preserved_counts_dict = {}
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -114,7 +115,7 @@ class Article:
                 if (retries > self.retries):
                     break
 
-        return article_data
+        return article_data, self.already_preserved_counts_dict
 
     def article_loop(self, articles, page_size, page, article_data):
         no_of_article = 0
@@ -155,11 +156,12 @@ class Article:
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 if version_data == "Skip":
-                                    self.ap_trust_preserved_versions += 1
+                                    # self.ap_trust_preserved_versions += 1
                                     continue
                                 metadata.append(version_data)
                             self.logs.write_log_in_file("info",
-                                                        f"Total already preserved (skipped) versions: {self.ap_trust_preserved_versions}.", True)
+                                                        f"Total already preserved (skipped) versions: \
+                                                        {self.already_preserved_counts_dict['already_preserved_versions']}.", True)
                         else:
                             # This branch is for cases where the item has a total embargo and no versions are available via the public API
                             version_data = self.private_article_for_data(private_url, article['id'])
@@ -243,8 +245,14 @@ class Article:
     If files > 0 then __download_files will be called
     """
     def __get_article_metadata_by_version(self, version, article_id):
+        if 'already_preserved_article_ids' not in self.already_preserved_counts_dict.keys():
+            self.already_preserved_counts_dict['already_preserved_article_ids'] = []
         retries = 1
+        self.already_preserved_counts_dict['already_preserved_versions'] = 0
+        self.already_preserved_counts_dict['wasabi_preserved_versions'] = 0
+        self.already_preserved_counts_dict['ap_trust_preserved_versions'] = 0
         success = False
+        already_preserved = False
 
         while not success and retries <= int(self.retries):
             try:
@@ -277,15 +285,37 @@ class Article:
                         wasabi_preserved_version_md5 = check_wasabi(article_id, version['version'])
 
                         # Compare hashes
-                        if compare_hash(version_md5, wasabi_preserved_version_md5):
+                        if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
+                            already_preserved = True
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} already in Wasabi.")
-                            self.wasabi_preserved_versions += 1
+                                                        f"Article {article_id} version {version['version']} already preserved in Wasabi and AP Trust.", True)
+                            # return "Skip"
 
-                        if compare_hash(version_md5, preserved_version_md5):
+                        elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Wasabi only check
+                            already_preserved = True
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} hash match in AP Trust", True)
+                                                       f"Article {article_id} version {version['version']} already preserved in Wasabi.",
+                                                       True)
+                            # return "Skip"
+
+                        elif compare_hash(version_md5, preserved_version_md5):  # AP Trust only check
+                            already_preserved = True
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} already preserved in AP Trust.", True)
+                            # return "Skip"
+
+                        if already_preserved:
+                            if article_id not in self.already_preserved_counts_dict['already_preserved_article_ids']:
+                                self.already_preserved_counts_dict['already_preserved_article_ids'].append(article_id)
                             return "Skip"
+
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
@@ -1004,7 +1034,8 @@ class Article:
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
-        return processed_count, self.ap_trust_preserved_versions, self.wasabi_preserved_versions
+        return processed_count, self.already_preserved_counts_dict['ap_trust_preserved_versions'], \
+            self.already_preserved_counts_dict['wasabi_preserved_versions']
 
     """
     Preservation and Curation directory access check while processing.

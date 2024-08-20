@@ -146,11 +146,14 @@ if __name__ == "__main__":
                           "Fetching articles...",
                           True)
     article_obj = Article(config, log, args.ids)
-    article_data = article_obj.get_articles()
+    article_data, already_preserved_counts_dict = article_obj.get_articles()
 
+    already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
+    already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
     published_articles_count = 0
     published_articles_versions_count = 0
     published_unpublished_count = 0
+
     for i, (k, v) in enumerate(article_data.items()):
         published_unpublished_count += 1
         if len(v) > 0:
@@ -159,8 +162,8 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info', "Fetched: "
                           + f"Total articles: {published_unpublished_count}, "
-                          + f"Published articles: {published_articles_count}, "
-                          + f"Published article versions: {published_articles_versions_count}",
+                          + f"Published articles: {published_articles_count + already_preserved_articles_count}, "
+                          + f"Published article versions: {published_articles_versions_count + already_preserved_versions_count}",
                           True)
     print(" ")
 
