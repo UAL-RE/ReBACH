@@ -50,8 +50,6 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        # self.ap_trust_preserved_versions = 0
-        # self.wasabi_preserved_versions = 0
         self.already_preserved_counts_dict = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -156,7 +154,6 @@ class Article:
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 if version_data == "Skip":
-                                    # self.ap_trust_preserved_versions += 1
                                     continue
                                 metadata.append(version_data)
                             self.logs.write_log_in_file("info",

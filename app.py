@@ -194,11 +194,11 @@ if __name__ == "__main__":
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
                           "Total articles/published articles: \t\t\t\t\t\t"
-                          + f'{published_unpublished_count} / {published_articles_count}',
+                          + f'{published_unpublished_count} / {published_articles_count + already_preserved_articles_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total processed articles bags already in preservation storage: \t\t\t"
+                          "Total processed articles bags already in preservation storage found by Bagger: \t\t\t"
                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
     log.write_log_in_file('info',
@@ -217,12 +217,23 @@ if __name__ == "__main__":
                           "Total count of already preserved articles versions in Wasabi: \t\t\t\t\t\t"
                           + f'{wasabi_preserved_versions}',
                           True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved articles: \t\t\t\t\t\t"
+                          + f'{already_preserved_articles_count}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved article versions: \t\t\t\t\t\t"
+                          + f'{already_preserved_versions_count}',
+                          True)
+
     log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
                           + f'{article_obj.no_unmatched}',
                           True)
     log.write_log_in_file('info',
-                          "Total processed articles bags successfully preserved \t\t\t\t"
+                          "Total processed articles bags successfully preserved: \t\t\t\t"
                           + f'{article_obj.processor.bag_preserved_count}',
                           True)
     log.write_log_in_file('info',
