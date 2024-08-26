@@ -181,3 +181,9 @@ def check_wasabi(article_id: int, version_no: int) -> str:
             preserved_article_hash = package.split('_')[-1].replace('.tar', '')
             return preserved_article_hash
     return preserved_article_hash
+
+
+def get_filenames_and_sizes_from_ls(ls: str):
+    lines = ls.splitlines()
+    return [(line.rsplit('/', 1)[-1], line.split()[-2]) for line in lines if
+            line.rsplit('/', 1)[-1] != '']
