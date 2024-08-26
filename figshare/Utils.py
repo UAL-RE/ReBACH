@@ -132,7 +132,7 @@ def compare_hash(article_version_hash: str, preserved_pkg_hash: str) -> bool:
     return article_version_hash == preserved_pkg_hash
 
 
-def check_wasabi(article_id: int, version_no: int) -> str:
+def check_wasabi(article_id: int, version_no: int) -> tuple:
     """
     Checks Wasabi preservation bucket if current article version has been bagged into Wasabi
 
@@ -142,12 +142,13 @@ def check_wasabi(article_id: int, version_no: int) -> str:
     :param version_no: Version number of current article been prepared for bagging
     :type version_no: int
 
-    :return: Returns a string containing md5 hash of the article version if article version
-             package exists in Wasabi else it returns empty string
+    :return: Returns a tuple containing md5 hash of the article version and its size if article version
+             package exists in Wasabi else it returns empty string and 0
     :rtype: str
     """
 
     preserved_article_hash = ''
+    preserved_article_size = 0
     config = configparser.ConfigParser()
     config.read('bagger/config/default.toml')
     wasabi_config = config['Wasabi']
@@ -167,7 +168,7 @@ def check_wasabi(article_id: int, version_no: int) -> str:
 
     preservation_bucket, bucket_error = wasabi.list_bucket(wasabi_bucket)
 
-    preserved_packages = get_filenames_from_ls(preservation_bucket)
+    preserved_packages = get_filenames_and_sizes_from_ls(preservation_bucket)
 
     if 'v' in str(version_no):
         version_no = version_no
@@ -177,10 +178,11 @@ def check_wasabi(article_id: int, version_no: int) -> str:
         version_no = f'v{str(version_no)}'
 
     for package in preserved_packages:
-        if str(article_id) in package and version_no in package:
-            preserved_article_hash = package.split('_')[-1].replace('.tar', '')
-            return preserved_article_hash
-    return preserved_article_hash
+        if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
+            preserved_article_hash = package[0].split('_')[-1].replace('.tar', '')
+            preserved_article_size = package[1]
+            return preserved_article_hash, preserved_article_size
+    return preserved_article_hash, preserved_article_size
 
 
 def get_filenames_and_sizes_from_ls(ls: str):
