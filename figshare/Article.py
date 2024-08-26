@@ -279,7 +279,7 @@ class Article:
                         version_md5 = hashlib.md5(json_data).hexdigest()
                         preserved_version_md5, preserved_version_size \
                             = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
-                        wasabi_preserved_version_md5 = check_wasabi(article_id, version['version'])
+                        wasabi_preserved_version_md5, wasabi_preserved_size = check_wasabi(article_id, version['version'])
 
                         # Compare hashes
                         if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
