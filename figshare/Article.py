@@ -311,8 +311,7 @@ class Article:
                         if already_preserved:
                             if article_id not in self.already_preserved_counts_dict['already_preserved_article_ids']:
                                 self.already_preserved_counts_dict['already_preserved_article_ids'].append(article_id)
-                            return "Skip"
-
+                            # return "Skip"
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
