@@ -103,7 +103,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                 for package in preserved_packages:
                     if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
                         preserved_pkg_hash = package['bag_name'].split('_')[-1]
-                        preserved_pkg_size = package['size']
+                        preserved_pkg_size = package['payload_size']
                         return preserved_pkg_hash, preserved_pkg_size
         except requests.exceptions.RequestException as e:
             tries += 1
