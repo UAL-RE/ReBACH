@@ -12,6 +12,8 @@ from figshare.Utils import compare_hash, check_wasabi
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
+from ReBACH.figshare.Utils import calculate_payload_size
+
 
 class Article:
     api_endpoint = ""
@@ -254,10 +256,12 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 if (version):
+                    json_file_size = 0
                     public_url = version['url']
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
+                        json_file_size = calculate_payload_size(version_data)
                         total_file_size = version_data['size']
                         files = []
                         error = ""

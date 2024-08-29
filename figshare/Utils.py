@@ -1,4 +1,6 @@
 import requests
+import json
+import os
 from typing import Any
 from operator import itemgetter
 from time import sleep
@@ -199,3 +201,30 @@ def get_filenames_and_sizes_from_ls(ls: str)->list:
     lines = ls.splitlines()
     return [(line.rsplit('/', 1)[-1], line.split()[-2]) for line in lines if
             line.rsplit('/', 1)[-1] != '']
+
+
+def calculate_ual_rdm_size(config, article_id, version):
+    article_dir = ""
+    article_version_dir = ""
+    article_version_ual_rdm = ""
+    version_ual_rdm_size = 0
+    curation_storage = config['curation_storage_location']
+    if os.access(curation_storage, os.R_OK):
+        curation_storage_items = os.scandir(curation_storage)
+        for item in curation_storage_items:
+            if item.is_dir() and item.name.__contains__(str(article_id)):
+                article_dir = os.path.join(curation_storage, item.name)
+                break
+        for item in os.scandir(article_dir):
+            if item.is_dir() and item.name.__contains__(version):
+                article_version_dir = os.path.join(article_dir, item.name)
+                break
+        for item in os.scandir(article_version_dir):
+            if item.is_dir() and item.name.__contains__('UAL_RDM'):
+                article_version_ual_rdm = os.path.join(article_version_dir, item.name)
+                break
+        for item in os.scandir(article_version_ual_rdm):
+            file_size = os.path.getsize(os.path.join(article_version_ual_rdm, item.name))
+            version_ual_rdm_size += file_size
+
+    return article_version_ual_rdm
