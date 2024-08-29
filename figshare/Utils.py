@@ -248,3 +248,19 @@ def calculate_json_file_size(version_data)->int:
         os.rmdir(buffer_dir)
 
     return json_file_size
+
+
+def calculate_payload_size(config, version_data):
+    article_id = version_data['id']
+    article_files_size = version_data['size']
+    version_no = version_data['version']
+    payload_size = 0
+    version = f"v{str(version_no).zfill(2)}"
+    if int(version_no) > 9:
+        version_no = f"v{str(version_no)}"
+
+    version_ual_rdm_size = calculate_ual_rdm_size(config, article_id, version_no)
+    json_file_size = calculate_json_file_size(version_data)
+    payload_size = version_ual_rdm_size + json_file_size + article_files_size
+
+    return payload_size
