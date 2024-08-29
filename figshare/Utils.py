@@ -228,3 +228,23 @@ def calculate_ual_rdm_size(config, article_id, version):
             version_ual_rdm_size += file_size
 
     return article_version_ual_rdm
+
+
+def calculate_json_file_size(version_data)->int:
+    version_data_copy = standardize_api_result(version_data)
+    version_data_copy = sorter_api_result(version_data_copy)
+    version_data_copy_json = json.dumps(version_data_copy, indent=4)
+    buffer_dir = os.path.join(os.getcwd(), "buffer")
+    filename = str(version_data['id']) + ".json"
+    json_file_size = 0
+    filepath = os.path.join(buffer_dir, filename)
+    if os.access(os.getcwd(), os.W_OK):
+        if not os.path.exists(buffer_dir):
+            os.makedirs(buffer_dir)
+        with open(filepath, 'w') as f:
+            f.write(version_data_copy_json)
+        file_size = os.path.getsize(filepath)
+        os.remove(filepath)
+        os.rmdir(buffer_dir)
+
+    return json_file_size
