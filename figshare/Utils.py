@@ -227,7 +227,7 @@ def calculate_ual_rdm_size(config, article_id, version):
             file_size = os.path.getsize(os.path.join(article_version_ual_rdm, item.name))
             version_ual_rdm_size += file_size
 
-    return article_version_ual_rdm
+    return version_ual_rdm_size
 
 
 def calculate_json_file_size(version_data)->int:
@@ -243,7 +243,7 @@ def calculate_json_file_size(version_data)->int:
             os.makedirs(buffer_dir)
         with open(filepath, 'w') as f:
             f.write(version_data_copy_json)
-        file_size = os.path.getsize(filepath)
+        json_file_size = os.path.getsize(filepath)
         os.remove(filepath)
         os.rmdir(buffer_dir)
 
@@ -257,9 +257,9 @@ def calculate_payload_size(config, version_data):
     payload_size = 0
     version = f"v{str(version_no).zfill(2)}"
     if int(version_no) > 9:
-        version_no = f"v{str(version_no)}"
+        version = f"v{str(version_no)}"
 
-    version_ual_rdm_size = calculate_ual_rdm_size(config, article_id, version_no)
+    version_ual_rdm_size = calculate_ual_rdm_size(config, article_id, version)
     json_file_size = calculate_json_file_size(version_data)
     payload_size = version_ual_rdm_size + json_file_size + article_files_size
 

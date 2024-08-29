@@ -261,7 +261,7 @@ class Article:
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
-                        json_file_size = calculate_payload_size(version_data)
+                        json_file_size = calculate_payload_size(self.system_config, version_data)
                         total_file_size = version_data['size']
                         files = []
                         error = ""
