@@ -155,7 +155,7 @@ class Article:
                                 self.logs.write_log_in_file("info",
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
-                                if version_data == "Skip":
+                                if version_data is None:
                                     continue
                                 metadata.append(version_data)
                             self.logs.write_log_in_file("info",
@@ -261,7 +261,7 @@ class Article:
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
-                        json_file_size = calculate_payload_size(self.system_config, version_data)
+                        payload_size = calculate_payload_size(self.system_config, version_data)
                         total_file_size = version_data['size']
                         files = []
                         error = ""
@@ -293,7 +293,6 @@ class Article:
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} already preserved in Wasabi and AP Trust.", True)
-                            # return "Skip"
 
                         elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Wasabi only check
                             already_preserved = True
@@ -302,20 +301,23 @@ class Article:
                             self.logs.write_log_in_file("info",
                                                        f"Article {article_id} version {version['version']} already preserved in Wasabi.",
                                                        True)
-                            # return "Skip"
 
                         elif compare_hash(version_md5, preserved_version_md5):  # AP Trust only check
                             already_preserved = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} already preserved in AP Trust.", True)
-                            # return "Skip"
+                                                        f"Article {article_id} version {version['version']} already preserved in AP Trust.",
+                                                        True)
 
                         if already_preserved:
                             if article_id not in self.already_preserved_counts_dict['already_preserved_article_ids']:
                                 self.already_preserved_counts_dict['already_preserved_article_ids'].append(article_id)
-                            # return "Skip"
+                            if preserved_version_size != payload_size:
+                                self.logs.write_log_in_file("warning",
+                                                            f"Article {article_id} version {version['version']} found in AP Trust but sizes do not match.",
+                                                            True)
+                            return None
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
