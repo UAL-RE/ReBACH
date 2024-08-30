@@ -52,7 +52,8 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        self.already_preserved_counts_dict = {}
+        self.already_preserved_counts_dict = {'already_preserved_article_ids': [],'already_preserved_versions': 0,
+                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -247,9 +248,7 @@ class Article:
         if 'already_preserved_article_ids' not in self.already_preserved_counts_dict.keys():
             self.already_preserved_counts_dict['already_preserved_article_ids'] = []
         retries = 1
-        self.already_preserved_counts_dict['already_preserved_versions'] = 0
-        self.already_preserved_counts_dict['wasabi_preserved_versions'] = 0
-        self.already_preserved_counts_dict['ap_trust_preserved_versions'] = 0
+
         success = False
         already_preserved = False
 
