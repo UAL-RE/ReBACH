@@ -4,6 +4,7 @@ import os
 from typing import Any
 from operator import itemgetter
 from time import sleep
+import tempfile
 from ReBACH.bagger.wasabi import Wasabi
 import configparser
 
@@ -234,18 +235,16 @@ def calculate_json_file_size(version_data)->int:
     version_data_copy = standardize_api_result(version_data)
     version_data_copy = sorter_api_result(version_data_copy)
     version_data_copy_json = json.dumps(version_data_copy, indent=4)
-    buffer_dir = os.path.join(os.getcwd(), "buffer")
+    temp_dir = tempfile.gettempdir()
     filename = str(version_data['id']) + ".json"
     json_file_size = 0
-    filepath = os.path.join(buffer_dir, filename)
-    if os.access(os.getcwd(), os.W_OK):
-        if not os.path.exists(buffer_dir):
-            os.makedirs(buffer_dir)
-        with open(filepath, 'w') as f:
-            f.write(version_data_copy_json)
-        json_file_size = os.path.getsize(filepath)
-        os.remove(filepath)
-        os.rmdir(buffer_dir)
+    filepath = os.path.join(temp_dir, filename)
+    if os.path.exists(temp_dir):
+        if os.access(temp_dir, os.W_OK):
+            with open(filepath, 'w') as f:
+                f.write(version_data_copy_json)
+            json_file_size = os.path.getsize(filepath)
+            os.remove(filepath)
 
     return json_file_size
 
@@ -257,7 +256,6 @@ def calculate_payload_size(config, version_data):
     version = f"v{str(version_no).zfill(2)}"
     if int(version_no) > 9:
         version = f"v{str(version_no)}"
-
     version_ual_rdm_size = calculate_ual_rdm_size(config, article_id, version)
     json_file_size = calculate_json_file_size(version_data)
     payload_size = version_ual_rdm_size + json_file_size + article_files_size
