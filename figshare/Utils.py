@@ -33,9 +33,8 @@ def sorter_api_result(json_dict_: Any) -> Any:
     :return: a sorted dict or a sorted list depending on the data type of the parameter
     :rtype: dict or list
     """
-    sorted_dict = {}
 
-    if not isinstance(json_dict_, dict) and not isinstance(json_dict_, list):
+    if not isinstance(json_dict_, (dict, list)):
         return json_dict_
 
     if isinstance(json_dict_, list):
@@ -45,22 +44,22 @@ def sorter_api_result(json_dict_: Any) -> Any:
 
             return sorted(
                 json_dict_,
-                key=lambda d: tuple((d.get(k) if d.get(k) is not None else '') for k in unique_dicts_keys)
+                key=lambda d: tuple(
+                    str(d.get(k, '')) for k in unique_dicts_keys
+                )
             )
-        return sorted(json_dict_)
+        else:
+            return sorted(sorter_api_result(item) for item in json_dict_)
 
     if isinstance(json_dict_, dict):
         sorted_dict = {}
-        json_dict_keys = sorted(list(json_dict_.keys()))
+        json_dict_keys = sorted(json_dict_.keys())
         for key in json_dict_keys:
             if key == 'authors':
                 sorted_dict[key] = json_dict_[key]
                 continue
-            if isinstance(json_dict_[key], list):
-                sorted_dict[key] = sorted(json_dict_[key])
-            else:
-                sorted_dict[key] = sorter_api_result(json_dict_[key])
-    return sorted_dict
+            sorted_dict[key] = sorter_api_result(json_dict_[key])
+        return sorted_dict
 
 
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> tuple:
