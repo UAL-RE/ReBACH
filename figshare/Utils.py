@@ -2,7 +2,6 @@ import requests
 import json
 import os
 from typing import Any
-from operator import itemgetter
 from time import sleep
 import tempfile
 from ReBACH.bagger.wasabi import Wasabi
@@ -57,7 +56,10 @@ def sorter_api_result(json_dict_: Any) -> Any:
             if key == 'authors':
                 sorted_dict[key] = json_dict_[key]
                 continue
-            sorted_dict[key] = sorter_api_result(json_dict_[key])
+            if isinstance(json_dict_[key], list):
+                sorted_dict[key] = sorted(json_dict_[key])
+            else:
+                sorted_dict[key] = sorter_api_result(json_dict_[key])
     return sorted_dict
 
 
