@@ -41,10 +41,13 @@ def sorter_api_result(json_dict_: Any) -> Any:
 
     if isinstance(json_dict_, list):
         if all(isinstance(item, dict) for item in json_dict_) and len(json_dict_) != 0:
-            dicts_keys = [item.keys() for item in json_dict_]
-            unique_dicts_keys = list({item for sublist in dicts_keys for item in sublist})
-            sorted_unique_dicts_keys = sorted(unique_dicts_keys)
-            return sorted(json_dict_, key=itemgetter(*sorted_unique_dicts_keys))
+            dicts_keys = [key for item in json_dict_ for key in item.keys()]
+            unique_dicts_keys = sorted(set(dicts_keys))
+
+            return sorted(
+                json_dict_,
+                key=lambda d: tuple((d.get(k) if d.get(k) is not None else '') for k in unique_dicts_keys)
+            )
         return sorted(json_dict_)
 
     if isinstance(json_dict_, dict):
