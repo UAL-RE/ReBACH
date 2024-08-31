@@ -83,9 +83,12 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
 
     preserved_pkg_hash = ''
     preserved_pkg_size = 0
-    endpoint = config['url']
+    base_url = config['url']
     user = config['user']
     key = config['token']
+    item_type = config['item_type']
+    items_per_page = int(config['items_per_page'])
+    alt_id = config['alt_identifier']
     retries = int(config['retries'])
     retries_wait = int(config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
@@ -99,17 +102,27 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
         version_no = f'v{str(version_no)}'
 
     tries = 1
+
     while tries <= retries and not success:
         try:
-            get_preserved_pkgs = requests.get(endpoint, headers=headers, timeout=retries_wait)
-            if get_preserved_pkgs.status_code == 200:
-                success = True
-                preserved_packages = get_preserved_pkgs.json()['results']
-                for package in preserved_packages:
-                    if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
-                        preserved_pkg_hash = package['bag_name'].split('_')[-1]
-                        preserved_pkg_size = package['payload_size']
-                        return preserved_pkg_hash, preserved_pkg_size
+            page_empty = False
+            page = 1
+            while not page_empty:
+                endpoint = f'{base_url}{item_type}?page={page}&per_page={items_per_page}&alt_identifier__starts_with={alt_id}'
+                get_preserved_pkgs = requests.get(endpoint, headers=headers, timeout=retries_wait)
+                if get_preserved_pkgs.status_code == 200:
+                    success = True
+                    preserved_packages = get_preserved_pkgs.json()['results']
+                    if preserved_packages is None:
+                        page_empty = True
+                    else:
+                        for package in preserved_packages:
+                            if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
+                                preserved_pkg_hash = package['bag_name'].split('_')[-1]
+                                preserved_pkg_size = package['payload_size']
+                                return preserved_pkg_hash, preserved_pkg_size
+                        else:
+                            page += 1
         except requests.exceptions.RequestException as e:
             tries += 1
             print(f"Request to AP Trust failed: {e}. Retrying {tries}/{retries}...")

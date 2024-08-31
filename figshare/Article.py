@@ -248,9 +248,8 @@ class Article:
         if 'already_preserved_article_ids' not in self.already_preserved_counts_dict.keys():
             self.already_preserved_counts_dict['already_preserved_article_ids'] = []
         retries = 1
-
         success = False
-        already_preserved = False
+        already_preserved = in_ap_trust = False
 
         while not success and retries <= int(self.retries):
             try:
@@ -286,7 +285,7 @@ class Article:
 
                         # Compare hashes
                         if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
-                            already_preserved = True
+                            already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
@@ -295,6 +294,7 @@ class Article:
 
                         elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Wasabi only check
                             already_preserved = True
+                            in_ap_trust = False
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
@@ -302,7 +302,7 @@ class Article:
                                                        True)
 
                         elif compare_hash(version_md5, preserved_version_md5):  # AP Trust only check
-                            already_preserved = True
+                            already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
@@ -312,7 +312,7 @@ class Article:
                         if already_preserved:
                             if article_id not in self.already_preserved_counts_dict['already_preserved_article_ids']:
                                 self.already_preserved_counts_dict['already_preserved_article_ids'].append(article_id)
-                            if preserved_version_size != payload_size:
+                            if in_ap_trust and preserved_version_size != payload_size :
                                 self.logs.write_log_in_file("warning",
                                                             f"Article {article_id} version {version['version']} found in AP Trust but sizes do not match.",
                                                             True)
