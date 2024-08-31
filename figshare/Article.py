@@ -159,9 +159,6 @@ class Article:
                                 if version_data is None:
                                     continue
                                 metadata.append(version_data)
-                            self.logs.write_log_in_file("info",
-                                                        f"Total already preserved (skipped) versions: \
-                                                        {self.already_preserved_counts_dict['already_preserved_versions']}.", True)
                         else:
                             # This branch is for cases where the item has a total embargo and no versions are available via the public API
                             version_data = self.private_article_for_data(private_url, article['id'])
