@@ -71,8 +71,10 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
 
     :param  config:  Configuration to use for extraction (where to extract)
     :type config: dict
+
     :param article_id: id number of article in Figshare
     :type article_id: int
+
     :param version_no: version number of article
     :type version_no: int
 
@@ -221,7 +223,22 @@ def get_filenames_and_sizes_from_ls(ls: str)->list:
             line.rsplit('/', 1)[-1] != '']
 
 
-def calculate_ual_rdm_size(config, article_id, version):
+def calculate_ual_rdm_size(config, article_id: int, version: str):
+    """
+    Calculates the size of version UAL_RDM folder
+
+    :param  config:  Configuration to get curation storage
+    :type: dict
+
+    :param  article_id: Article ID
+    :type: int
+
+    :param  version: Article version in the 'v0{version number}'
+    :type: str
+
+    :return: Size of version UAL_RDM folder in bytes
+    :rtype: int
+    """
     article_dir = ""
     article_version_dir = ""
     article_version_ual_rdm = ""
@@ -248,7 +265,17 @@ def calculate_ual_rdm_size(config, article_id, version):
     return version_ual_rdm_size
 
 
-def calculate_json_file_size(version_data)->int:
+def calculate_json_file_size(version_data: dict) -> int:
+    """
+    Pre-calculates the size of json file from Figshare version response
+
+    :param  version_data: Version response from figshare
+    :type: dict
+
+    :return: Size of json file from Figshare version response in bytes
+    :rtype: int
+    """
+
     version_data_copy = standardize_api_result(version_data)
     version_data_copy = sorter_api_result(version_data_copy)
     version_data_copy_json = json.dumps(version_data_copy, indent=4)
@@ -266,7 +293,19 @@ def calculate_json_file_size(version_data)->int:
     return json_file_size
 
 
-def calculate_payload_size(config, version_data):
+def calculate_payload_size(config: dict, version_data: dict) -> int:
+    """
+    Pre-calculates payload size for package that will be created
+
+    :param  config:  Configuration to get curation storage
+    :type: dict
+    :param  version_data: Version response from figshare
+    :type: dict
+
+    :return: Size of payload in bytes
+    :rtype: int
+    """
+
     article_id = version_data['id']
     article_files_size = version_data['size']
     version_no = version_data['version']
