@@ -52,7 +52,7 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        self.already_preserved_counts_dict = {'already_preserved_article_ids': [],'already_preserved_versions': 0,
+        self.already_preserved_counts_dict = {'already_preserved_article_ids': set(),'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -242,8 +242,6 @@ class Article:
     If files > 0 then __download_files will be called
     """
     def __get_article_metadata_by_version(self, version, article_id):
-        if 'already_preserved_article_ids' not in self.already_preserved_counts_dict.keys():
-            self.already_preserved_counts_dict['already_preserved_article_ids'] = []
         retries = 1
         success = False
         already_preserved = in_ap_trust = False
@@ -251,7 +249,6 @@ class Article:
         while not success and retries <= int(self.retries):
             try:
                 if (version):
-                    json_file_size = 0
                     public_url = version['url']
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
@@ -307,9 +304,8 @@ class Article:
                                                         True)
 
                         if already_preserved:
-                            if article_id not in self.already_preserved_counts_dict['already_preserved_article_ids']:
-                                self.already_preserved_counts_dict['already_preserved_article_ids'].append(article_id)
-                            if in_ap_trust and preserved_version_size != payload_size :
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            if in_ap_trust and preserved_version_size != payload_size:
                                 self.logs.write_log_in_file("warning",
                                                             f"Article {article_id} version {version['version']} found in AP Trust but sizes do not match.",
                                                             True)
