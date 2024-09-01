@@ -36,6 +36,8 @@ class Collection:
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"
         self.input_collection_ids = ids
+        self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'already_preserved_versions': 0,
+                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -243,8 +245,8 @@ class Collection:
     """
     def process_collections(self, collections):
         processed_count = 0
-        already_preserved_collection_versions = 0
-        preserved_versions_in_wasabi = 0
+        # already_preserved_collection_versions = 0
+        # preserved_versions_in_wasabi = 0
 
         self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
@@ -258,24 +260,36 @@ class Collection:
                 json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
-                preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config,
+                ap_trust_preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config,
                                                                                                     version['id'],
                                                                                                     version_no)
-                wasabi_preserved_version_md5 = check_wasabi(version['id'], version_no)
+                wasabi_preserved_version = check_wasabi(version['id'], version_no)
+                wasabi_preserved_version_md5 = wasabi_preserved_version[0]
+
+                if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, ap_trust_preserved_version_md5):
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                    self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                    self.logs.write_log_in_file("info",
+                                                f"Collection {version['id']} version {version['version']} already preserved in Wasabi and AP Trust.",
+                                                True)
+                    continue
 
                 if compare_hash(version_md5, wasabi_preserved_version_md5):
-                    preserved_versions_in_wasabi += 1
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} initially preserved in Wasabi. Skipping...",
+                                                f"Collection {version['id']} version {version['version']} already preserved in Wasabi.",
                                                 True)
-                else:
-                    self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} not in Wasabi",
-                                                True)
+                    continue
 
-                if compare_hash(version_md5, preserved_version_md5):
-                    already_preserved_collection_versions += 1
-                    self.logs.write_log_in_file("info", f"{collection} version {version['version']} initially preserved. Skipping...")
+                if compare_hash(version_md5, ap_trust_preserved_version_md5):
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                    self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in AP Trust.")
                     continue
 
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
@@ -293,7 +307,9 @@ class Collection:
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
                 else:
                     processed_count += 1
-        return processed_count, already_preserved_collection_versions, preserved_versions_in_wasabi
+        # return processed_count, self.already_preserved_counts_dict['already_preserved_versions'], \
+        #     self.already_preserved_counts_dict['wasabi_preserved_versions']
+        return processed_count, self.already_preserved_counts_dict
 
     """
     Save json data for each collection version in related directory

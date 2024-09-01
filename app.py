@@ -188,8 +188,13 @@ if __name__ == "__main__":
         = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi \
-        = collection_obj.process_collections(collection_data)
+    # processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi \
+    #     = collection_obj.process_collections(collection_data)
+    processed_collections_versions_count, already_preserved_collections_counts = collection_obj.process_collections(collection_data)
+    already_preserved_collections = len(already_preserved_collections_counts['already_preserved_collection_ids'])
+    already_preserved_collection_versions = already_preserved_collections_counts['already_preserved_versions']
+    preserved_collection_versions_in_wasabi = already_preserved_collections_counts['wasabi_preserved_versions']
+    preserved_collection_versions_in_ap_trust = already_preserved_collections_counts['ap_trust_preserved_versions']
 
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
@@ -246,11 +251,20 @@ if __name__ == "__main__":
                           True)
     log.write_log_in_file('info',
                           "Total collections already preserved: \t\t\t\t\t\t"
-                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          + f'{already_preserved_collections}',
                           True)
     log.write_log_in_file('info',
+                          "Total collection versions already preserved: \t\t\t\t\t\t"
+                          + f'{already_preserved_collection_versions}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total collections already preserved found by Bagger: \t\t\t\t\t\t"
+                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          True)
+
+    log.write_log_in_file('info',
                           "Total count of already preserved collections versions in AP Trust: \t\t\t\t\t\t"
-                          + f'{already_preserved_collection_versions_count}',
+                          + f'{preserved_collection_versions_in_ap_trust}',
                           True)
 
     log.write_log_in_file('info',
