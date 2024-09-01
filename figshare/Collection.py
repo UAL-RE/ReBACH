@@ -307,8 +307,6 @@ class Collection:
                     self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
                 else:
                     processed_count += 1
-        # return processed_count, self.already_preserved_counts_dict['already_preserved_versions'], \
-        #     self.already_preserved_counts_dict['wasabi_preserved_versions']
         return processed_count, self.already_preserved_counts_dict
 
     """
