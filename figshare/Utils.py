@@ -90,7 +90,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     key = config['token']
     item_type = "objects"
     items_per_page = int(config['items_per_page'])
-    alt_id = config['alt_identifier']
+    alt_id = config['alt_identifier_starts_with']
     retries = int(config['retries'])
     retries_wait = int(config['retries_wait'])
     headers = {'X-Pharos-API-User': user,

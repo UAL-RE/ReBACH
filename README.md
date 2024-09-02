@@ -32,6 +32,8 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 	    - url - required: The AP Trust API url (identifier__starts_with filter must be included in the url)
 		- user - required: Your user email address on AP Trust
 		- token - required: Your user secret token on AP Trust
+        - items_per_page - Maximum number of object to be return per page by the API
+        - alt_identifier_starts_with - Prefix for alternate identifier in AP Trust 
 		- retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
 		- retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
     - preservation_storage_location - required: The file system location where the preservation folders/packages should be created
