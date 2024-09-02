@@ -246,8 +246,6 @@ class Collection:
     """
     def process_collections(self, collections):
         processed_count = 0
-        # already_preserved_collection_versions = 0
-        # preserved_versions_in_wasabi = 0
 
         self.logs.write_log_in_file("info", "Processing collections.", True)
         for collection in collections:
