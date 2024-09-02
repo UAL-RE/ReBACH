@@ -88,7 +88,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     base_url = config['url']
     user = config['user']
     key = config['token']
-    item_type = config['item_type']
+    item_type = "objects"
     items_per_page = int(config['items_per_page'])
     alt_id = config['alt_identifier']
     retries = int(config['retries'])
