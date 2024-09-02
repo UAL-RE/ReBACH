@@ -235,6 +235,8 @@ class Article:
     :param version object value.
     :param article_id int value.
     On successful response from url_public_api API, metadata array will be setup for response.
+    Metadata hash is calculated and matched against preserved version copy's has if any, if 
+    a match is found, the version will not be processed.
     If files aren't found and size is > 0 in public API response then
     private api will be called for files.
     No. of tries implemented in while loop, loop will exit if API is not giving
