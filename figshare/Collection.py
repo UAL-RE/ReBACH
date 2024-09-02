@@ -241,6 +241,7 @@ class Collection:
 
     """
     Function to process collections and its articles with collection versions. Returns the number of successfully processed collections.
+    If a collection's version is already preserved, it will not be processed.
     :param collections object
     """
     def process_collections(self, collections):
