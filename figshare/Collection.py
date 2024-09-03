@@ -259,9 +259,8 @@ class Collection:
                 json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
-                ap_trust_preserved_version_md5, preserved_version_size = get_preserved_version_hash_and_size(self.aptrust_config,
-                                                                                                    version['id'],
-                                                                                                    version_no)
+                ap_trust_preserved_version_md5, preserved_version_size \
+                    = get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version_no)
                 wasabi_preserved_version = check_wasabi(version['id'], version_no)
                 wasabi_preserved_version_md5 = wasabi_preserved_version[0]
 

@@ -207,7 +207,7 @@ def check_wasabi(article_id: int, version_no: int) -> tuple:
     return preserved_article_hash, preserved_article_size
 
 
-def get_filenames_and_sizes_from_ls(ls: str)->list:
+def get_filenames_and_sizes_from_ls(ls: str) -> list:
     """
     Extracts names of files and their sizes from ls command. It returns
     a list of tuples. Each tuple contains filename and size

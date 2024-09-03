@@ -52,7 +52,7 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        self.already_preserved_counts_dict = {'already_preserved_article_ids': set(),'already_preserved_versions': 0,
+        self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -286,7 +286,8 @@ class Article:
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} already preserved in Wasabi and AP Trust.", True)
+                                                        f"Article {article_id} version {version['version']} "
+                                                        f"already preserved in Wasabi and AP Trust.", True)
 
                         elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Wasabi only check
                             already_preserved = True
@@ -294,23 +295,23 @@ class Article:
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                       f"Article {article_id} version {version['version']} already preserved in Wasabi.",
-                                                       True)
+                                                       f"Article {article_id} version {version['version']} "
+                                                       f"already preserved in Wasabi.", True)
 
                         elif compare_hash(version_md5, preserved_version_md5):  # AP Trust only check
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} already preserved in AP Trust.",
-                                                        True)
+                                                        f"Article {article_id} version {version['version']} "
+                                                        f"already preserved in AP Trust.", True)
 
                         if already_preserved:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
                             if in_ap_trust and preserved_version_size != payload_size:
                                 self.logs.write_log_in_file("warning",
-                                                            f"Article {article_id} version {version['version']} found in AP Trust but sizes do not match.",
-                                                            True)
+                                                            f"Article {article_id} version {version['version']} "
+                                                            f"found in AP Trust but sizes do not match.", True)
                             return None
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
