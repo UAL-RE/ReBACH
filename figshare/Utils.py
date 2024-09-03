@@ -4,7 +4,7 @@ import os
 from typing import Any
 from time import sleep
 import tempfile
-from ReBACH.bagger.wasabi import Wasabi
+from bagger.wasabi import Wasabi
 import configparser
 
 
