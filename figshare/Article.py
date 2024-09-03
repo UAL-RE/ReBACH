@@ -235,7 +235,7 @@ class Article:
     :param version object value.
     :param article_id int value.
     On successful response from url_public_api API, metadata array will be setup for response.
-    Metadata hash is calculated and matched against preserved version copy's has if any, if 
+    Metadata hash is calculated and matched against preserved version copy's has if any, if
     a match is found, the version will not be processed.
     If files aren't found and size is > 0 in public API response then
     private api will be called for files.
@@ -286,25 +286,24 @@ class Article:
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} "
-                                                        f"already preserved in Wasabi and AP Trust.", True)
+                                                        f"Article {article_id} version {version['version']} \
+                                                        already preserved in Wasabi and AP Trust.", True)
 
                         elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Wasabi only check
                             already_preserved = True
                             in_ap_trust = False
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                            self.logs.write_log_in_file("info",
-                                                       f"Article {article_id} version {version['version']} "
-                                                       f"already preserved in Wasabi.", True)
+                            self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} \
+                             already preserved in Wasabi.", True)
 
                         elif compare_hash(version_md5, preserved_version_md5):  # AP Trust only check
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} "
-                                                        f"already preserved in AP Trust.", True)
+                                                        f"Article {article_id} version {version['version']} \
+                                                        already preserved in AP Trust.", True)
 
                         if already_preserved:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
