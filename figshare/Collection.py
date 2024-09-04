@@ -270,7 +270,8 @@ class Collection:
                     self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} already preserved in Wasabi and AP Trust.",
+                                                f"Collection {version['id']} version {version['version']} already preserved "
+                                                + "in preservation staging remote storage and preservation final remote storage.",
                                                 True)
                     continue
 
@@ -279,7 +280,8 @@ class Collection:
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} already preserved in Wasabi.",
+                                                f"Collection {version['id']} version {version['version']} already preserved"
+                                                + " in preservation staging remote storage.",
                                                 True)
                     continue
 
@@ -287,7 +289,8 @@ class Collection:
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
-                    self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in AP Trust.")
+                    self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in"
+                                                        + " preservation final remote storage.")
                     continue
 
                 author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])

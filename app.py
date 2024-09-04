@@ -188,8 +188,6 @@ if __name__ == "__main__":
         = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    # processed_collections_versions_count, already_preserved_collection_versions_count, preserved_collection_versions_in_wasabi \
-    #     = collection_obj.process_collections(collection_data)
     processed_collections_versions_count, already_preserved_collections_counts = collection_obj.process_collections(collection_data)
     already_preserved_collections = len(already_preserved_collections_counts['already_preserved_collection_ids'])
     already_preserved_collection_versions = already_preserved_collections_counts['already_preserved_versions']
@@ -215,11 +213,11 @@ if __name__ == "__main__":
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved articles versions in AP Trust: \t\t\t\t\t\t"
+                          "Total count of already preserved articles versions in preservation final remote storage: \t\t\t\t\t\t"
                           + f'{ap_trust_preserved_article_version_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved articles versions in Wasabi: \t\t\t\t\t\t"
+                          "Total count of already preserved articles versions in preservation staging remote storage: \t\t\t\t\t\t"
                           + f'{wasabi_preserved_versions}',
                           True)
 
@@ -263,18 +261,18 @@ if __name__ == "__main__":
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collections versions in AP Trust: \t\t\t\t\t\t"
+                          "Total count of already preserved collections versions in preservation final remote storage: \t\t\t\t\t\t"
                           + f'{preserved_collection_versions_in_ap_trust}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collections versions in Wasabi: \t\t\t\t\t\t"
+                          "Total count of already preserved collections versions in preservation staging remote storage: \t\t\t\t\t\t"
                           + f'{preserved_collection_versions_in_wasabi}',
                           True)
 
     if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
         log.write_log_in_file('warning',
-                              'The number of articles versions or collections versions sucessfully processed is different'
+                              'The number of articles versions or collections versions successfully processed is different'
                               + ' than the number fetched. Check the log for details.', True)
 
     log.write_log_in_file('info',
