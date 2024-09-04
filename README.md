@@ -29,7 +29,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 	    - retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
 	    - institution - required: The Figshare Institution ID for your organization
     - aptrust_api
-	    - url - required: The AP Trust API url (identifier__starts_with filter must be included in the url)
+	    - url - required: The AP Trust member API url including the version
 		- user - required: Your user email address on AP Trust
 		- token - required: Your user secret token on AP Trust
         - items_per_page - Maximum number of object to be return per page by the API
