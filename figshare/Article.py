@@ -8,11 +8,9 @@ import hashlib
 import re
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
-from figshare.Utils import compare_hash, check_wasabi
+from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
-
-from ReBACH.figshare.Utils import calculate_payload_size
 
 
 class Article:
