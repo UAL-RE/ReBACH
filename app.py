@@ -196,38 +196,38 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info', '------- Summary -------')
     log.write_log_in_file('info',
-                          "Total articles/published articles: \t\t\t\t\t\t"
+                          "Total articles/published articles: \t\t\t\t\t\t\t\t"
                           + f'{published_unpublished_count} / {published_articles_count + already_preserved_articles_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total processed articles bags already in preservation storage found by Bagger: \t\t\t"
+                          "Total processed articles bags already in preservation storage found by Bagger: \t\t\t\t\t\t"
                           + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total articles versions matched/published: \t\t\t\t\t"  # todo: exclude already-preserved bags from processing
+                          "Total articles versions matched/published: \t\t\t\t\t\t"
                           + f'{article_obj.no_matched} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total articles versions processed/matched: \t\t\t\t\t"
+                          "Total articles versions processed/matched: \t\t\t\t\t\t"
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved articles versions in preservation final remote storage: \t\t\t\t\t\t"
+                          "Total count of already preserved articles versions in preservation final remote storage: \t\t\t\t"
                           + f'{ap_trust_preserved_article_version_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved articles versions in preservation staging remote storage: \t\t\t\t\t\t"
+                          "Total count of already preserved articles versions in preservation staging remote storage: \t\t\t"
                           + f'{wasabi_preserved_versions}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved articles: \t\t\t\t\t\t"
+                          "Total count of already preserved articles: \t\t\t\t\t\t\t"
                           + f'{already_preserved_articles_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved article versions: \t\t\t\t\t\t"
+                          "Total count of already preserved article versions: \t\t\t\t\t"
                           + f'{already_preserved_versions_count}',
                           True)
 
@@ -240,7 +240,7 @@ if __name__ == "__main__":
                           + f'{article_obj.processor.bag_preserved_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total collections/published collections: \t\t\t\t\t\t"
+                          "Total collections/published collections: \t\t\t\t\t\t\t"
                           + f'{collections_count} / {collections_count}',
                           True)
     log.write_log_in_file('info',
@@ -248,25 +248,25 @@ if __name__ == "__main__":
                           + f'{processed_collections_versions_count} / {collections_versions_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total collections already preserved: \t\t\t\t\t\t"
+                          "Total collections already preserved: \t\t\t\t\t\t\t\t\t"
                           + f'{already_preserved_collections}',
                           True)
     log.write_log_in_file('info',
-                          "Total collection versions already preserved: \t\t\t\t\t\t"
+                          "Total collection versions already preserved: \t\t\t\t\t\t\t"
                           + f'{already_preserved_collection_versions}',
                           True)
     log.write_log_in_file('info',
-                          "Total collections already preserved found by Bagger: \t\t\t\t\t\t"
+                          "Total collections already preserved found by Bagger: \t\t\t\t\t"
                           + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collections versions in preservation final remote storage: \t\t\t\t\t\t"
+                          "Total count of already preserved collections versions in preservation final remote storage: \t\t\t"
                           + f'{preserved_collection_versions_in_ap_trust}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collections versions in preservation staging remote storage: \t\t\t\t\t\t"
+                          "Total count of already preserved collections versions in preservation staging remote storage: \t\t"
                           + f'{preserved_collection_versions_in_wasabi}',
                           True)
 
