@@ -312,7 +312,7 @@ class Article:
                             if in_ap_trust and preserved_version_size != payload_size:
                                 self.logs.write_log_in_file("warning",
                                                             f"Article {article_id} version {version['version']} "
-                                                            + f"found in preservation final remote storage but sizes do not match.",
+                                                            + "found in preservation final remote storage but sizes do not match.",
                                                             True)
                             return None
 
