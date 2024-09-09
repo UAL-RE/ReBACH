@@ -278,7 +278,8 @@ if __name__ == "__main__":
                           + f'{preserved_collection_versions_in_wasabi}',
                           True)
 
-    if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
+    if processed_articles_versions_count != published_articles_versions_count or \
+            processed_collections_versions_count != (collections_versions_count - already_preserved_collection_versions):
         log.write_log_in_file('warning',
                               'The number of articles versions or collections versions successfully processed is different'
                               + ' than the number fetched. Check the log for details.', True)
