@@ -96,6 +96,10 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
     success = False
+
+    if base_url[-1] != '/':
+        base_url = base_url + '/'
+
     if 'v' in str(version_no):
         version_no = version_no
     elif int(version_no) < 10:
