@@ -201,9 +201,20 @@ if __name__ == "__main__":
                           True)
 
     log.write_log_in_file('info',
-                          "Total processed articles bags already in preservation storage found by Bagger: \t\t\t\t\t\t"
-                          + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          "Total count of already(skipped) preserved articles: \t\t\t\t\t"
+                          + f'{already_preserved_articles_count}',
                           True)
+
+    log.write_log_in_file('info',
+                          "Total count of already(skipped) preserved article versions: \t\t\t"
+                          + f'{already_preserved_versions_count}',
+                          True)
+
+    if article_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
+        log.write_log_in_file('warning',
+                              f'Bagger found {article_obj.processor.duplicate_bag_in_preservation_storage_count} duplicate article(s)',
+                              True)
+
     log.write_log_in_file('info',
                           "Total articles versions matched/published: \t\t\t\t\t\t"
                           + f'{article_obj.no_matched} / {published_articles_versions_count}',
@@ -222,16 +233,6 @@ if __name__ == "__main__":
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved articles: \t\t\t\t\t\t\t"
-                          + f'{already_preserved_articles_count}',
-                          True)
-
-    log.write_log_in_file('info',
-                          "Total count of already preserved article versions: \t\t\t\t\t"
-                          + f'{already_preserved_versions_count}',
-                          True)
-
-    log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
                           + f'{article_obj.no_unmatched}',
                           True)
@@ -243,22 +244,29 @@ if __name__ == "__main__":
                           "Total collections/published collections: \t\t\t\t\t\t\t"
                           + f'{collections_count} / {collections_count}',
                           True)
+
     log.write_log_in_file('info',
-                          "Total collections versions processed/published: \t\t\t\t\t"
-                          + f'{processed_collections_versions_count} / {collections_versions_count}',
-                          True)
-    log.write_log_in_file('info',
-                          "Total collections already preserved: \t\t\t\t\t\t\t\t\t"
+                          "Total count of already(skipped) preserved collections: \t\t\t\t"
                           + f'{already_preserved_collections}',
                           True)
+
     log.write_log_in_file('info',
-                          "Total collection versions already preserved: \t\t\t\t\t\t\t"
+                          "Total count of already(skipped) preserved collection versions: \t\t"
                           + f'{already_preserved_collection_versions}',
                           True)
+
     log.write_log_in_file('info',
-                          "Total collections already preserved found by Bagger: \t\t\t\t\t"
-                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          "Total collections versions processed/published: \t\t\t\t\t"
+                          + f'{processed_collections_versions_count} / {collections_versions_count - already_preserved_collection_versions}',
                           True)
+
+
+    if collection_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
+        log.write_log_in_file('warning',
+                              f'Bagger found {collection_obj.processor.duplicate_bag_in_preservation_storage_count} duplicate collection(s)',
+                              True)
+
+
 
     log.write_log_in_file('info',
                           "Total count of already preserved collections versions in preservation final remote storage: \t\t\t"
