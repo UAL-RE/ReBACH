@@ -260,13 +260,10 @@ if __name__ == "__main__":
                           + f'{processed_collections_versions_count} / {collections_versions_count - already_preserved_collection_versions}',
                           True)
 
-
     if collection_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
         log.write_log_in_file('warning',
                               f'Bagger found {collection_obj.processor.duplicate_bag_in_preservation_storage_count} duplicate collection(s)',
                               True)
-
-
 
     log.write_log_in_file('info',
                           "Total count of already preserved collections versions in preservation final remote storage: \t\t\t"
