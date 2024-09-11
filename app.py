@@ -142,9 +142,8 @@ if __name__ == "__main__":
     get_args()
     config, log = main()
 
-    log.write_log_in_file('info',
-                          "Fetching articles...",
-                          True)
+    log.write_log_in_file('info', " ", True)
+    log.write_log_in_file('info', "------- Fetching articles -------", True)
     article_obj = Article(config, log, args.ids)
     article_data, already_preserved_counts_dict = article_obj.get_articles()
 
@@ -167,9 +166,7 @@ if __name__ == "__main__":
                           True)
     print(" ")
 
-    log.write_log_in_file('info',
-                          "Fetching collections...",
-                          True)
+    log.write_log_in_file('info', "------- Fetching collections -------", True)
     collection_obj = Collection(config, log, args.ids)
     collection_data = collection_obj.get_collections()
 
@@ -194,20 +191,21 @@ if __name__ == "__main__":
     preserved_collection_versions_in_wasabi = already_preserved_collections_counts['wasabi_preserved_versions']
     preserved_collection_versions_in_ap_trust = already_preserved_collections_counts['ap_trust_preserved_versions']
 
-    log.write_log_in_file('info', '------- Summary -------')
+    log.write_log_in_file('info', ' ', True)
+    log.write_log_in_file('info', '------- Summary -------', True)
     log.write_log_in_file('info',
-                          "Total articles/published articles: \t\t\t\t\t\t"
-                          + f'{published_unpublished_count} / {published_articles_count + already_preserved_articles_count}',
+                          f"Total articles: \t\t\t\t\t\t\t\t\t{published_unpublished_count}",
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already(skipped) preserved articles: \t\t\t\t"
-                          + f'{already_preserved_articles_count}',
+                          "Total published articles/article versions: \t\t\t\t\t"
+                          + f'{published_articles_count + already_preserved_articles_count} / '
+                          + f'{published_articles_versions_count + already_preserved_versions_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already(skipped) preserved article versions: \t\t\t"
-                          + f'{already_preserved_versions_count}',
+                          "Total count of already preserved (skipped) articles / article versions: \t\t"
+                          + f'{already_preserved_articles_count} / {already_preserved_versions_count}',
                           True)
 
     if article_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
@@ -216,7 +214,7 @@ if __name__ == "__main__":
                               True)
 
     log.write_log_in_file('info',
-                          "Total articles versions matched/published: \t\t\t\t\t"
+                          "Total articles versions matched/published (unskipped): \t\t\t\t"
                           + f'{article_obj.no_matched} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
@@ -240,19 +238,20 @@ if __name__ == "__main__":
                           "Total processed articles bags successfully preserved: \t\t\t\t"
                           + f'{article_obj.processor.bag_preserved_count}',
                           True)
+
+    log.write_log_in_file('info', "", True)
     log.write_log_in_file('info',
-                          "Total collections/published collections: \t\t\t\t\t\t"
-                          + f'{collections_count} / {collections_count}',
+                          "Total collections: \t\t\t\t\t\t\t\t"
+                          + f'{collections_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total published collections / collection versions: \t\t\t\t"
+                          + f'{collections_count} / {collections_versions_count}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already(skipped) preserved collections: \t\t\t\t"
-                          + f'{already_preserved_collections}',
-                          True)
-
-    log.write_log_in_file('info',
-                          "Total count of already(skipped) preserved collection versions: \t\t\t"
-                          + f'{already_preserved_collection_versions}',
+                          "Total count of already preserved (skipped) collections / collection versions: \t"
+                          + f'{already_preserved_collections} / {already_preserved_collection_versions}',
                           True)
 
     log.write_log_in_file('info',

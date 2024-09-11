@@ -829,6 +829,10 @@ class Article:
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total matched article versions: {self.no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {self.no_unmatched}.", True)
+        self.logs.write_log_in_file("info", f"Total skipped unique articles: "
+                                    + f"{len(self.already_preserved_counts_dict['already_preserved_article_ids'])}.", True)
+        self.logs.write_log_in_file("info", f"Total skipped article versions: "
+                                    + f"{self.already_preserved_counts_dict['already_preserved_versions']}.", True)
 
         if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
             self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
@@ -955,6 +959,7 @@ class Article:
     def process_articles(self, articles):
         processed_count = 0
         curation_storage_location = self.__initial_process()
+        self.logs.write_log_in_file("info", "------- Processing articles -------", True)
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 

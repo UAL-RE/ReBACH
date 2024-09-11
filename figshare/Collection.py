@@ -247,7 +247,8 @@ class Collection:
     def process_collections(self, collections):
         processed_count = 0
 
-        self.logs.write_log_in_file("info", "Processing collections.", True)
+        self.logs.write_log_in_file("info", " ", True)
+        self.logs.write_log_in_file("info", "------- Processing collections -------", True)
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
