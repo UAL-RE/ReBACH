@@ -341,4 +341,3 @@ def get_article_id_and_version_from_path(path: str) -> tuple:
         article_id = path_elements[-3].split('_')[-1]
 
     return article_id, version_no
-
