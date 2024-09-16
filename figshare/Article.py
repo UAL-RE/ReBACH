@@ -52,6 +52,7 @@ class Article:
         self.no_unmatched = 0
         self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+        self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -155,6 +156,10 @@ class Article:
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
                                 if version_data is None:
+                                    article_version = 'v' + str(version['version']).zfill(2) if version['version'] <= 9 \
+                                        else 'v' + str(version['version'])
+                                    self.skipped_article_versions[article['id']] = []
+                                    self.skipped_article_versions[article['id']].append(article_version)
                                     continue
                                 metadata.append(version_data)
                         else:
@@ -971,6 +976,8 @@ class Article:
             for folder in self.matched_curation_folder_list:
                 path = curation_storage_location + folder
                 curation_folder_size += self.get_file_size_of_given_path(path, "UAL_RDM")
+        elif len(self.matched_curation_folder_list) == 0 and len(article_data) != 0:
+            curation_folder_size = 0
         else:
             curation_folder_size = self.get_file_size_of_given_path(curation_storage_location, "UAL_RDM")
 
