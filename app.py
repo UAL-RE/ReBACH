@@ -142,15 +142,17 @@ if __name__ == "__main__":
     get_args()
     config, log = main()
 
-    log.write_log_in_file('info',
-                          "Fetching articles...",
-                          True)
+    log.write_log_in_file('info', " ", True)
+    log.write_log_in_file('info', "------- Fetching articles -------", True)
     article_obj = Article(config, log, args.ids)
-    article_data = article_obj.get_articles()
+    article_data, already_preserved_counts_dict = article_obj.get_articles()
 
+    already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
+    already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
     published_articles_count = 0
     published_articles_versions_count = 0
     published_unpublished_count = 0
+
     for i, (k, v) in enumerate(article_data.items()):
         published_unpublished_count += 1
         if len(v) > 0:
@@ -159,14 +161,12 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info', "Fetched: "
                           + f"Total articles: {published_unpublished_count}, "
-                          + f"Published articles: {published_articles_count}, "
-                          + f"Published article versions: {published_articles_versions_count}",
+                          + f"Published articles: {published_articles_count + already_preserved_articles_count}, "
+                          + f"Published article versions: {published_articles_versions_count + already_preserved_versions_count}",
                           True)
     print(" ")
 
-    log.write_log_in_file('info',
-                          "Fetching collections...",
-                          True)
+    log.write_log_in_file('info', "------- Fetching collections -------", True)
     collection_obj = Collection(config, log, args.ids)
     collection_data = collection_obj.get_collections()
 
@@ -181,22 +181,40 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    processed_articles_versions_count = article_obj.process_articles(article_data)
+    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions \
+        = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
-    processed_collections_versions_count = collection_obj.process_collections(collection_data)
+    processed_collections_versions_count, already_preserved_collections_counts = collection_obj.process_collections(collection_data)
+    already_preserved_collections = len(already_preserved_collections_counts['already_preserved_collection_ids'])
+    already_preserved_collection_versions = already_preserved_collections_counts['already_preserved_versions']
+    preserved_collection_versions_in_wasabi = already_preserved_collections_counts['wasabi_preserved_versions']
+    preserved_collection_versions_in_ap_trust = already_preserved_collections_counts['ap_trust_preserved_versions']
 
-    log.write_log_in_file('info', '------- Summary -------')
+    log.write_log_in_file('info', ' ', True)
+    log.write_log_in_file('info', '------- Summary -------', True)
     log.write_log_in_file('info',
-                          "Total articles/published articles: \t\t\t\t\t\t"
-                          + f'{published_unpublished_count} / {published_articles_count}',
+                          f"Total articles: \t\t\t\t\t\t\t\t\t{published_unpublished_count}",
                           True)
+
     log.write_log_in_file('info',
-                          "Total processed articles bags already in preservation storage: \t\t\t"
-                          + f'{article_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          "Total published articles/article versions: \t\t\t\t\t"
+                          + f'{published_articles_count + already_preserved_articles_count} / '
+                          + f'{published_articles_versions_count + already_preserved_versions_count}',
                           True)
+
     log.write_log_in_file('info',
-                          "Total articles versions matched/published: \t\t\t\t\t"  # todo: exclude already-preserved bags from processing
+                          "Total count of already preserved (skipped) articles / article versions: \t\t"
+                          + f'{already_preserved_articles_count} / {already_preserved_versions_count}',
+                          True)
+
+    if article_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
+        log.write_log_in_file('warning',
+                              f'Bagger found {article_obj.processor.duplicate_bag_in_preservation_storage_count} duplicate article(s)',
+                              True)
+
+    log.write_log_in_file('info',
+                          "Total articles versions matched/published (unskipped): \t\t\t\t"
                           + f'{article_obj.no_matched} / {published_articles_versions_count}',
                           True)
     log.write_log_in_file('info',
@@ -204,29 +222,62 @@ if __name__ == "__main__":
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
+                          "Total count of already preserved article versions in preservation final remote storage: \t\t"
+                          + f'{ap_trust_preserved_article_version_count}',
+                          True)
+    log.write_log_in_file('info',
+                          "Total count of already preserved article versions in preservation staging remote storage: \t"
+                          + f'{wasabi_preserved_versions}',
+                          True)
+
+    log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
                           + f'{article_obj.no_unmatched}',
                           True)
     log.write_log_in_file('info',
-                          "Total processed articles bags successfully preserved \t\t\t\t"
+                          "Total processed articles bags successfully preserved: \t\t\t\t"
                           + f'{article_obj.processor.bag_preserved_count}',
                           True)
+
+    log.write_log_in_file('info', "", True)
     log.write_log_in_file('info',
-                          "Total collections/published collections: \t\t\t\t\t\t"
-                          + f'{collections_count} / {collections_count}',
+                          "Total collections: \t\t\t\t\t\t\t\t"
+                          + f'{collections_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total collections versions processed/published: \t\t\t\t\t"
-                          + f'{processed_collections_versions_count} / {collections_versions_count}',
-                          True)
-    log.write_log_in_file('info',
-                          "Total collections already preserved: \t\t\t\t\t\t"
-                          + f'{collection_obj.processor.duplicate_bag_in_preservation_storage_count}',
+                          "Total published collections / collection versions: \t\t\t\t"
+                          + f'{collections_count} / {collections_versions_count}',
                           True)
 
-    if processed_articles_versions_count != published_articles_versions_count or processed_collections_versions_count != collections_versions_count:
+    log.write_log_in_file('info',
+                          "Total count of already preserved (skipped) collections / collection versions: \t"
+                          + f'{already_preserved_collections} / {already_preserved_collection_versions}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total collections versions processed/published: \t\t\t\t\t"
+                          + f'{processed_collections_versions_count} / {collections_versions_count - already_preserved_collection_versions}',
+                          True)
+
+    if collection_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
         log.write_log_in_file('warning',
-                              'The number of articles versions or collections versions sucessfully processed is different'
+                              f'Bagger found {collection_obj.processor.duplicate_bag_in_preservation_storage_count} duplicate collection(s)',
+                              True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved collection versions in preservation final remote storage: \t"
+                          + f'{preserved_collection_versions_in_ap_trust}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved collection versions in preservation staging remote storage: \t"
+                          + f'{preserved_collection_versions_in_wasabi}',
+                          True)
+
+    if processed_articles_versions_count != published_articles_versions_count or \
+            processed_collections_versions_count != (collections_versions_count - already_preserved_collection_versions):
+        log.write_log_in_file('warning',
+                              'The number of articles versions or collections versions successfully processed is different'
                               + ' than the number fetched. Check the log for details.', True)
 
     log.write_log_in_file('info',

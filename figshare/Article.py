@@ -7,6 +7,8 @@ import requests
 import hashlib
 import re
 from figshare.Integration import Integration
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
+from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -25,6 +27,7 @@ class Article:
     def __init__(self, config, log, ids):
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
+        self.aptrust_config = self.config_obj.aptrust_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
@@ -47,6 +50,9 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
+        self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
+                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+        self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -109,7 +115,7 @@ class Article:
                 if (retries > self.retries):
                     break
 
-        return article_data
+        return article_data, self.already_preserved_counts_dict
 
     def article_loop(self, articles, page_size, page, article_data):
         no_of_article = 0
@@ -149,6 +155,13 @@ class Article:
                                 self.logs.write_log_in_file("info",
                                                             f"Fetching article {article['id']} version {version['version']}.", True)
                                 version_data = self.__get_article_metadata_by_version(version, article['id'])
+                                if version_data is None:
+                                    article_version = 'v' + str(version['version']).zfill(2) if version['version'] <= 9 \
+                                        else 'v' + str(version['version'])
+                                    article_id = str(article['id'])
+                                    self.skipped_article_versions[article_id] = []
+                                    self.skipped_article_versions[article_id].append(article_version)
+                                    continue
                                 metadata.append(version_data)
                         else:
                             # This branch is for cases where the item has a total embargo and no versions are available via the public API
@@ -158,7 +171,7 @@ class Article:
                         success = True
                         return metadata
                     else:
-                        retries = self.retries_if_error(f"Public verion URL is not reachable. Retry {retries}",
+                        retries = self.retries_if_error(f"Public version URL is not reachable. Retry {retries}",
                                                         get_response.status_code, retries)
                         if (retries > self.retries):
                             break
@@ -226,6 +239,8 @@ class Article:
     :param version object value.
     :param article_id int value.
     On successful response from url_public_api API, metadata array will be setup for response.
+    Metadata hash is calculated and matched against preserved version copy's has if any, if
+    a match is found, the version will not be processed.
     If files aren't found and size is > 0 in public API response then
     private api will be called for files.
     No. of tries implemented in while loop, loop will exit if API is not giving
@@ -235,6 +250,7 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
+        already_preserved = in_ap_trust = False
 
         while not success and retries <= int(self.retries):
             try:
@@ -243,6 +259,7 @@ class Article:
                     get_response = requests.get(public_url)
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
+                        payload_size = calculate_payload_size(self.system_config, version_data)
                         total_file_size = version_data['size']
                         files = []
                         error = ""
@@ -258,14 +275,59 @@ class Article:
                             files = version_data['files']
 
                         version_md5 = ''
+                        version_data = standardize_api_result(version_data)
+                        version_data = sorter_api_result(version_data)
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
+                        preserved_version_md5, preserved_version_size \
+                            = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+                        wasabi_preserved_version_md5, wasabi_preserved_size = check_wasabi(article_id, version['version'])
+
+                        # Compare hashes
+                        if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
+                            already_preserved = in_ap_trust = True
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} "
+                                                        + "already preserved in preservation staging remote storage"
+                                                        + " and preservation final remote storage.",
+                                                        True)
+
+                        elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Preservation staging remote storage only check
+                            already_preserved = True
+                            in_ap_trust = False
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                            self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
+                                                                + "already preserved in preservation staging remote storage.",
+                                                        True)
+
+                        elif compare_hash(version_md5, preserved_version_md5):  # Preservation final remote storage only check
+                            already_preserved = in_ap_trust = True
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} "
+                                                        + "already preserved in preservation staging remote storage.",
+                                                        True)
+
+                        if already_preserved:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            if in_ap_trust and preserved_version_size != payload_size:
+                                self.logs.write_log_in_file("warning",
+                                                            f"Article {article_id} version {version['version']} "
+                                                            + "found in preservation final remote storage but sizes do not match.",
+                                                            True)
+                            return None
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len
                         version_data['file_size_sum'] = total_file_size
                         version_data['version_md5'] = version_md5
-                        if (error):
+
+                        if error:
                             version_metadata['errors'] = []
                             version_metadata['errors'].append(error)
 
@@ -502,7 +564,7 @@ class Article:
         return version_data
 
     """
-    Get size of files of the given directory path
+    Get size of files of the given directory path, excluding skipped articles UAL_RDM
     :param dir_path string  path of dir where file size require to calculate.
     :param include_only string include in the total only paths that contain this string. If ommitted, includes all paths.
     :return size integer
@@ -511,12 +573,16 @@ class Article:
         size = 0
         for path, dirs, files in os.walk(dir_path):
             if include_only in path:
-                for f in files:
-                    fp = os.path.join(path, f)
-                    try:
-                        size += os.path.getsize(fp)
-                    except Exception:
-                        pass
+                article_id, article_version = get_article_id_and_version_from_path(path)
+                if article_id in self.skipped_article_versions.keys() and article_version in self.skipped_article_versions[article_id]:
+                    size += 0
+                else:
+                    for f in files:
+                        fp = os.path.join(path, f)
+                        try:
+                            size += os.path.getsize(fp)
+                        except Exception:
+                            pass
 
         return size
 
@@ -773,6 +839,10 @@ class Article:
         self.logs.write_log_in_file("info", f"Total unmatched unique articles: {len(set(unmatched_articles))}.", True)
         self.logs.write_log_in_file("info", f"Total matched article versions: {self.no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {self.no_unmatched}.", True)
+        self.logs.write_log_in_file("info", "Total skipped unique articles: "
+                                    + f"{len(self.already_preserved_counts_dict['already_preserved_article_ids'])}.", True)
+        self.logs.write_log_in_file("info", "Total skipped article versions: "
+                                    + f"{self.already_preserved_counts_dict['already_preserved_versions']}.", True)
 
         if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
             self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
@@ -899,17 +969,21 @@ class Article:
     def process_articles(self, articles):
         processed_count = 0
         curation_storage_location = self.__initial_process()
+        self.logs.write_log_in_file("info", "------- Processing articles -------", True)
         self.logs.write_log_in_file("info", "Finding matched articles.", True)
         article_data = self.find_matched_articles(articles)
 
         # Calculate the size of the curation folder
         # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
         # Otherwise, it is calculated considering all curation folders.
+        # Size of curation folders for skipped articles are excluded in all cases.
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
                 path = curation_storage_location + folder
                 curation_folder_size += self.get_file_size_of_given_path(path, "UAL_RDM")
+        elif len(self.matched_curation_folder_list) == 0 and len(article_data) != 0:
+            curation_folder_size = 0
         else:
             curation_folder_size = self.get_file_size_of_given_path(curation_storage_location, "UAL_RDM")
 
@@ -977,7 +1051,8 @@ class Article:
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
-        return processed_count
+        return processed_count, self.already_preserved_counts_dict['ap_trust_preserved_versions'], \
+            self.already_preserved_counts_dict['wasabi_preserved_versions']
 
     """
     Preservation and Curation directory access check while processing.

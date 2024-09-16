@@ -22,14 +22,23 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 ## How to run:
 - Copy the .env.sample.ini file and give it a name of your choice (e.g. .env.ini).
 - Fill out the .env.ini file (IMPORTANT: Make sure not to commit this file to Github)
-    - url - required: The figshare API url
-    - token - required: Your auth token to your organization's API
-    - retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
-    - retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
-    - institution - required: The Figshare Institution ID for your organization
+    - figshare_api
+	    - url - required: The figshare API url
+	    - token - required: Your auth token to your organization's API
+	    - retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
+	    - retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
+	    - institution - required: The Figshare Institution ID for your organization
+    - aptrust_api
+	    - url - required: The AP Trust member API url including the version
+		- user - required: Your user email address on AP Trust
+		- token - required: Your user secret token on AP Trust
+        - items_per_page - Maximum number of object to be return per page by the API
+        - alt_identifier_starts_with - Prefix for alternate identifier in AP Trust 
+		- retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
+		- retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
     - preservation_storage_location - required: The file system location where the preservation folders/packages should be created
     - logs_location - required: The file system location where logs should be created. This value will override the one in `bagger/config/default.toml` when bagger is used for post-processing (see post_process_script_command setting below).
-    - additional_precentage_required - required: How much extra space the preservation storage location should have in order to handle files as a percent. This percent is applied to the total storage needed for all files. I.e. if the value of this field is 10 and the amount of storage needed for files is 1 GB, the script will make sure that the preservation storage location has at least 1.1 GB free. Defaults to 10
+    - additional_percentage_required - required: How much extra space the preservation storage location should have in order to handle files as a percent. This percent is applied to the total storage needed for all files. I.e. if the value of this field is 10 and the amount of storage needed for files is 1 GB, the script will make sure that the preservation storage location has at least 1.1 GB free. Defaults to 10
     - pre_process_script_command - optional: The terminal command (including arguments) to invoke a script to be run BEFORE the files are copied and logic applied to the preservation storage (note: this action is not currently implemented)
     - post_process_script_command - required: Specifies the method of performing post-processing steps. This can take only two values: the string 'Bagger', or the path to an external script. If the value is set to 'Bagger', the post-processing steps will consist of running the internal `bagger` module. If the value is set to a path to an external script, the post-processing steps will be executed by invoking the external script through the function 'post_process_script_function'. The post-processing steps are executed AFTER the files are copied and logic applied to the preservation storage.
     - curation_storage_location - required: The file system location where the Curation files reside
