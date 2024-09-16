@@ -321,3 +321,24 @@ def calculate_payload_size(config: dict, version_data: dict) -> int:
     payload_size = version_ual_rdm_size + json_file_size + article_files_size
 
     return payload_size
+
+
+def get_article_id_and_version_from_path(path: str) -> tuple:
+    """
+    Extract article_id and version from UAL_RDM path
+
+    :param  path:  UAL_RDM path of an article
+    :type: str
+
+    :return: A tuple containing article_id and version
+    :rtype: tuple
+    """
+    version_no = ''
+    article_id = ''
+    if path:
+        path_elements = path.split('/')
+        version_no = path_elements[-2]
+        article_id = path_elements[-3].split('_')[-1]
+
+    return article_id, version_no
+

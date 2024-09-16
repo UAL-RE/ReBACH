@@ -8,7 +8,7 @@ import hashlib
 import re
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
-from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size
+from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -158,8 +158,9 @@ class Article:
                                 if version_data is None:
                                     article_version = 'v' + str(version['version']).zfill(2) if version['version'] <= 9 \
                                         else 'v' + str(version['version'])
-                                    self.skipped_article_versions[article['id']] = []
-                                    self.skipped_article_versions[article['id']].append(article_version)
+                                    article_id = str(article['id'])
+                                    self.skipped_article_versions[article_id] = []
+                                    self.skipped_article_versions[article_id].append(article_version)
                                     continue
                                 metadata.append(version_data)
                         else:
@@ -563,7 +564,7 @@ class Article:
         return version_data
 
     """
-    Get size of files of the given directory path
+    Get size of files of the given directory path, excluding skipped articles UAL_RDM
     :param dir_path string  path of dir where file size require to calculate.
     :param include_only string include in the total only paths that contain this string. If ommitted, includes all paths.
     :return size integer
@@ -572,12 +573,16 @@ class Article:
         size = 0
         for path, dirs, files in os.walk(dir_path):
             if include_only in path:
-                for f in files:
-                    fp = os.path.join(path, f)
-                    try:
-                        size += os.path.getsize(fp)
-                    except Exception:
-                        pass
+                article_id, article_version = get_article_id_and_version_from_path(path)
+                if article_id in self.skipped_article_versions.keys() and article_version in self.skipped_article_versions[article_id]:
+                    size += 0
+                else:
+                    for f in files:
+                        fp = os.path.join(path, f)
+                        try:
+                            size += os.path.getsize(fp)
+                        except Exception:
+                            pass
 
         return size
 
@@ -971,6 +976,7 @@ class Article:
         # Calculate the size of the curation folder
         # When article IDs are explicitly passed, curation folder size is calculated based on matched curation folders.
         # Otherwise, it is calculated considering all curation folders.
+        # Size of curation folders for skipped articles are excluded in all cases.
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
