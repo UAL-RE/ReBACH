@@ -310,7 +310,7 @@ class Article:
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation staging remote storage.",
+                                                        + "already preserved in preservation final remote storage.",
                                                         True)
 
                         if already_preserved:
