@@ -74,6 +74,7 @@ def main():
     config_obj = Config(env_file)
 
     config_obj.add_setting(name='continue-on-error', value=args.continue_on_error)
+    config_obj.add_setting(name='dry-run', value=args.dry_run)
 
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
