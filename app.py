@@ -23,6 +23,8 @@ def get_args():
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
     parser.add_argument('--continue-on-error', action='store_true',
                         help='If an item encounters an error during the processing stage, continue to the next item.')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Fetch, match and verify items only. Do not download, delete, or upload to preservation any files.')
     args = parser.parse_args()
 
 
