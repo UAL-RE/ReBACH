@@ -51,7 +51,8 @@ class Article:
         self.no_matched = 0
         self.no_unmatched = 0
         self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
-                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
+                                              'articles_with_error': set(), 'article_versions_with_error': 0}
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -260,6 +261,16 @@ class Article:
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
                         payload_size = calculate_payload_size(self.system_config, version_data)
+
+                        if payload_size == 0:
+                            self.already_preserved_counts_dict['articles_with_error'].add(article_id)
+                            self.already_preserved_counts_dict['article_versions_with_error'] += 1
+                            self.logs.write_log_in_file("error",
+                                                        f"Curation folder for Article {article_id} version {version['version']} not found."
+                                                        + " Article version will be skipped.",
+                                                        True)
+                            return None
+
                         total_file_size = version_data['size']
                         files = []
                         error = ""

@@ -248,20 +248,28 @@ def calculate_ual_rdm_size(config, article_id: int, version: str):
     article_version_ual_rdm = ""
     version_ual_rdm_size = 0
     curation_storage = config['curation_storage_location']
-    if os.access(curation_storage, os.R_OK):
+    if os.path.exists(curation_storage) and os.access(curation_storage, os.R_OK):
         curation_storage_items = os.scandir(curation_storage)
         for item in curation_storage_items:
             if item.is_dir() and item.name.__contains__(str(article_id)):
                 article_dir = os.path.join(curation_storage, item.name)
                 break
+        if not os.path.exists(article_dir):
+            return 0
         for item in os.scandir(article_dir):
             if item.is_dir() and item.name.__contains__(version):
                 article_version_dir = os.path.join(article_dir, item.name)
                 break
+
+        if not os.path.exists(article_version_dir):
+            return 0
         for item in os.scandir(article_version_dir):
             if item.is_dir() and item.name.__contains__('UAL_RDM'):
                 article_version_ual_rdm = os.path.join(article_version_dir, item.name)
                 break
+
+        if not os.path.exists(article_version_ual_rdm):
+            return 0
         for item in os.scandir(article_version_ual_rdm):
             file_size = os.path.getsize(os.path.join(article_version_ual_rdm, item.name))
             version_ual_rdm_size += file_size
@@ -317,6 +325,8 @@ def calculate_payload_size(config: dict, version_data: dict) -> int:
     if int(version_no) > 9:
         version = f"v{str(version_no)}"
     version_ual_rdm_size = calculate_ual_rdm_size(config, article_id, version)
+    if version_ual_rdm_size == 0:
+        return 0
     json_file_size = calculate_json_file_size(version_data)
     payload_size = version_ual_rdm_size + json_file_size + article_files_size
 
