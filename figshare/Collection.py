@@ -306,7 +306,7 @@ class Collection:
                 if self.system_config['dry-run'] == 'False':
                     self.__save_json_in_metadata(collection, version, folder_name)
                     collection_preservation_path = self.preservation_storage_location + \
-                                                   os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
+                        os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
                     value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                     if (value_post_process != 0):
                         self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
