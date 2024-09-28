@@ -33,7 +33,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 		- user - required: Your user email address on AP Trust
 		- token - required: Your user secret token on AP Trust
         - items_per_page - Maximum number of object to be return per page by the API
-        - alt_identifier_starts_with - Prefix for alternate identifier in AP Trust 
+        - alt_identifier_starts_with - Prefix for alternate identifier in AP Trust
 		- retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
 		- retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
     - preservation_storage_location - required: The file system location where the preservation folders/packages should be created
@@ -54,6 +54,7 @@ These parameters are only available on the command line.
 |`--xfg`  | The path to the configuration file to use.|
 |`--ids`  | A comma-separated list of article IDs to process. E.g., 12345,12356|
 |`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item.|
+|`--dry-run` | Runs all operations, excluding any that involve writing any storage medium |
 
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.
