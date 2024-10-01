@@ -267,8 +267,7 @@ class Article:
                                 self.logs.write_log_in_file("error",
                                                             f"Curation folder for article {article_id} version {version['version']} not found.",
                                                             True)
-                                self.logs.write_log_in_file("info", "Aborting execution.", True)
-                                exit()
+                                self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                             self.already_preserved_counts_dict['articles_with_error'].add(article_id)
                             self.already_preserved_counts_dict['article_versions_with_error'] += 1
                             self.logs.write_log_in_file("error",
