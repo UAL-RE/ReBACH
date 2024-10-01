@@ -240,7 +240,8 @@ def calculate_ual_rdm_size(config, article_id: int, version: str):
     :param  version: Article version in the 'v0{version number}'
     :type: str
 
-    :return: Size of version UAL_RDM folder in bytes
+    :return: Size of version UAL_RDM folder in bytes. Returns zero bytes if any of the
+             folders in the path to UAL_RDM is missing
     :rtype: int
     """
     article_dir = ""
@@ -314,7 +315,7 @@ def calculate_payload_size(config: dict, version_data: dict) -> int:
     :param  version_data: Version response from figshare
     :type: dict
 
-    :return: Size of payload in bytes
+    :return: Size of payload in bytes. Returns zero bytes if UAL_RDM is not found
     :rtype: int
     """
 
