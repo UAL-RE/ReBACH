@@ -302,13 +302,21 @@ class Collection:
                 version["license"] = json.loads('{"value": 2,"name": "CC0","url": "https://creativecommons.org/publicdomain/zero/1.0/"}')
 
                 self.logs.write_log_in_file("info", f"------- Processing collection {collection} version {version['version']}.", True)
-                self.__save_json_in_metadata(collection, version, folder_name)
-                collection_preservation_path = self.preservation_storage_location + os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
-                value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
-                if (value_post_process != 0):
-                    self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
+
+                if self.system_config['dry-run'] == 'False':
+                    self.__save_json_in_metadata(collection, version, folder_name)
+                    collection_preservation_path = self.preservation_storage_location + \
+                        os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
+                    value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
+                    if (value_post_process != 0):
+                        self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
+                    else:
+                        processed_count += 1
                 else:
+                    self.logs.write_log_in_file("info", "*Dry Run* File download and post-processing with "
+                                                + f"{self.system_config['post_process_script_command']} skipped.", True)
                     processed_count += 1
+
         return processed_count, self.already_preserved_counts_dict
 
     """

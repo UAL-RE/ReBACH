@@ -676,7 +676,10 @@ class Article:
         # delete directory if validation failed.
         if (delete_folder is True):
             self.logs.write_log_in_file("error", f"Validation failed, deleting {preservation_storage_location + folder_path}.", True)
-            self.delete_folder(preservation_storage_location + folder_path)
+            if self.system_config['dry-run'] == 'False':
+                self.delete_folder(preservation_storage_location + folder_path)
+            else:
+                self.logs.write_log_in_file("info", "*Dry Run* Folder not deleted.", True)
             process_article = True
 
         return process_article
@@ -1024,8 +1027,14 @@ class Article:
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
+
                         # call pre process script function for each matched item.
-                        value_pre_process = self.pre_process_script_function()
+                        if self.system_config['dry-run'] == 'False':
+                            value_pre_process = self.pre_process_script_function()
+                        else:
+                            value_pre_process = 0
+                            self.logs.write_log_in_file("info", "*Dry Run* Skipping pre processing.", True)
+
                         if (value_pre_process == 0):
                             self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
@@ -1042,24 +1051,40 @@ class Article:
                                 else:
                                     self.logs.write_log_in_file("info", "Exists and is empty", True)
                                     check_files = False
-                                    # delete folder if validation fails
-                                    self.delete_folder(check_dir)
-                                    # call post process script function for each matched item. Code 5 corresponds to step 5 of S4.4 in the spec.
-                                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process, 5)
-                                    if (value_post_process != 0):
-                                        self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
-                                                                    + "Post-processing script error found.", True)
+
+                                    if self.system_config['dry-run'] == 'False':
+                                        # delete folder if validation fails
+                                        self.delete_folder(check_dir)
+                                        # call post process script function for each matched item. Code 5 corresponds to step 5 of S4.4 in the spec.
+                                        value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process, 5)
+                                        if (value_post_process != 0):
+                                            self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
+                                                                        + "Post-processing script error found.", True)
+                                    else:
+                                        self.logs.write_log_in_file("info", "*Dry Run* File download and post-processing with "
+                                                                    + f"{self.system_config['post_process_script_command']} skipped.", True)
+
                                     break
                             else:
-                                self.logs.write_log_in_file("info", "Does not exist. Folder will be created", True)
+                                value_post_process = 0
+                                if self.system_config['dry-run'] == 'False':
+                                    self.logs.write_log_in_file("info", "Does not exist. Folder will be created", True)
+                                else:
+                                    self.logs.write_log_in_file("info", "*Dru Run* Does not exist. Folder will not be created", True)
 
                             # end check main folder exists in preservation storage.
                             # check required files exist in curation UAL_RDM folder
                             self.logs.write_log_in_file("info", "Checking required files exist in associated curation "
                                                         + f"folder {curation_storage_location}.", True)
                             copy_files = self.__can_copy_files(version_data)
-                            if self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
+
+                            if self.system_config['dry-run'] == 'False':
+                                if self.__final_process(check_files, copy_files, check_dir, version_data, folder_name, version_no, value_pre_process):
+                                    processed_count += 1
+                            else:
                                 processed_count += 1
+                                self.logs.write_log_in_file("info", "*Dry Run* File download and post-processing with "
+                                                            + f"{self.system_config['post_process_script_command']} skipped.", True)
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
