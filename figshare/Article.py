@@ -51,7 +51,8 @@ class Article:
         self.no_matched = 0
         self.no_unmatched = 0
         self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
-                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
+                                              'articles_with_error': set(), 'article_versions_with_error': 0}
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -260,6 +261,21 @@ class Article:
                     if (get_response.status_code == 200):
                         version_data = get_response.json()
                         payload_size = calculate_payload_size(self.system_config, version_data)
+
+                        if payload_size == 0:
+                            if self.system_config['continue-on-error'] == "False":
+                                self.logs.write_log_in_file("error",
+                                                            f"Curation folder for article {article_id} version {version['version']} not found.",
+                                                            True)
+                                self.logs.write_log_in_file("info", "Aborting execution.", True, True)
+                            self.already_preserved_counts_dict['articles_with_error'].add(article_id)
+                            self.already_preserved_counts_dict['article_versions_with_error'] += 1
+                            self.logs.write_log_in_file("error",
+                                                        f"Curation folder for article {article_id} version {version['version']} not found."
+                                                        + " Article version will be skipped.",
+                                                        True)
+                            return None
+
                         total_file_size = version_data['size']
                         files = []
                         error = ""
@@ -284,6 +300,7 @@ class Article:
                         wasabi_preserved_version_md5, wasabi_preserved_size = check_wasabi(article_id, version['version'])
 
                         # Compare hashes
+                        # Checking both remote storages
                         if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
@@ -310,7 +327,7 @@ class Article:
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation staging remote storage.",
+                                                        + "already preserved in preservation final remote storage.",
                                                         True)
 
                         if already_preserved:
@@ -892,8 +909,7 @@ class Article:
             except Exception as e:
                 self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
                 if self.system_config['continue-on-error'] == "False":
-                    self.logs.write_log_in_file("info", "Aborting execution.", True)
-                    exit()
+                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                 delete_now = True
 
             # check if download process has error or not.

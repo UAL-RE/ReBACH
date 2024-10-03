@@ -152,6 +152,8 @@ if __name__ == "__main__":
 
     already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
     already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
+    articles_with_error_count = len(already_preserved_counts_dict['articles_with_error'])
+    article_versions_with_error_count = already_preserved_counts_dict['article_versions_with_error']
     published_articles_count = 0
     published_articles_versions_count = 0
     published_unpublished_count = 0
@@ -164,8 +166,9 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info', "Fetched: "
                           + f"Total articles: {published_unpublished_count}, "
-                          + f"Published articles: {published_articles_count + already_preserved_articles_count}, "
-                          + f"Published article versions: {published_articles_versions_count + already_preserved_versions_count}",
+                          + f"Published articles: {published_articles_count + already_preserved_articles_count + articles_with_error_count}, "
+                          + "Published article versions: "
+                          + f"{published_articles_versions_count + already_preserved_versions_count + article_versions_with_error_count}",
                           True)
     print(" ")
 
@@ -202,13 +205,24 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info',
                           "Total published articles/article versions: \t\t\t\t\t"
-                          + f'{published_articles_count + already_preserved_articles_count} / '
-                          + f'{published_articles_versions_count + already_preserved_versions_count}',
+                          + f'{published_articles_count + already_preserved_articles_count + articles_with_error_count} / '
+                          + f'{published_articles_versions_count + already_preserved_versions_count + article_versions_with_error_count}',
                           True)
 
     log.write_log_in_file('info',
                           "Total count of already preserved (skipped) articles / article versions: \t\t"
                           + f'{already_preserved_articles_count} / {already_preserved_versions_count}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of articles with fetch error / articles: \t\t\t\t"
+                          + f'{articles_with_error_count} / {published_unpublished_count}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of article versions with fetch error / article versions: \t\t"
+                          + f'{article_versions_with_error_count} / '
+                          + f'{published_articles_versions_count + already_preserved_versions_count + article_versions_with_error_count}',
                           True)
 
     if article_obj.processor.duplicate_bag_in_preservation_storage_count > 0:
