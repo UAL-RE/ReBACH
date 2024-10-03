@@ -909,8 +909,7 @@ class Article:
             except Exception as e:
                 self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
                 if self.system_config['continue-on-error'] == "False":
-                    self.logs.write_log_in_file("info", "Aborting execution.", True)
-                    exit()
+                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                 delete_now = True
 
             # check if download process has error or not.
