@@ -300,6 +300,7 @@ class Article:
                         wasabi_preserved_version_md5, wasabi_preserved_size = check_wasabi(article_id, version['version'])
 
                         # Compare hashes
+                        # Checking both remote storages
                         if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
