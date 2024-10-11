@@ -609,14 +609,19 @@ class Article:
     :return log error and terminate script if required_space greater.
     """
     def check_required_space(self, required_space):
-        self.logs.write_log_in_file("info", "Checking required space, script will stop if there's not enough space.", True)
+        self.logs.write_log_in_file("info", "Checking required space, script might stop if there's not enough space.", True)
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"]) / 100))
         preservation_storage_location = self.preservation_storage_location
         memory = shutil.disk_usage(preservation_storage_location)
         available_space = memory.free
         if (req_space > available_space):
+            if self.system_config['continue-on-error'] == "False":
+                self.logs.write_log_in_file('error', "There isn't enough space in storage path."
+                                                 + f"Required space is {req_space} and available space is {available_space}. Aborting...",
+                                            True, True)
             self.logs.write_log_in_file('error', "There isn't enough space in storage path."
-                                                 + f"Required space is {req_space} and available space is {available_space}.", True, True)
+                                        + f"Required space is {req_space} and available space is {available_space}.",
+                                        True)
 
     """
     Checking file hash
