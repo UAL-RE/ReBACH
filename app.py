@@ -216,7 +216,8 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info',
                           "Total count of articles with fetch error / articles: \t\t\t\t"
-                          + f'{articles_with_error_count} / {published_unpublished_count}',
+                          + f'{articles_with_error_count} / '
+                          + f'{published_articles_count + already_preserved_articles_count + articles_with_error_count}',
                           True)
 
     log.write_log_in_file('info',
