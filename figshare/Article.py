@@ -295,13 +295,24 @@ class Article:
                         version_data = sorter_api_result(version_data)
                         json_data = json.dumps(version_data).encode("utf-8")
                         version_md5 = hashlib.md5(json_data).hexdigest()
-                        preserved_version_md5, preserved_version_size \
-                            = get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
-                        wasabi_preserved_version_md5, wasabi_preserved_size = check_wasabi(article_id, version['version'])
+                        version_final_storage_preserved_list = \
+                            get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+                        if len(version_final_storage_preserved_list) > 1:
+                            self.logs.write_log_in_file("warning",
+                                                        f"Multiple copies of article {article_id} version {version['version']} "
+                                                        + "found in preservation final remote storage",
+                                                        True)
+                        version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
+                        if len(version_staging_storage_preserved_list) > 1:
+                            self.logs.write_log_in_file("warning",
+                                                        f"Multiple copies of article {article_id} version {version['version']} "
+                                                        + "found in preservation staging remote storage",
+                                                        True)
 
                         # Compare hashes
                         # Checking both remote storages
-                        if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, preserved_version_md5):
+                        if compare_hash(version_md5, version_staging_storage_preserved_list) and \
+                                compare_hash(version_md5, version_final_storage_preserved_list):
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
@@ -312,7 +323,7 @@ class Article:
                                                         + " and preservation final remote storage.",
                                                         True)
 
-                        elif compare_hash(version_md5, wasabi_preserved_version_md5):  # Preservation staging remote storage only check
+                        elif compare_hash(version_md5, version_staging_storage_preserved_list):  # Preservation staging remote storage only check
                             already_preserved = True
                             in_ap_trust = False
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
@@ -321,7 +332,7 @@ class Article:
                                                                 + "already preserved in preservation staging remote storage.",
                                                         True)
 
-                        elif compare_hash(version_md5, preserved_version_md5):  # Preservation final remote storage only check
+                        elif compare_hash(version_md5, version_final_storage_preserved_list):  # Preservation final remote storage only check
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
@@ -332,11 +343,13 @@ class Article:
 
                         if already_preserved:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
-                            if in_ap_trust and preserved_version_size != payload_size:
-                                self.logs.write_log_in_file("warning",
-                                                            f"Article {article_id} version {version['version']} "
-                                                            + "found in preservation final remote storage but sizes do not match.",
-                                                            True)
+                            if in_ap_trust:
+                                for version_hash in version_final_storage_preserved_list:
+                                    if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                                        self.logs.write_log_in_file("warning",
+                                                                    f"Article {article_id} version {version['version']} "
+                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    True)
                             return None
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)

@@ -260,12 +260,23 @@ class Collection:
                 json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
-                ap_trust_preserved_version_md5, preserved_version_size \
-                    = get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version_no)
-                wasabi_preserved_version = check_wasabi(version['id'], version_no)
-                wasabi_preserved_version_md5 = wasabi_preserved_version[0]
 
-                if compare_hash(version_md5, wasabi_preserved_version_md5) and compare_hash(version_md5, ap_trust_preserved_version_md5):
+                version_final_storage_preserved_list = \
+                    get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version_no)
+                if len(version_final_storage_preserved_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                + "found in preservation final remote storage",
+                                                True)
+                version_staging_storage_preserved_list = check_wasabi(version['id'], version_no)
+                if len(version_staging_storage_preserved_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                + "found in preservation staging remote storage",
+                                                True)
+
+                if compare_hash(version_md5, version_staging_storage_preserved_list) and \
+                        compare_hash(version_md5, version_final_storage_preserved_list):
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
@@ -276,7 +287,7 @@ class Collection:
                                                 True)
                     continue
 
-                if compare_hash(version_md5, wasabi_preserved_version_md5):
+                if compare_hash(version_md5, version_staging_storage_preserved_list):
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
@@ -286,7 +297,7 @@ class Collection:
                                                 True)
                     continue
 
-                if compare_hash(version_md5, ap_trust_preserved_version_md5):
+                if compare_hash(version_md5, version_final_storage_preserved_list):
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
