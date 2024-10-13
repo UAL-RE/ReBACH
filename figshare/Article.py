@@ -630,7 +630,7 @@ class Article:
         if (req_space > available_space):
             if self.system_config['continue-on-error'] == "False":
                 self.logs.write_log_in_file('error', "There isn't enough space in storage path."
-                                                 + f"Required space is {req_space} and available space is {available_space}. Aborting...",
+                                            + f"Required space is {req_space} and available space is {available_space}. Aborting...",
                                             True, True)
             self.logs.write_log_in_file('error', "There isn't enough space in storage path."
                                         + f"Required space is {req_space} and available space is {available_space}.",
