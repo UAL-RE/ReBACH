@@ -62,7 +62,7 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
-def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> tuple:
+def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
     If version is already preserved, it returns a tuple containing
@@ -78,13 +78,15 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     :param version_no: version number of article
     :type version_no: int
 
-    :return: A tuple containing md5 hash and size of preserved package version in AP Trust.
-             if the package version has been initially preserved.
-    :rtype: tuple
+    :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
+            its size if article version package exists in Wasabi else it returns empty list.
+            It returns an empty list there is no preserved copy of article version.
+    :rtype: list
     """
 
     preserved_pkg_hash = ''
     preserved_pkg_size = 0
+    version_preserved_list = []
     base_url = config['url']
     user = config['user']
     key = config['token']
@@ -126,7 +128,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                             if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
                                 preserved_pkg_hash = package['bag_name'].split('_')[-1]
                                 preserved_pkg_size = package['payload_size']
-                                return preserved_pkg_hash, preserved_pkg_size
+                                version_preserved_list.append((preserved_pkg_hash, preserved_pkg_size))
                         else:
                             page += 1
         except requests.exceptions.RequestException as e:
@@ -136,29 +138,34 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                 print("Max retries reached. Raising exception.")
                 raise
             sleep(retries_wait)
-    return preserved_pkg_hash, preserved_pkg_size
+    return version_preserved_list
 
 
-def compare_hash(article_version_hash: str, preserved_pkg_hash: str) -> bool:
+def compare_hash(article_version_hash: str, preserved_pkg_hash_list: list) -> bool:
     """
     Compares two strings
 
     :param article_version_hash: A string containing md5 hash of the current article
-                                version been prepared for bagging
+                               version already in AP Trust
     :type article_version_hash: str
 
-    :param preserved_pkg_hash: A string containing md5 hash of the current article
-                               version already in AP Trust
-    :type preserved_pkg_hash: str
+    :param preserved_pkg_hash_list: A list of tuples. Each tuple contains md5 hash and size of the preserved copies of
+                                    current article version been prepared for bagging
+    :type preserved_pkg_hash_list: list
 
     :return: True or False
     :rtype: bool
     """
 
-    return article_version_hash == preserved_pkg_hash
+    if len(preserved_pkg_hash_list) == 0:
+        return False
+    for item_hash in preserved_pkg_hash_list:
+        if item_hash[0] == article_version_hash:
+            return True
+    return False
 
 
-def check_wasabi(article_id: int, version_no: int) -> tuple:
+def check_wasabi(article_id: int, version_no: int) -> list:
     """
     Checks Wasabi preservation bucket if current article version has been bagged into Wasabi
 
@@ -168,13 +175,15 @@ def check_wasabi(article_id: int, version_no: int) -> tuple:
     :param version_no: Version number of current article been prepared for bagging
     :type version_no: int
 
-    :return: Returns a tuple containing md5 hash of the article version and its size if article version
-             package exists in Wasabi else it returns empty string and 0
-    :rtype: str
+    :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
+            its size if article version package exists in Wasabi else it returns empty list.
+            It returns an empty list there is no preserved copy of article version.
+    :rtype: list
     """
 
     preserved_article_hash = ''
     preserved_article_size = 0
+    version_preserved_list = []
     config = configparser.ConfigParser()
     config.read('bagger/config/default.toml')
     wasabi_config = config['Wasabi']
@@ -207,8 +216,8 @@ def check_wasabi(article_id: int, version_no: int) -> tuple:
         if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
             preserved_article_hash = package[0].split('_')[-1].replace('.tar', '')
             preserved_article_size = package[1]
-            return preserved_article_hash, preserved_article_size
-    return preserved_article_hash, preserved_article_size
+            version_preserved_list.append((preserved_article_hash, preserved_article_size))
+    return version_preserved_list
 
 
 def get_filenames_and_sizes_from_ls(ls: str) -> list:
