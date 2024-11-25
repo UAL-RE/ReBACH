@@ -15,6 +15,8 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 ## Requirements:
 - Figshare organization number
 - Figshare API token for respective organization
+- Preservation final remote storage (AP Trust) user email
+- Preservation final remote storage (AP Trust) user secret
 - Read privileges to Curation storage location
 - Write privileges to Preservation storage location
 - Write privileges to logs location
@@ -44,7 +46,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - curation_storage_location - required: The file system location where the Curation files reside
 - Ensure the aforementioned Dependencies and Requirements are met
 - Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py --xfg /path/of/.env.ini` or `python app.py --xfg /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater)
-- Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file
+- Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file. The log details are described in [Description of ReBACH Log Messages](ReBACH_Logs_Summary_Description.md).  
 - Final preservation package output will occur in the preservation location you specified in the env.ini file
 
 ## Command line
