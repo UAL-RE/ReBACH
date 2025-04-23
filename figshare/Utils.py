@@ -380,4 +380,3 @@ def metadata_to_hash(metadata: dict) -> dict:
         if key not in focus_metadata:
             del article_metadata[key]
     return article_metadata
-
