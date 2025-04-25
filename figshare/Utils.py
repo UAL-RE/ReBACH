@@ -17,9 +17,17 @@ def standardize_api_result(api_result) -> dict:
     :type: dict
     """
     api_result_dict = api_result
-    for key in api_result_dict.keys():
-        if api_result_dict[key] == 'null' or api_result_dict[key] is None:
-            api_result_dict[key] = ""
+    if isinstance(api_result_dict, dict):
+        item_keys = list(api_result_dict.keys())
+        for key in item_keys:
+            api_result_dict[key] = standardize_api_result(api_result_dict[key])
+    elif isinstance(api_result_dict, list):
+        for k, v in enumerate(api_result_dict):
+            api_result_dict[k] = standardize_api_result(api_result_dict[k])
+    else:
+        if api_result_dict == 'null' or api_result_dict is None:
+            api_result_dict = ''
+
     return api_result_dict
 
 
