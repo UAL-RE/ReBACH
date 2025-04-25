@@ -8,7 +8,7 @@ import hashlib
 import re
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash
-from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path
+from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -294,8 +294,8 @@ class Article:
                         version_data_for_hashing = metadata_to_hash(version_data)
                         version_data_for_hashing = standardize_api_result(version_data_for_hashing)
                         version_data_for_hashing = sorter_api_result(version_data_for_hashing)
-                        json_data = json.dumps(version_data_for_hashing).encode("utf-8")
-                        version_md5 = hashlib.md5(json_data).hexdigest()
+                        str_version_data_for_hashing = stringify_metadata(version_data_for_hashing).encode("utf-8")
+                        version_md5 = hashlib.md5(str_version_data_for_hashing).hexdigest()
                         version_final_storage_preserved_list = \
                             get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
