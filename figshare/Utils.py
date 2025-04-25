@@ -379,4 +379,32 @@ def metadata_to_hash(metadata: dict) -> dict:
     for key in full_metadata:
         if key not in focus_metadata:
             del article_metadata[key]
+
     return article_metadata
+
+
+def stringify_metadata(metadata: Any) -> str:
+    """
+    Concatenates all metadata field values into a string
+
+    :param  metadata:  Item metadata in any format
+    :type: Any
+
+    :return: A dictionary containing only metadata fields for hash calculation
+    :rtype: str
+    """
+    metadata_str = ""
+    if isinstance(metadata, list):
+        if len(metadata) == 0:
+            metadata_str += ""
+        else:
+            for item in metadata:
+                metadata_str += stringify_metadata(item)
+    elif isinstance(metadata, dict):
+        keys_list = sorted(list(metadata.keys()))
+        for key in keys_list:
+            metadata_str += stringify_metadata(metadata[key])
+    else:
+        metadata_str += str(metadata)
+
+    return metadata_str
