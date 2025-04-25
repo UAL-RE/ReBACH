@@ -398,7 +398,7 @@ def stringify_metadata(metadata: Any) -> str:
     :param  metadata:  Item metadata in any format
     :type: Any
 
-    :return: A dictionary containing only metadata fields for hash calculation
+    :return: A string of concatenated field values
     :rtype: str
     """
     metadata_str = ""
