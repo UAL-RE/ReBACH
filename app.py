@@ -61,7 +61,6 @@ def main():
     This function will be called first, after parsing the command line.
     Set up required variables and conditions.
     """
-    global args
     print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":INFO: ReBACH script has started.")
 
     # Check .env file exists.

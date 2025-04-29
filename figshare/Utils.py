@@ -17,9 +17,17 @@ def standardize_api_result(api_result) -> dict:
     :type: dict
     """
     api_result_dict = api_result
-    for key in api_result_dict.keys():
-        if api_result_dict[key] == 'null' or api_result_dict[key] is None:
-            api_result_dict[key] = ""
+    if isinstance(api_result_dict, dict):
+        item_keys = list(api_result_dict.keys())
+        for key in item_keys:
+            api_result_dict[key] = standardize_api_result(api_result_dict[key])
+    elif isinstance(api_result_dict, list):
+        for k, v in enumerate(api_result_dict):
+            api_result_dict[k] = standardize_api_result(api_result_dict[k])
+    else:
+        if api_result_dict == 'null' or api_result_dict is None:
+            api_result_dict = ''
+
     return api_result_dict
 
 
@@ -361,3 +369,50 @@ def get_article_id_and_version_from_path(path: str) -> tuple:
         article_id = path_elements[-3].split('_')[-1]
 
     return article_id, version_no
+
+
+def metadata_to_hash(metadata: dict) -> dict:
+    """
+    Reduces an article metadata to specific metadata fields
+
+    :param  metadata:  Complete article metadata
+    :type: dict
+
+    :return: A dictionary containing only metadata fields for hash calculation
+    :rtype: dict
+    """
+    article_metadata = dict(metadata)
+    full_metadata = list(article_metadata.keys())
+    focus_metadata = ['description', 'funding_list', 'related_materials']
+    for key in full_metadata:
+        if key not in focus_metadata:
+            del article_metadata[key]
+
+    return article_metadata
+
+
+def stringify_metadata(metadata: Any) -> str:
+    """
+    Concatenates all metadata field values into a string
+
+    :param  metadata:  Item metadata in any format
+    :type: Any
+
+    :return: A string of concatenated field values
+    :rtype: str
+    """
+    metadata_str = ""
+    if isinstance(metadata, list):
+        if len(metadata) == 0:
+            metadata_str += ""
+        else:
+            for item in metadata:
+                metadata_str += stringify_metadata(item)
+    elif isinstance(metadata, dict):
+        keys_list = sorted(list(metadata.keys()))
+        for key in keys_list:
+            metadata_str += stringify_metadata(metadata[key])
+    else:
+        metadata_str += str(metadata)
+
+    return metadata_str
