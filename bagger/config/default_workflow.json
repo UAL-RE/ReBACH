@@ -6,14 +6,14 @@
   "packagePluginId": "BagIt",
   "packagePluginName": null,
   "bagItProfile": {
-    "id": "80dda49d-96c9-46dd-91bf-7f57053854d4",
+    "id": "7f0cd963-4750-4c10-a3de-0c65bb0d0dc5",
     "userCanDelete": true,
     "required": [
       "name",
       "id"
     ],
     "errors": {},
-    "name": "ReDATA BagIt Profile",
+    "name": "ReDATA",
     "description": "BagIt Profile for ReDATA BagIt preservation using ReBACH (based on APTrust BagIt Profile v2.2)",
     "acceptBagItVersion": [
       "0.97",
@@ -24,13 +24,13 @@
     ],
     "allowFetchTxt": false,
     "bagItProfileInfo": {
-      "bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/profiles/redata-bagit-dart-v2.2.json",
+      "bagItProfileIdentifier": "https://raw.githubusercontent.com/UAL-RE/ReBACH/main/bagger/profiles/redata-bagit-dart-v3.0.json",
       "bagItProfileVersion": "",
       "contactEmail": "redata@arizona.edu",
       "contactName": "ReDATA Administrator",
-      "externalDescription": "BagIt profile for creating bags from ReDATA content. Based on APTrust BagIt profile v2.2.",
+      "externalDescription": "Profile for ReDATA content. Based on APTrust BagIt profile v2.2. bagItProfileIdentifier points to a DART settings object which contains this profile.",
       "sourceOrganization": "redata.arizona.edu",
-      "version": "2.2"
+      "version": "3.0"
     },
     "manifestsRequired": [
       "md5"
@@ -106,14 +106,15 @@
         "tagName": "Bag-Count",
         "required": false,
         "values": [],
-        "defaultValue": "",
+        "defaultValue": null,
         "userValue": "",
         "help": "The number of bags that make up this object. Set this only if you are packaging a single object into multiple bags. See https://wiki.aptrust.org/Bagging_specifications for info on naming multi-part APTrust bags.",
         "isBuiltIn": true,
         "isUserAddedFile": false,
         "isUserAddedTag": false,
         "wasAddedForJob": false,
-        "errors": {}
+        "errors": {},
+        "emptyOk": true
       },
       {
         "id": "41b75504-e54d-49a1-aad4-c8a4921d15ce",
@@ -287,7 +288,7 @@
         "errors": {}
       },
       {
-        "id": "16772027-e33b-416b-9eb1-9d50b02224f7",
+        "id": "22f51ea6-de98-494e-a876-dbaeb004cc9f",
         "tagFile": "bag-info.txt",
         "tagName": "License-Name",
         "required": false,
@@ -305,7 +306,7 @@
         ],
         "defaultValue": "",
         "userValue": "",
-        "help": "The name of the license assigned to the record in ReDATA. For items with multiple licenses,",
+        "help": "The name of the license assigned to the record in ReDATA.",
         "isBuiltIn": false,
         "isUserAddedFile": false,
         "isUserAddedTag": true,
@@ -313,7 +314,22 @@
         "errors": {}
       },
       {
-        "id": "d9044d6b-818c-4c3b-b7ff-ab867c525249",
+        "id": "317ede75-de6f-4bd5-9af0-67c2a24f9174",
+        "tagFile": "bag-info.txt",
+        "tagName": "External-Identifier",
+        "required": true,
+        "values": [],
+        "defaultValue": "",
+        "userValue": "",
+        "help": "Format: {id of item on figshare}-{version}-{first author firstname}-{first author lastname}-{hash}",
+        "isBuiltIn": false,
+        "isUserAddedFile": false,
+        "isUserAddedTag": true,
+        "wasAddedForJob": false,
+        "errors": {}
+      },
+      {
+        "id": "8a264c2d-9a75-4a07-917e-1763e2b57993",
         "tagFile": "bag-info.txt",
         "tagName": "Published-Date",
         "required": false,
@@ -344,8 +360,8 @@
         "id"
       ],
       "errors": {},
-      "name": "Wasabi Main",
-      "description": "Main Wasabi storage endpoint",
+      "name": "Wasabi (ReDATA)",
+      "description": "Wasabi storage for ReDATA. Override necessary settings using ReBACH bagger config.",
       "protocol": "s3",
       "host": "***Override***",
       "port": 0,
