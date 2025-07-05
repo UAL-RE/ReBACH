@@ -125,7 +125,7 @@ class Bagger:
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
 
-        metadata_tags = Metadata(self.config, metadata_path,
+        metadata_tags = Metadata(self.config, metadata_path, article_id, version, metadata_hash,
                                  self.log).parse_metadata()
 
         if not metadata_tags:

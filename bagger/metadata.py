@@ -12,18 +12,24 @@ Tag = namedtuple('Tag', ['tag_file', 'tag_name', 'tag_value'])
 
 class Metadata:
 
-    def __init__(self, config: dict, metadata_json_path: Path, log: Logger):
+    def __init__(self, config: dict, metadata_json_path: Path, article_id: str, version: str, ver_hash: str, log: Logger):
         """
         Assemble metadata tags to embed in bags
 
         :param config: Config dict
         :param metadata_json_path: Path to package metadata JSON file
+        :param article_id: id of the article being processed
+        :param version: version of the article_id being processed
+        :param hash: identifying hash of the item being processed
         :param log: Logger object
         """
         self.config: dict = config
         self.log: Logger = log
         self.metadata_json_path: Path = metadata_json_path
         self.metadata_config: dict = self.config['Metadata']
+        self.article_id: str = article_id
+        self.version: str = version
+        self.hash: str = ver_hash
 
         self.tags: list[Tag] = []
 
@@ -52,7 +58,7 @@ class Metadata:
                 # Otherwise, the tag_value needs to be extracted from the metadata, and we need to
                 # check for strip_html and shorten.
                 try:
-                    tag_path = tag_annotation['tag_path']
+                    tag_path_list = tag_annotation['tag_path']
                 except KeyError:
                     self.log.error(f"Metadata key '{_tag_file}.{tag_name}' "
                                    f"must have tag_path defined")
@@ -60,20 +66,32 @@ class Metadata:
 
                 strip_html = tag_annotation.get('strip_html', False)
                 shorten = tag_annotation.get('shorten', False)
-                split_tag_path = tag_path.split('.')
+                tag_value_sep = '-'
+                tag_value_list =[]
+                for tag_path in tag_path_list:
+                    if tag_path.startswith('#') and tag_path.endswith('#'):
+                        # Special case where we want to use article_id, version, or hash in tag files
+                        try:
+                            tag_value_list.append(getattr(self, tag_path.replace('#','')))
+                        except AttributeError:
+                            print(f"Error: Variable '{tag_path.replace('#','')}' does not exist in class Metadata.")
+                    else:
+                        split_tag_path = tag_path.split('.')
 
-                tag_value = self._descend_json(self.data, split_tag_path, tag_path)
+                        tag_value = self._descend_json(self.data, split_tag_path, tag_path)
 
-                if not tag_value:
-                    return False
+                        if not tag_value:
+                            tag_value_list.append("")
+                        else:
+                            if strip_html:
+                                tag_value = strip_tags(tag_value)
 
-                if strip_html:
-                    tag_value = strip_tags(tag_value)
+                            if shorten:
+                                tag_value = textwrap.shorten(tag_value, shorten)
 
-                if shorten:
-                    tag_value = textwrap.shorten(tag_value, shorten)
+                            tag_value_list.append(str(tag_value))
 
-                self.tags.append(Tag(tag_file, tag_name, tag_value))
+                self.tags.append(Tag(tag_file, tag_name, tag_value_sep.join(tag_value_list)))
 
         return self.tags
 
