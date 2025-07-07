@@ -350,27 +350,5 @@
     "tarDirMustMatchName": true
   },
   "storageServices": [
-    {
-      "id": "b8bb7486-247b-4182-930a-f61644f5b95e",
-      "userCanDelete": true,
-      "required": [
-        "name",
-        "protocol",
-        "host",
-        "id"
-      ],
-      "errors": {},
-      "name": "Wasabi (ReDATA)",
-      "description": "Wasabi storage for ReDATA. Override necessary settings using ReBACH bagger config.",
-      "protocol": "s3",
-      "host": "***Override***",
-      "port": 0,
-      "bucket": "***Override***",
-      "login": "env:WASABI_ACCESS_KEY_ID",
-      "password": "env:WASABI_SECRET_ACCESS_KEY",
-      "loginExtra": "",
-      "allowsUpload": true,
-      "allowsDownload": true
-    }
   ]
 }

@@ -96,7 +96,7 @@ class Status(IntEnum):
     DRY_RUN = SUCCESS
 ```
 
-Code that imports the `Bagger` module can use the name or value of the `Status` object: 
+Code that imports the `Bagger` module can use the name or value of the `Status` object:
 
 ```python
 if status == Status.INVALID_PATH:
@@ -140,6 +140,8 @@ workflow = "default_workflow.json" # Path to the DART workflow file
 dart_command = "dart-runner" # Command or path to DART executable
 ```
 
+There are currently two workflows `default_workflow.json` and `noupload_workflow.json`. The only difference is that the latter instructs dart-runner to not upload files to any remote storage locations.
+
 ### Logging
 
 ReBACH-Bagger logs errors, debug messages, and DART output to disk.
@@ -152,12 +154,12 @@ logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 
 ### Wasabi
 
-Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi. 
+Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi.
 ReBACH-Bagger checks Wasabi for duplicate bags. See [DART Workflow]("#dart-workflow") for details on how
-these variables are used in DART. 
+these variables are used in DART.
 
-If the `dart_workflow_hostbucket_override` variable is set to `true` 
-(default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the 
+If the `dart_workflow_hostbucket_override` variable is set to `true`
+(default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the
 `workflow` variable above. If set to `false`, the values defined in the workflow itself are used instead. This
 option can only be set in the configuration file.
 
@@ -192,7 +194,7 @@ the tag.
 
 ### Metadata from JSON
 
-Users may also use an inline table to define a dot-notation `tag_path` to the tag's corresponding 
+Users may also use an inline table to define a dot-notation `tag_path` to the tag's corresponding
 key in the package's metadata file. Take the following abbreviated example of a metadata JSON file:
 
 ```json
@@ -214,15 +216,35 @@ key in the package's metadata file. Take the following abbreviated example of a 
 }
 ```
 
-To define a set of tags based on this metadata named "First-Author", "License", and "DOI" in the 
+To define a set of tags based on this metadata named "First-Author", "License", and "DOI" in the
 "bag-info.txt" tag file, users can define the following relationships in the config file:
 
 ```toml
 [Metadata]
-bag-info.First-Author = { tag_path = "authors.0.full_name" }
-bag-info.License = { tag_path = "license.name" }
-bag-info.DOI = { tag_path = "doi" }
+bag-info.First-Author = { tag_path = ["authors.0.full_name"] }
+bag-info.License = { tag_path = ["license.name"] }
+bag-info.DOI = { tag_path = ["doi"] }
 ```
+
+To extract multiple items and concatenate their values into a single tag, include more list items.
+
+```toml
+bag-info.External-Identifier = { tag_path = ["authors.0.full_name", "#hash#"] }
+```
+
+Note the special value `#hash#`. This will not extract values from the JSON but instead from the name of the bag that will be created. Available values:
+
+- `#id#`: the article id
+- `#version#`: the article version (in `vXX` format where XX is a zero-padded number from 1 to 99)
+- `#hash#`: The metadata hash
+
+In the example, the value of External-Identifier will be set to `Brian Avants-<md5>` where `<md5>` is the 32 character MD5 hash computed by bagger for the bag name. To include literal text in the tag, enclose it in `@`. 
+
+```toml
+bag-info.External-Identifier = { tag_path = ["@azu_@", "authors.0.full_name", "#hash#"] }
+```
+sets External-Identifier to `azu_Brian Avants-<md5>`
+
 
 ### Metadata Utilities
 
