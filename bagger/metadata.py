@@ -67,14 +67,14 @@ class Metadata:
                 strip_html = tag_annotation.get('strip_html', False)
                 shorten = tag_annotation.get('shorten', False)
                 tag_value_sep = '-'
-                tag_value_list =[]
+                tag_value_list = []
                 for tag_path in tag_path_list:
                     if tag_path.startswith('#') and tag_path.endswith('#'):
                         # Special case where we want to use article_id, version, or hash in tag files
                         try:
-                            tag_value_list.append(getattr(self, tag_path.replace('#','')))
+                            tag_value_list.append(getattr(self, tag_path.replace('#', '')))
                         except AttributeError:
-                            print(f"Error: Variable '{tag_path.replace('#','')}' does not exist in class Metadata.")
+                            print(f"Error: Variable '{tag_path.replace('#', '')}' does not exist in class Metadata.")
                     else:
                         split_tag_path = tag_path.split('.')
 

@@ -227,14 +227,16 @@ bag-info.DOI = { tag_path = ["doi"] }
 To extract multiple items and concatenate their values into a single tag, include more list items.
 
 ```toml
-bag-info.External-Identifier = { tag_path = ["authors.0.last_name", "#hash#"] }
+bag-info.External-Identifier = { tag_path = ["authors.0.full_name", "#hash#"] }
 ```
 
-Note the special value `#hash#`. This will not extract values from the JSON but instead from the name of the bag that will be created
+Note the special value `#hash#`. This will not extract values from the JSON but instead from the name of the bag that will be created. Available values:
+
 - `#id#`: the article id
 - `#version#`: the article version (in `vXX` format where XX is a zero-padded number from 1 to 99)
 - `#hash#`: The metadata hash
-In the example, the value of External-Identifier will be set to `Avants-<md5>` where `<md5>` is a 32 character MD5 hash.
+
+In the example, the value of External-Identifier will be set to `Brian Avants-<md5>` where `<md5>` is the 32 character MD5 hash computed by bagger for the bag name.
 
 
 ### Metadata Utilities
