@@ -1,6 +1,6 @@
 [Defaults]
 output_dir = "out"
-workflow = "bagger/config/default_workflow.json"
+workflow = "bagger/config/noupload_workflow.json"
 dart_command = "dart-runner"
 overwrite = false
 delete = true

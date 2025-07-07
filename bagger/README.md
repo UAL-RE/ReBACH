@@ -140,6 +140,8 @@ workflow = "default_workflow.json" # Path to the DART workflow file
 dart_command = "dart-runner" # Command or path to DART executable
 ```
 
+There are currently two workflows `default_workflow.json` and `noupload_workflow.json`. The only difference is that the latter instructs dart-runner to not upload files to any remote storage locations.
+
 ### Logging
 
 ReBACH-Bagger logs errors, debug messages, and DART output to disk.
