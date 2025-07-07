@@ -75,6 +75,8 @@ class Metadata:
                             tag_value_list.append(getattr(self, tag_path.replace('#', '')))
                         except AttributeError:
                             print(f"Error: Variable '{tag_path.replace('#', '')}' does not exist in class Metadata.")
+                    elif tag_path.startswith('@') and tag_path.endswith('@'):
+                        tag_value_list.append(tag_path.replace('@', ''))
                     else:
                         split_tag_path = tag_path.split('.')
 
