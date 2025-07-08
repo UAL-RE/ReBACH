@@ -6,6 +6,7 @@ import time
 import requests
 import hashlib
 import re
+from datetime import datetime
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
@@ -31,6 +32,8 @@ class Article:
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
+        self.bag_name_prefix = self.system_config['bag_name_prefix']
+        self.bag_creation_date = datetime.today().strftime('%Y%m%d')
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
         self.logs = log
@@ -1039,10 +1042,10 @@ class Article:
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
                     version_no = "v" + str(version_data["version"]).zfill(2)
-                    first_depositor_full_name = version_data['authors'][0]['full_name']
-                    formatted_depositor_full_name = slugify(first_depositor_full_name, separator="_", lowercase=False)
-                    folder_name = str(version_data["id"]) + "_" + version_no + "_" \
-                        + formatted_depositor_full_name + "_" + version_data['version_md5']
+                    first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-','')
+                    formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
+                    folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-" \
+                        + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag_" + str(self.bag_creation_date)
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
