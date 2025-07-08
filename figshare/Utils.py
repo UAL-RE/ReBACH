@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 from typing import Any
 from time import sleep
 import tempfile
@@ -105,6 +106,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     retries_wait = int(config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
+    extract_hash = re.compile("[a-z0-9]{32}_bag")
     success = False
 
     if base_url[-1] != '/':
@@ -134,7 +136,8 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                     else:
                         for package in preserved_packages:
                             if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
-                                preserved_pkg_hash = package['bag_name'].split('_')[-1]
+                                preserved_pkg_hash = extract_hash.findall(package['bag_name'])
+                                preserved_pkg_hash = preserved_pkg_hash[0].replace('_bag', '')
                                 preserved_pkg_size = package['payload_size']
                                 version_preserved_list.append((preserved_pkg_hash, preserved_pkg_size))
                         else:
