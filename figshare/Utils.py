@@ -73,18 +73,21 @@ def sorter_api_result(json_dict_: Any) -> Any:
 
 def extract_metadata_hash_only(package_name: str) -> str:
     """
-    Extracts MD5 hash of metadata from package name
+    Extracts MD5 hash of metadata from package name based on the format
+    azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
 
     :param package_name: Filename package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
     :type: str
 
-    :return: MD5 hash of metadata
+    :return: MD5 hash of metadata or empty string if package name format differs from the specified format
     :rtype: str
     """
 
     metadata_re = re.compile("[a-z0-9]{32}_bag")
     metadata_hash = metadata_re.findall(package_name)
-    return metadata_hash[0].replace('_bag', '')
+    if len(metadata_hash) != 0:
+        return metadata_hash[0].replace("_bag", '')
+    return ''
 
 
 def extract_version_only(package_name: str) -> str:
@@ -100,7 +103,9 @@ def extract_version_only(package_name: str) -> str:
 
     version_re = re.compile("-v\d{2}-")
     version = version_re.findall(package_name)
-    return version[0].replace('-', '')
+    if len(version) != 0:
+        return version[0].replace('-', '')
+    return ''
 
 
 def extract_item_id_only(package_name: str) -> str:
@@ -116,7 +121,9 @@ def extract_item_id_only(package_name: str) -> str:
 
     item_id_re = re.compile("azu_\d{8}")
     item_id = item_id_re.findall(package_name)
-    return item_id[0].replace('azu_', '')
+    if len(item_id) != 0:
+        return item_id[0].replace("azu_", '')
+    return ''
 
 
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
