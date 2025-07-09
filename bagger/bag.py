@@ -4,6 +4,7 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
+from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -60,16 +61,11 @@ class Bagger:
         :return: Tuple of package name parts
         """
         # Format of preservation package name:
-        # [article_id]_[version]_[first_depositor_full_name]_[metadata_hash]
+        # azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
 
-        path_elements = package_name.split('_')
-
-        # Article ID and version are the first and second elements
-        article_id = path_elements[0]
-        version = path_elements[1]
-        # Depositor can be arbitrary number of elements because it is
-        # snake-cased, so get hash as last element
-        metadata_hash = path_elements[-1]
+        article_id = extract_item_id_only(package_name)
+        version = extract_version_only(package_name)
+        metadata_hash = extract_metadata_hash_only(package_name)
 
         return article_id, version, metadata_hash
 
