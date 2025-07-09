@@ -161,7 +161,6 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     retries_wait = int(config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
-    # extract_hash = re.compile("[a-z0-9]{32}_bag")
     success = False
 
     if base_url[-1] != '/':
