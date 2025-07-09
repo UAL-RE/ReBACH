@@ -91,6 +91,9 @@ class Metadata:
                             if shorten:
                                 tag_value = textwrap.shorten(tag_value, shorten)
 
+                            if tag_name == 'External-Identifier' and tag_path == 'authors.0.last_name':
+                                tag_value = tag_value.replace('-', '').replace(' ', '')
+
                             tag_value_list.append(str(tag_value))
 
                 self.tags.append(Tag(tag_file, tag_name, tag_value_sep.join(tag_value_list)))
