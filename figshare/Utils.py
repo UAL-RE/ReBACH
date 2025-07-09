@@ -154,7 +154,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     retries_wait = int(config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
-    extract_hash = re.compile("[a-z0-9]{32}_bag")
+    # extract_hash = re.compile("[a-z0-9]{32}_bag")
     success = False
 
     if base_url[-1] != '/':
@@ -184,8 +184,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                     else:
                         for package in preserved_packages:
                             if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
-                                preserved_pkg_hash = extract_hash.findall(package['bag_name'])
-                                preserved_pkg_hash = preserved_pkg_hash[0].replace('_bag', '')
+                                preserved_pkg_hash = extract_metadata_hash_only(package['bag_name'])
                                 preserved_pkg_size = package['payload_size']
                                 version_preserved_list.append((preserved_pkg_hash, preserved_pkg_size))
                         else:
@@ -273,7 +272,7 @@ def check_wasabi(article_id: int, version_no: int) -> list:
 
     for package in preserved_packages:
         if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
-            preserved_article_hash = package[0].split('_')[-1].replace('.tar', '')
+            preserved_article_hash = extract_metadata_hash_only(package[0])
             preserved_article_size = package[1]
             version_preserved_list.append((preserved_article_hash, preserved_article_size))
     return version_preserved_list
