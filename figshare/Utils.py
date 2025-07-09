@@ -98,9 +98,25 @@ def extract_version_only(package_name: str) -> str:
     :rtype: str
     """
 
-    metadata_re = re.compile("-v\d{2}-")
-    metadata_hash = metadata_re.findall(package_name)
-    return metadata_hash[0].replace('-', '')
+    version_re = re.compile("-v\d{2}-")
+    version = version_re.findall(package_name)
+    return version[0].replace('-', '')
+
+
+def extract_item_id_only(package_name: str) -> str:
+    """
+    Extracts item_id from package name. An item is an article or a collection
+
+    :param package_name: Filename package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: Item id of item bag
+    :rtype: str
+    """
+
+    item_id_re = re.compile("azu_\d{8}")
+    item_id = item_id_re.findall(package_name)
+    return item_id[0].replace('azu_', '')
 
 
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
