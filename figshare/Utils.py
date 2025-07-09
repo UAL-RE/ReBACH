@@ -71,6 +71,22 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
+def extract_metadata_hash_only(package_name: str) -> str:
+    """
+    Extracts MD5 hash of metadata from package name
+
+    :param package_name: Filename package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: MD5 hash of metadata
+    :rtype: str
+    """
+
+    metadata_re = re.compile("[a-z0-9]{32}_bag")
+    metadata_hash = metadata_re.findall(package_name)
+    return metadata_hash[0].replace('_bag', '')
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
