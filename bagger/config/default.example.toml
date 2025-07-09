@@ -21,8 +21,8 @@ dart_workflow_hostbucket_override = true
 [Metadata]
 # https://github.com/UAL-RE/ReBACH/blob/12-merge-rebach-bagger/bagger/README.md#metadata
 
-aptrust-info.Title = { tag_path = "title", strip_html = true }
-aptrust-info.Description = { tag_path = "description", strip_html = true }
+aptrust-info.Title = { tag_path = ["title"], strip_html = true }
+aptrust-info.Description = { tag_path = ["description"], strip_html = true }
 
 bag-info.Contact-Name = "ReDATA Administrator"
 bag-info.Contact-Email = "redata@arizona.edu"
