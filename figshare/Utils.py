@@ -87,6 +87,22 @@ def extract_metadata_hash_only(package_name: str) -> str:
     return metadata_hash[0].replace('_bag', '')
 
 
+def extract_version_only(package_name: str) -> str:
+    """
+    Extracts version from package name
+
+    :param package_name: Filename package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: Version of item bag
+    :rtype: str
+    """
+
+    metadata_re = re.compile("-v\d{2}-")
+    metadata_hash = metadata_re.findall(package_name)
+    return metadata_hash[0].replace('-', '')
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
