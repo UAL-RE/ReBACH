@@ -163,6 +163,25 @@ def extract_bag_count(package_name: str) -> str:
     return ''
 
 
+def extract_bag_date(package_name: str) -> str:
+    """
+    Extracts bag creation date in the format "YYYYmmdd" from package name. An item is an article or a collection
+
+    :param package_name: Filename of package in the format
+     azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: Bag creation date from bag name
+    :rtype: str
+    """
+
+    bag_date_re = re.compile("\\d{8}$")
+    bag_date = bag_date_re.findall(package_name)
+    if len(bag_date) != 0:
+        return bag_date[0]
+    return ''
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
