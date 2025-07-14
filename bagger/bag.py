@@ -100,7 +100,7 @@ class Bagger:
         package_name = Path(package_path).name
         bag_name = f'{package_name}.tar'
 
-        article_id, version, metadata_hash = self.decompose_name(package_name)
+        article_id, version, metadata_hash, last_name, bag_count, bag_date = self.decompose_name(package_name)
         metadata_dir = f'{version}/METADATA/'
         metadata_filename = f'{article_id}.json'
         metadata_path = Path(package_path, metadata_dir, metadata_filename)
@@ -125,7 +125,7 @@ class Bagger:
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
 
-        metadata_tags = Metadata(self.config, metadata_path, article_id, version, metadata_hash,
+        metadata_tags = Metadata(self.config, metadata_path, article_id, version, last_name, metadata_hash, bag_count,
                                  self.log).parse_metadata()
 
         if not metadata_tags:

@@ -12,7 +12,8 @@ Tag = namedtuple('Tag', ['tag_file', 'tag_name', 'tag_value'])
 
 class Metadata:
 
-    def __init__(self, config: dict, metadata_json_path: Path, article_id: str, version: str, ver_hash: str, log: Logger):
+    def __init__(self, config: dict, metadata_json_path: Path, article_id: str, version: str, last_name: str,
+                 ver_hash: str, bag_count: str, log: Logger):
         """
         Assemble metadata tags to embed in bags
 
@@ -20,7 +21,9 @@ class Metadata:
         :param metadata_json_path: Path to package metadata JSON file
         :param article_id: id of the article being processed
         :param version: version of the article_id being processed
-        :param hash: identifying hash of the item being processed
+        :param last_name: Last name of author
+        :param ver_hash: identifying hash of the item being processed
+        :param bag_count: Bag count
         :param log: Logger object
         """
         self.config: dict = config
@@ -29,7 +32,9 @@ class Metadata:
         self.metadata_config: dict = self.config['Metadata']
         self.article_id: str = article_id
         self.version: str = version
+        self.last_name = last_name
         self.hash: str = ver_hash
+        self.bag_count = bag_count
 
         self.tags: list[Tag] = []
 
@@ -91,8 +96,8 @@ class Metadata:
                             if shorten:
                                 tag_value = textwrap.shorten(tag_value, shorten)
 
-                            if tag_name == 'External-Identifier' and tag_path == 'authors.0.last_name':
-                                tag_value = tag_value.replace('-', '').replace(' ', '')
+                            # if tag_name == 'External-Identifier' and tag_path == 'authors.0.last_name':
+                            #     tag_value = tag_value.replace('-', '').replace(' ', '')
 
                             tag_value_list.append(str(tag_value))
 
