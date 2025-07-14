@@ -147,7 +147,7 @@ def extract_lastname_only(package_name: str) -> str:
 
 def extract_bag_count(package_name: str) -> str:
     """
-    Extracts bag count i.e "bagXofY" from package name. A package is an article bag or a collection bag
+    Extracts bag count i.e "X of Y" from package name. A package is an article bag or a collection bag
 
     :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
     :type: str
@@ -159,7 +159,7 @@ def extract_bag_count(package_name: str) -> str:
     bag_count_re = re.compile("bag[1-9]+of[1-9]+")
     bag_count = bag_count_re.findall(package_name)
     if len(bag_count) != 0:
-        return bag_count[0]
+        return bag_count[0].replace('bag','').replace('of',' of ')
     return ''
 
 
