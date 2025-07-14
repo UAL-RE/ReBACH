@@ -311,7 +311,7 @@ class Collection:
                 # author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
                 author_name = version['authors'][0]['last_name'].replace('-','').replace(' ', '')
                 folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
-                folder_name += "_bag10f1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
+                folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
                 version["articles"] = articles
 
                 # Collections don't have an explicit license. Make them CC0
