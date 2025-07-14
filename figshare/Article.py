@@ -1045,7 +1045,7 @@ class Article:
                     first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-','').replace(' ', '')
                     formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
                     folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-" \
-                        + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag_" + str(self.bag_creation_date)
+                        + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
