@@ -101,7 +101,7 @@ def extract_version_only(package_name: str) -> str:
     :rtype: str
     """
 
-    version_re = re.compile("-v\d{2}-")
+    version_re = re.compile("-v\\d{2}-")
     version = version_re.findall(package_name)
     if len(version) != 0:
         return version[0].replace('-', '')
@@ -119,7 +119,7 @@ def extract_item_id_only(package_name: str) -> str:
     :rtype: str
     """
 
-    item_id_re = re.compile("azu_\d*-")
+    item_id_re = re.compile("azu_\\d+-")
     item_id = item_id_re.findall(package_name)
     if len(item_id) != 0:
         return item_id[0].replace("azu_", '').replace('-', '')
