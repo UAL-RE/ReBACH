@@ -10,6 +10,7 @@ from bagger.config import get_args, TOMLDecodeError
 
 p = 'azu_1234567-v01-authorLastName-6de0ea5d4b2317d016c6db397bbebe86_bag_20250709'
 
+
 def test_decompose_name():
     name_parts = Bagger.decompose_name(p)
 

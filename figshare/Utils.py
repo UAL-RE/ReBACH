@@ -159,7 +159,7 @@ def extract_bag_count(package_name: str) -> str:
     bag_count_re = re.compile("bag[1-9]+of[1-9]+")
     bag_count = bag_count_re.findall(package_name)
     if len(bag_count) != 0:
-        return bag_count[0].replace('bag','').replace('of',' of ')
+        return bag_count[0].replace('bag', '').replace('of', ' of ')
     return ''
 
 

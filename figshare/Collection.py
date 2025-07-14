@@ -3,7 +3,6 @@ import shutil
 import os
 import requests
 import hashlib
-import re
 from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
@@ -308,8 +307,7 @@ class Collection:
                                                         + " preservation final remote storage.")
                     continue
 
-                # author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
-                author_name = version['authors'][0]['last_name'].replace('-','').replace(' ', '')
+                author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
                 folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
                 folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
                 version["articles"] = articles

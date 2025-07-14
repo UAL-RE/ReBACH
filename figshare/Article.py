@@ -1042,7 +1042,7 @@ class Article:
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
                     version_no = "v" + str(version_data["version"]).zfill(2)
-                    first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-','').replace(' ', '')
+                    first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
                     formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
                     folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-" \
                         + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
