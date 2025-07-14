@@ -144,6 +144,25 @@ def extract_lastname_only(package_name: str) -> str:
     return ''
 
 
+def extract_bag_count(package_name: str) -> str:
+    """
+    Extracts bag count i.e "bagXofY" from package name. An item is an article or a collection
+
+    :param package_name: Filename of package in the format
+     azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: Bag count from bag name
+    :rtype: str
+    """
+
+    bag_count_re = re.compile("bag[1-9]+of[1-9]+")
+    bag_count = bag_count_re.findall(package_name)
+    if len(bag_count) != 0:
+        return bag_count[0]
+    return ''
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
