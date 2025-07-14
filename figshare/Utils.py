@@ -126,6 +126,24 @@ def extract_item_id_only(package_name: str) -> str:
     return ''
 
 
+def extract_lastname_only(package_name: str) -> str:
+    """
+    Extracts author's lastname from package name. An item is an article or a collection
+
+    :param package_name: Filename package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+    :type: str
+
+    :return: Author's lastname from item bag
+    :rtype: str
+    """
+
+    author_lastname_re = re.compile("-[A-Z][A-za-z]+-")
+    author_last_name = author_lastname_re.findall(package_name)
+    if len(author_last_name) != 0:
+        return author_last_name[0].replace('-', '')
+    return ''
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
