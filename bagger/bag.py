@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Union
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
+from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -52,7 +53,7 @@ class Bagger:
                              dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
     @staticmethod
-    def decompose_name(package_name: str) -> tuple[str, str, str]:
+    def decompose_name(package_name: str) -> tuple[str, str, str, str, str, str]:
         """
         Decompose the name of a package into parts to enable traversing the
         package
@@ -61,13 +62,16 @@ class Bagger:
         :return: Tuple of package name parts
         """
         # Format of preservation package name:
-        # azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bag_[YYYYMMDD]
+        # azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
 
         article_id = extract_item_id_only(package_name)
         version = extract_version_only(package_name)
         metadata_hash = extract_metadata_hash_only(package_name)
+        last_name = extract_lastname_only(package_name)
+        bag_count = extract_bag_count(package_name)
+        bag_date = extract_bag_date(package_name)
 
-        return article_id, version, metadata_hash
+        return article_id, version, metadata_hash, last_name, bag_count, bag_date
 
     @staticmethod
     def validate_package(metadata_path: PathLike) -> bool:
