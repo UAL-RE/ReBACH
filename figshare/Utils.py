@@ -127,10 +127,10 @@ def extract_item_id_only(package_name: str) -> str:
     :rtype: str
     """
 
-    item_id_re = re.compile("azu_\\d+-")
+    item_id_re = re.compile("^\\w+_\\d+-")
     item_id = item_id_re.findall(package_name)
     if len(item_id) != 0:
-        return item_id[0].replace("azu_", '').replace('-', '')
+        return re.sub("^\\w+_", "", item_id[0]).replace("-","")
     return ''
 
 
