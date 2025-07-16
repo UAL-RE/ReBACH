@@ -62,7 +62,8 @@ class Bagger:
         :return: Tuple of package name parts
         """
         # Format of preservation package name:
-        # azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+        # [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+        # bag_name_prefix is set in configuration.
 
         article_id = extract_item_id_only(package_name)
         version = extract_version_only(package_name)

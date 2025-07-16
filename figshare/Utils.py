@@ -74,10 +74,13 @@ def sorter_api_result(json_dict_: Any) -> Any:
 def extract_metadata_hash_only(package_name: str) -> str:
     """
     Extracts MD5 hash of metadata from package name based on the format
-    azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
-    A package is an article bag or a collection bag
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration.
+    A package is an article bag or a collection bag.
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: MD5 hash of metadata or empty string if package name format differs from the specified format
@@ -93,9 +96,11 @@ def extract_metadata_hash_only(package_name: str) -> str:
 
 def extract_version_only(package_name: str) -> str:
     """
-    Extracts version from package name. A package is an article bag or a collection bag
+    Extracts version from package name. A package is an article bag or a collection bag.
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: Version of item bag
@@ -113,7 +118,9 @@ def extract_item_id_only(package_name: str) -> str:
     """
     Extracts item_id from package name. A package is an article bag or a collection bag
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: Item id of item bag
@@ -131,7 +138,9 @@ def extract_lastname_only(package_name: str) -> str:
     """
     Extracts author's lastname from package name. A package is an article bag or a collection bag
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: Author's lastname from item bag
@@ -149,7 +158,9 @@ def extract_bag_count(package_name: str) -> str:
     """
     Extracts bag count i.e "X of Y" from package name. A package is an article bag or a collection bag
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: Bag count from bag name
@@ -167,7 +178,9 @@ def extract_bag_date(package_name: str) -> str:
     """
     Extracts bag creation date in the format "YYYYMMDD" from package name. A package is an article bag or a collection bag
 
-    :param package_name: Filename of package in the format azu_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD]
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
     :type: str
 
     :return: Bag creation date from bag name
