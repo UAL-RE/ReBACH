@@ -4,6 +4,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
+from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
+from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -51,7 +53,7 @@ class Bagger:
                              dart_hostbucket_override=config['Wasabi']['dart_workflow_hostbucket_override'])
 
     @staticmethod
-    def decompose_name(package_name: str) -> tuple[str, str, str]:
+    def decompose_name(package_name: str) -> tuple[str, str, str, str, str, str]:
         """
         Decompose the name of a package into parts to enable traversing the
         package
@@ -60,18 +62,17 @@ class Bagger:
         :return: Tuple of package name parts
         """
         # Format of preservation package name:
-        # [article_id]_[version]_[first_depositor_full_name]_[metadata_hash]
+        # [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+        # bag_name_prefix is set in configuration.
 
-        path_elements = package_name.split('_')
+        article_id = extract_item_id_only(package_name)
+        version = extract_version_only(package_name)
+        metadata_hash = extract_metadata_hash_only(package_name)
+        last_name = extract_lastname_only(package_name)
+        bag_count = extract_bag_count(package_name)
+        bag_date = extract_bag_date(package_name)
 
-        # Article ID and version are the first and second elements
-        article_id = path_elements[0]
-        version = path_elements[1]
-        # Depositor can be arbitrary number of elements because it is
-        # snake-cased, so get hash as last element
-        metadata_hash = path_elements[-1]
-
-        return article_id, version, metadata_hash
+        return article_id, version, metadata_hash, last_name, bag_count, bag_date
 
     @staticmethod
     def validate_package(metadata_path: PathLike) -> bool:
@@ -100,7 +101,7 @@ class Bagger:
         package_name = Path(package_path).name
         bag_name = f'{package_name}.tar'
 
-        article_id, version, metadata_hash = self.decompose_name(package_name)
+        article_id, version, metadata_hash, last_name, bag_count, bag_date = self.decompose_name(package_name)
         metadata_dir = f'{version}/METADATA/'
         metadata_filename = f'{article_id}.json'
         metadata_path = Path(package_path, metadata_dir, metadata_filename)
@@ -125,7 +126,7 @@ class Bagger:
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
 
-        metadata_tags = Metadata(self.config, metadata_path, article_id, version, metadata_hash,
+        metadata_tags = Metadata(self.config, metadata_path, article_id, version, last_name, metadata_hash, bag_count,
                                  self.log).parse_metadata()
 
         if not metadata_tags:

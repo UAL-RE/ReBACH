@@ -8,7 +8,7 @@ from bagger import Status
 from bagger.bag import Bagger
 from bagger.config import get_args, TOMLDecodeError
 
-p = '1234567_01_TEST_PACKAGE_6de0ea5d4b2317d016c6db397bbebe86'
+p = 'azu_1234567-v01-authorLastName-6de0ea5d4b2317d016c6db397bbebe86_bag_20250709'
 
 
 def test_decompose_name():
@@ -17,7 +17,7 @@ def test_decompose_name():
     assert isinstance(name_parts, tuple)
 
     assert name_parts[0] == '1234567'
-    assert name_parts[1] == '01'
+    assert name_parts[1] == 'v01'
     assert name_parts[2] == '6de0ea5d4b2317d016c6db397bbebe86'
 
 

@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 from typing import Any
 from time import sleep
 import tempfile
@@ -70,6 +71,129 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
+def extract_metadata_hash_only(package_name: str) -> str:
+    """
+    Extracts MD5 hash of metadata from package name based on the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration.
+    A package is an article bag or a collection bag.
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: MD5 hash of metadata or empty string if package name format differs from the specified format
+    :rtype: str
+    """
+
+    metadata_re = re.compile("[a-z0-9]{32}_bag")
+    metadata_hash = metadata_re.findall(package_name)
+    if len(metadata_hash) != 0:
+        return metadata_hash[0].replace("_bag", '')
+    return ''
+
+
+def extract_version_only(package_name: str) -> str:
+    """
+    Extracts version from package name. A package is an article bag or a collection bag.
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: Version of item bag
+    :rtype: str
+    """
+
+    version_re = re.compile("-v\\d{2}-")
+    version = version_re.findall(package_name)
+    if len(version) != 0:
+        return version[0].replace('-', '')
+    return ''
+
+
+def extract_item_id_only(package_name: str) -> str:
+    """
+    Extracts item_id from package name. A package is an article bag or a collection bag
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: Item id of item bag
+    :rtype: str
+    """
+
+    item_id_re = re.compile("^\\w*_\\d+-")
+    item_id = item_id_re.findall(package_name)
+    if len(item_id) != 0:
+        return re.sub("^\\w*_", "", item_id[0]).replace('-', '')
+    return ''
+
+
+def extract_lastname_only(package_name: str) -> str:
+    """
+    Extracts author's lastname from package name. A package is an article bag or a collection bag
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: Author's lastname from item bag
+    :rtype: str
+    """
+
+    author_lastname_re = re.compile("-[A-Z][A-za-z]+-")
+    author_last_name = author_lastname_re.findall(package_name)
+    if len(author_last_name) != 0:
+        return author_last_name[0].replace('-', '')
+    return ''
+
+
+def extract_bag_count(package_name: str) -> str:
+    """
+    Extracts bag count i.e "X of Y" from package name. A package is an article bag or a collection bag
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: Bag count from bag name
+    :rtype: str
+    """
+
+    bag_count_re = re.compile("bag[1-9]+of[1-9]+")
+    bag_count = bag_count_re.findall(package_name)
+    if len(bag_count) != 0:
+        return bag_count[0].replace('bag', '').replace('of', ' of ')
+    return ''
+
+
+def extract_bag_date(package_name: str) -> str:
+    """
+    Extracts bag creation date in the format "YYYYMMDD" from package name. A package is an article bag or a collection bag
+
+    :param package_name: Filename of package in the format
+    [bag_name_prefix]_[article_id]-[version]-[first_author_lastname]-[metadata_hash]_bagXofY_[YYYYMMDD].
+    bag_name_prefix is set in configuration file.
+    :type: str
+
+    :return: Bag creation date from bag name
+    :rtype: str
+    """
+
+    bag_date_re = re.compile("\\d{8}$")
+    bag_date = bag_date_re.findall(package_name)
+    if len(bag_date) != 0:
+        return bag_date[0]
+    return ''
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
@@ -134,7 +258,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
                     else:
                         for package in preserved_packages:
                             if str(article_id) in package['bag_name'] and version_no in package['bag_name']:
-                                preserved_pkg_hash = package['bag_name'].split('_')[-1]
+                                preserved_pkg_hash = extract_metadata_hash_only(package['bag_name'])
                                 preserved_pkg_size = package['payload_size']
                                 version_preserved_list.append((preserved_pkg_hash, preserved_pkg_size))
                         else:
@@ -222,7 +346,7 @@ def check_wasabi(article_id: int, version_no: int) -> list:
 
     for package in preserved_packages:
         if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
-            preserved_article_hash = package[0].split('_')[-1].replace('.tar', '')
+            preserved_article_hash = extract_metadata_hash_only(package[0])
             preserved_article_size = package[1]
             version_preserved_list.append((preserved_article_hash, preserved_article_size))
     return version_preserved_list

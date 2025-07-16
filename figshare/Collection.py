@@ -3,7 +3,7 @@ import shutil
 import os
 import requests
 import hashlib
-import re
+from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
@@ -26,6 +26,8 @@ class Collection:
         self.aptrust_config = self.config_obj.aptrust_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
+        self.bag_name_prefix = self.system_config['bag_name_prefix']
+        self.bag_creation_date = datetime.today().strftime('%Y%m%d')
         self.retries = int(figshare_config["retries"]) if figshare_config["retries"] is not None else 3
         self.retry_wait = int(figshare_config["retries_wait"]) if figshare_config["retries_wait"] is not None else 10
         self.institution = int(figshare_config["institution"])
@@ -305,8 +307,9 @@ class Collection:
                                                         + " preservation final remote storage.")
                     continue
 
-                author_name = re.sub("[^A-Za-z0-9]", "_", version['authors'][0]['full_name'])
-                folder_name = str(collection) + "_" + version_no + "_" + author_name + "_" + version_md5 + "/" + version_no + "/METADATA"
+                author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
+                folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
+                folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
                 version["articles"] = articles
 
                 # Collections don't have an explicit license. Make them CC0

@@ -12,7 +12,8 @@ Tag = namedtuple('Tag', ['tag_file', 'tag_name', 'tag_value'])
 
 class Metadata:
 
-    def __init__(self, config: dict, metadata_json_path: Path, article_id: str, version: str, ver_hash: str, log: Logger):
+    def __init__(self, config: dict, metadata_json_path: Path, article_id: str, version: str, last_name: str,
+                 ver_hash: str, bag_count: str, log: Logger):
         """
         Assemble metadata tags to embed in bags
 
@@ -20,7 +21,9 @@ class Metadata:
         :param metadata_json_path: Path to package metadata JSON file
         :param article_id: id of the article being processed
         :param version: version of the article_id being processed
-        :param hash: identifying hash of the item being processed
+        :param last_name: Last name of author
+        :param ver_hash: identifying hash of the item being processed
+        :param bag_count: Bag count
         :param log: Logger object
         """
         self.config: dict = config
@@ -29,7 +32,9 @@ class Metadata:
         self.metadata_config: dict = self.config['Metadata']
         self.article_id: str = article_id
         self.version: str = version
+        self.last_name = last_name
         self.hash: str = ver_hash
+        self.bag_count = bag_count
 
         self.tags: list[Tag] = []
 
@@ -70,7 +75,7 @@ class Metadata:
                 tag_value_list = []
                 for tag_path in tag_path_list:
                     if tag_path.startswith('#') and tag_path.endswith('#'):
-                        # Special case where we want to use article_id, version, or hash in tag files
+                        # Special case where we want to use article_id, version, last_name, hash, bag_count or bag_creation_date in tag files
                         try:
                             tag_value_list.append(getattr(self, tag_path.replace('#', '')))
                         except AttributeError:
