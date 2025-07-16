@@ -75,7 +75,7 @@ class Metadata:
                 tag_value_list = []
                 for tag_path in tag_path_list:
                     if tag_path.startswith('#') and tag_path.endswith('#'):
-                        # Special case where we want to use article_id, version, or hash in tag files
+                        # Special case where we want to use article_id, version, last_name, hash, bag_count or bag_creation_date in tag files
                         try:
                             tag_value_list.append(getattr(self, tag_path.replace('#', '')))
                         except AttributeError:
