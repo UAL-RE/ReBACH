@@ -7,7 +7,7 @@ from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
-from figshare.Utils import compare_hash, check_wasabi
+from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage
 
 
 class Collection:
@@ -38,8 +38,10 @@ class Collection:
         if self.preservation_storage_location[-1] != "/":
             self.preservation_storage_location = self.preservation_storage_location + "/"
         self.input_collection_ids = ids
-        self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'already_preserved_versions': 0,
-                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+        self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'locally_preserved_versions': 0,
+                                              'already_preserved_versions': 0, 'wasabi_preserved_versions': 0,
+                                              'ap_trust_preserved_versions': 0
+                                              }
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -263,19 +265,35 @@ class Collection:
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = f"v{str(version['version']).zfill(2)}"
 
+                version_local_final_preserved_list = check_local_path(version['id'], version['version'])
+                if len(version_local_final_preserved_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                + "found in local final preservation storage",
+                                                True)
+
                 version_final_storage_preserved_list = \
-                    get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version_no)
+                    get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version['version'])
                 if len(version_final_storage_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
                                                 + "found in preservation final remote storage",
                                                 True)
-                version_staging_storage_preserved_list = check_wasabi(version['id'], version_no)
+                version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
                 if len(version_staging_storage_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
                                                 + "found in preservation staging remote storage",
                                                 True)
+
+                if compare_hash(version_md5, version_local_final_preserved_list):  # Local final storage check
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['locally_preserved_versions'] += 1
+                    self.logs.write_log_in_file("info",
+                                                f"Collection {version['id']} version {version['version']} already preserved"
+                                                + " in preservation local final storage.",
+                                                True)
+                    continue
 
                 if compare_hash(version_md5, version_staging_storage_preserved_list) and \
                         compare_hash(version_md5, version_final_storage_preserved_list):
@@ -307,9 +325,26 @@ class Collection:
                                                         + " preservation final remote storage.")
                     continue
 
-                author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
-                folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
-                folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
+                # Local staging storage check
+                version_staging_local_storage_list = check_local_path(version['id'], version['version'], \
+                                                                      self.system_config['preservation_storage_location'])
+                if len(version_staging_local_storage_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of article {version['id']} version {version['version']} "
+                                                + "found in preservation staging local storage",
+                                                True)
+                if compare_hash(version_md5, version_staging_local_storage_list):
+                    self.logs.write_log_in_file("info",
+                                                f"Article {version['id']} version {version['version']} "
+                                                + "already staged for preservation.",
+                                                True)
+                    folder_name = get_folder_name_in_local_storage(self.system_config['preservation_storage_location'], \
+                                                                   version['id'], version['version'], version_md5)
+                    folder_name += "/" + version_no + "/METADATA"
+                else:
+                    author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
+                    folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
+                    folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
                 version["articles"] = articles
 
                 # Collections don't have an explicit license. Make them CC0
