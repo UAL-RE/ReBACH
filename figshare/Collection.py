@@ -6,7 +6,7 @@ import hashlib
 from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
-from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, format_version
 from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage
 
 
@@ -263,7 +263,7 @@ class Collection:
                 dict_data = sorter_api_result(dict_data)
                 json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
-                version_no = f"v{str(version['version']).zfill(2)}"
+                version_no = format_version(version['version'])
 
                 version_local_final_preserved_list = check_local_path(version['id'], version['version'])
                 if len(version_local_final_preserved_list) > 1:
