@@ -8,8 +8,9 @@ import hashlib
 import re
 from datetime import datetime
 from figshare.Integration import Integration
-from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash, check_local_path
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
+from figshare.Utils import format_version, get_folder_name_in_local_storage
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -55,7 +56,9 @@ class Article:
         self.no_unmatched = 0
         self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
-                                              'articles_with_error': set(), 'article_versions_with_error': 0}
+                                              'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
+                                              'articles_locally_preserved': 0
+                                              }
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -254,7 +257,7 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
-        already_preserved = in_ap_trust = False
+        staged = already_preserved = in_ap_trust = False
 
         while not success and retries <= int(self.retries):
             try:
@@ -299,6 +302,12 @@ class Article:
                         version_data_for_hashing = sorter_api_result(version_data_for_hashing)
                         str_version_data_for_hashing = stringify_metadata(version_data_for_hashing).encode("utf-8")
                         version_md5 = hashlib.md5(str_version_data_for_hashing).hexdigest()
+                        version_local_final_preserved_list = check_local_path(article_id, version['version'])
+                        if len(version_local_final_preserved_list) > 1:
+                            self.logs.write_log_in_file("warning",
+                                                        f"Multiple copies of article {article_id} version {version['version']} "
+                                                        + "found in local final preservation storage",
+                                                        True)
                         version_final_storage_preserved_list = \
                             get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
@@ -312,9 +321,18 @@ class Article:
                                                         f"Multiple copies of article {article_id} version {version['version']} "
                                                         + "found in preservation staging remote storage",
                                                         True)
-
                         # Compare hashes
-                        # Checking both remote storages
+                        ## Checking local storages
+                        if compare_hash(version_md5, version_local_final_preserved_list): # Local final storage check
+                            self.preservation_storage_location['articles_locally_preserved'] += 1
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} "
+                                                        + "already preserved in preservation local final storage",
+                                                        True)
+                            return None
+
+                        ## Checking both remote storages
                         if compare_hash(version_md5, version_staging_storage_preserved_list) and \
                                 compare_hash(version_md5, version_final_storage_preserved_list):
                             already_preserved = in_ap_trust = True
@@ -439,7 +457,7 @@ class Article:
         http.mount("http://", adapter)
 
         if (len(files) > 0):
-            version_no = "v" + str(version_data["version"]).zfill(2)
+            version_no = format_version(version_data["version"])
             article_folder = folder_name + "/" + version_no
             file_no = 0
             for file in files:
@@ -521,7 +539,7 @@ class Article:
     def __check_curation_dir(self, version_data):
         curation_storage_location = self.curation_storage_location
         dirs = os.listdir(curation_storage_location)
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         version_data["matched"] = False
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -648,7 +666,7 @@ class Article:
     :return boolean
     """
     def __check_file_hash(self, files, version_data, folder_path):
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         article_version_folder = folder_path + "/" + version_no
         article_files_folder = article_version_folder + "/DATA"
         preservation_storage_location = self.preservation_storage_location
@@ -730,7 +748,7 @@ class Article:
     def __save_json_in_metadata(self, version_data, folder_name):
         result = False
 
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         json_folder_path = folder_name + "/" + version_no + "/METADATA"
         preservation_storage_location = self.preservation_storage_location
         complete_path = preservation_storage_location + json_folder_path
@@ -780,7 +798,7 @@ class Article:
     def __copy_files_ual_rdm(self, version_data, folder_name):
         result = False
 
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         curation_storage_location = self.curation_storage_location
         # check curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
@@ -833,7 +851,7 @@ class Article:
                     # check curation folder for required files and setup data for further processing.
                     if (version_data is not None and len(version_data) > 0):
                         data = self.__check_curation_dir(version_data)
-                        version_no = "v" + str(data["version"]).zfill(2)
+                        version_no = format_version(data["version"])
                         i += 1
                         if (data["matched"] is True):
                             total_file_size = version_data['size']
@@ -1041,11 +1059,28 @@ class Article:
             article_versions_list = article_data[article]
             for version_data in article_versions_list:
                 if version_data is not None or len(version_data) > 0:
-                    version_no = "v" + str(version_data["version"]).zfill(2)
-                    first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
-                    formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
-                    folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-" \
-                        + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
+                    version_no = format_version(version_data["version"])
+
+                    # Local staging storage check
+                    version_staging_local_storage_list = \
+                        check_local_path(version_data["id"], version_data['version'],
+                                         self.system_config['preservation_storage_location'])
+                    if len(version_staging_local_storage_list) > 1:
+                        self.logs.write_log_in_file("warning",
+                                                    f"Multiple copies of article {version_data['id']} version {version_data['version']} "
+                                                    + "found in preservation staging local storage",
+                                                    True)
+                    if compare_hash(version_data['version_md5'], version_staging_local_storage_list):
+                        self.logs.write_log_in_file("info", f"Article {version_data['id']} version {version_data['version']} "
+                                                    + "already staged for preservation.",
+                                                    True)
+                        folder_name = get_folder_name_in_local_storage(self.system_config['preservation_storage_location'],
+                                                                       version_data['id'], version_data['version'], version_data['version_md5'])
+                    else:
+                        first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
+                        formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
+                        folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-"
+                        folder_name += formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
@@ -1142,7 +1177,7 @@ class Article:
 
     def create_required_folders(self, version_data, folder_name):
         preservation_storage_location = self.preservation_storage_location
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         # setup UAL_RDM directory
         ual_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
         ual_path_exists = os.path.exists(ual_folder_name)
