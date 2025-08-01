@@ -71,6 +71,25 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
+def format_version(version_no: int) -> str:
+    """
+    Formats version number to v[0]{version number}
+
+    :param version_no: version number of item
+    :type: int
+
+    :return: Formatted version number
+    :rtype: str
+    """
+    if 'v' in str(version_no):
+        version_no = version_no
+    elif int(version_no) < 10:
+        version_no = f"v{str(version_no).zfill(2)}"
+    else:
+        version_no = f'v{str(version_no)}'
+    return version_no
+
+
 def extract_metadata_hash_only(package_name: str) -> str:
     """
     Extracts MD5 hash of metadata from package name based on the format
@@ -194,6 +213,36 @@ def extract_bag_date(package_name: str) -> str:
     return ''
 
 
+def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int, version_hash: str) -> str:
+    """
+    Gets the name of a package folder from a local storage
+
+    :param path: Path to local storage folder
+    :type path: str
+
+    :param article_id: id number of article in Figshare
+    :type article_id: int
+
+    :param version_no: version number of article
+    :type version_no: int
+
+    :param version_hash: Version metadata Md5 hash
+    :type version_hash: str
+
+    :return: Returns the name of a package folder from a local storage.
+    :rtype: str
+    """
+
+    if os.path.exists(path) and os.access(path, os.R_OK):
+        folder_name_re = re.compile("\\w*_\\d+-v\\d{2}-[A-Z][A-Za-z]+-[a-z0-9]{32}_bag\\d+of\\d+_\\d{8}")
+        version_no = format_version(version_no)
+        for item in os.scandir(path):
+            if item.is_dir() and item.name.__contains__(str(article_id)) and item.name.__contains__(version_no) \
+                    and item.name.__contains__(version_hash) and folder_name_re.search(item.name) is not None:
+                return item.name
+    return ""
+
+
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
@@ -234,12 +283,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     if base_url[-1] != '/':
         base_url = base_url + '/'
 
-    if 'v' in str(version_no):
-        version_no = version_no
-    elif int(version_no) < 10:
-        version_no = f"v{str(version_no).zfill(2)}"
-    else:
-        version_no = f'v{str(version_no)}'
+    version_no = format_version(version_no)
 
     tries = 1
 
@@ -337,18 +381,57 @@ def check_wasabi(article_id: int, version_no: int) -> list:
 
     preserved_packages = get_filenames_and_sizes_from_ls(preservation_bucket)
 
-    if 'v' in str(version_no):
-        version_no = version_no
-    elif int(version_no) < 10:
-        version_no = f"v{str(version_no).zfill(2)}"
-    else:
-        version_no = f'v{str(version_no)}'
+    version_no = format_version(version_no)
 
     for package in preserved_packages:
         if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
             preserved_article_hash = extract_metadata_hash_only(package[0])
             preserved_article_size = package[1]
             version_preserved_list.append((preserved_article_hash, preserved_article_size))
+    return version_preserved_list
+
+
+def check_local_path(article_id: int, version_no: int, path="") -> list:
+    """
+    Extracts md5 hash and size from preserved article version metadata in a local storage.
+    If version is already preserved, it returns a tuple containing
+    preserved article version md5 hash and preserved article version size
+    else it returns a tuple containing empty string and 0.
+
+    :param article_id: id number of article in Figshare
+    :type article_id: int
+
+    :param version_no: version number of article
+    :type version_no: int
+
+    :param path: An accessible absolute path. It defaults to local preservation storage
+    :type path: str
+
+    :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
+            its size if article version package exists in Wasabi else it returns empty list.
+            It returns an empty list there is no preserved copy of article version.
+    :rtype: list
+    """
+
+    if path == "":
+        config = configparser.ConfigParser()
+        config.read('bagger/config/default.toml')
+        default_config = config['Defaults']
+        path = default_config['output_dir']
+
+    version_preserved_list = []
+    preserved_article_hash = ''
+    preserved_article_size = 0
+
+    version_no = format_version(version_no)
+
+    if os.path.exists(path) and os.access(path, os.R_OK):
+        for item in os.scandir(path):
+            if item.name.__contains__(str(article_id)) and item.name.__contains__(version_no):
+                preserved_article_hash = extract_metadata_hash_only(item.name)
+                preserved_article_size = os.path.getsize(item.path)
+                version_preserved_list.append((preserved_article_hash, preserved_article_size))
+        return version_preserved_list
     return version_preserved_list
 
 
