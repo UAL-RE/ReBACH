@@ -213,7 +213,7 @@ def extract_bag_date(package_name: str) -> str:
     return ''
 
 
-def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int, version_hash: str) -> str:
+def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int, version_hash: str) -> Any:
     """
     Gets the name of a package folder from a local storage
 
@@ -229,8 +229,8 @@ def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int
     :param version_hash: Version metadata Md5 hash
     :type version_hash: str
 
-    :return: Returns the name of a package folder from a local storage.
-    :rtype: str
+    :return: Returns the name of a package folder from a local storage if found else None.
+    :rtype: None
     """
 
     if os.path.exists(path) and os.access(path, os.R_OK):
@@ -240,7 +240,7 @@ def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int
             if item.is_dir() and item.name.__contains__(str(article_id)) and item.name.__contains__(version_no) \
                     and item.name.__contains__(version_hash) and folder_name_re.search(item.name) is not None:
                 return item.name
-    return ""
+    return None
 
 
 def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:

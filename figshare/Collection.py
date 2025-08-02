@@ -258,6 +258,7 @@ class Collection:
             articles = data["articles"]
             versions = data['versions']
             for version in versions:
+                folder_name = None
                 dict_data = version
                 dict_data = standardize_api_result(dict_data)
                 dict_data = sorter_api_result(dict_data)
@@ -340,8 +341,9 @@ class Collection:
                                                 True)
                     folder_name = get_folder_name_in_local_storage(self.system_config['preservation_storage_location'], \
                                                                    version['id'], version['version'], version_md5)
-                    folder_name += "/" + version_no + "/METADATA"
-                else:
+                    if folder_name is not None:
+                        folder_name += "/" + version_no + "/METADATA"
+                if folder_name is None:
                     author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
                     folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
                     folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
