@@ -266,6 +266,7 @@ class Collection:
                 version_md5 = hashlib.md5(json_data).hexdigest()
                 version_no = format_version(version['version'])
 
+                # Checking archival staging storage (local) for existence of package
                 version_local_final_preserved_list = check_local_path(version['id'], version['version'])
                 if len(version_local_final_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
@@ -273,6 +274,7 @@ class Collection:
                                                 + "found in local final preservation storage",
                                                 True)
 
+                # Checking archival storage (remote) for existence of package
                 version_final_storage_preserved_list = \
                     get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version['version'])
                 if len(version_final_storage_preserved_list) > 1:
@@ -280,6 +282,8 @@ class Collection:
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
                                                 + "found in preservation final remote storage",
                                                 True)
+
+                # Checking alternative archival staging storage (remote) for existence of package
                 version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
                 if len(version_staging_storage_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
@@ -287,6 +291,7 @@ class Collection:
                                                 + "found in preservation staging remote storage",
                                                 True)
 
+                # Hash comparisons
                 if compare_hash(version_md5, version_local_final_preserved_list):  # Local final storage check
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['locally_preserved_versions'] += 1
@@ -326,7 +331,8 @@ class Collection:
                                                         + " preservation final remote storage.")
                     continue
 
-                # Local staging storage check
+                # Checking local staging storage if a folder exists for package
+                # Reuse folder name if folder exists
                 version_staging_local_storage_list = check_local_path(version['id'], version['version'], \
                                                                       self.system_config['preservation_storage_location'])
                 if len(version_staging_local_storage_list) > 1:
