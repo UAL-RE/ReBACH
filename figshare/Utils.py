@@ -4,6 +4,7 @@ import os
 import re
 from typing import Any
 from time import sleep
+from pathlib import Path
 import tempfile
 from bagger.wasabi import Wasabi
 import configparser
@@ -394,11 +395,11 @@ def check_wasabi(article_id: int, version_no: int) -> list:
 def check_local_path(article_id: int, version_no: int, path="") -> list:
     """
     Extracts md5 hash and size from preserved article version metadata in a local storage.
-    If version is already preserved, it returns a tuple containing
+    If a version is already preserved, it returns a tuple containing
     preserved article version md5 hash and preserved article version size
     else it returns a tuple containing empty string and 0.
 
-    :param article_id: id number of article in Figshare
+    :param article_id: id number of an article in Figshare
     :type article_id: int
 
     :param version_no: version number of article
@@ -424,6 +425,7 @@ def check_local_path(article_id: int, version_no: int, path="") -> list:
     preserved_article_size = 0
 
     version_no = format_version(version_no)
+    path = path.replace('\"','')
 
     if os.path.exists(path) and os.access(path, os.R_OK):
         for item in os.scandir(path):
@@ -433,6 +435,26 @@ def check_local_path(article_id: int, version_no: int, path="") -> list:
                 version_preserved_list.append((preserved_article_hash, preserved_article_size))
         return version_preserved_list
     return version_preserved_list
+
+
+def upload_to_remote() -> bool:
+    """
+    Checks if packages are uploaded to a remote storage
+
+    :return: Return True if packages will be uploaded, otherwise False
+    :rtype: bool
+    """
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    default_config = config['Defaults']
+    workflow_file = default_config['workflow']
+
+    with open(workflow_file, 'r') as workflow:
+        settings = json.load(workflow)
+        if len(settings['storageServices']) == 0:
+            return False
+        return True
+
 
 
 def get_filenames_and_sizes_from_ls(ls: str) -> list:
