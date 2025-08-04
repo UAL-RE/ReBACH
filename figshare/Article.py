@@ -10,7 +10,7 @@ from datetime import datetime
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash, check_local_path
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
-from figshare.Utils import format_version, get_folder_name_in_local_storage
+from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -355,6 +355,8 @@ class Article:
                                 self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
                                                                     + "already preserved in preservation staging remote storage.",
                                                             True)
+                                if upload_to_remote():
+                                    already_preserved = True
 
                         if already_preserved:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)

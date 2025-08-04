@@ -7,7 +7,7 @@ from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, format_version
-from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage
+from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage, upload_to_remote
 
 
 class Collection:
@@ -318,7 +318,8 @@ class Collection:
                                                     f"Collection {version['id']} version {version['version']} already preserved"
                                                     + " in preservation staging remote storage.",
                                                     True)
-                        continue
+                        if upload_to_remote():
+                            continue
 
                 # Checking local staging storage if a folder exists for package
                 # Reuse folder name if folder exists
