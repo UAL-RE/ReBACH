@@ -447,14 +447,13 @@ def upload_to_remote() -> bool:
     config = configparser.ConfigParser()
     config.read('bagger/config/default.toml')
     default_config = config['Defaults']
-    workflow_file = default_config['workflow']
+    workflow_file = default_config['workflow'].replace('\"', '')
 
     with open(workflow_file, 'r') as workflow:
         settings = json.load(workflow)
         if len(settings['storageServices']) == 0:
             return False
         return True
-
 
 
 def get_filenames_and_sizes_from_ls(ls: str) -> list:
