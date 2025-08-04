@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Union
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
-from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date
+from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -109,19 +109,20 @@ class Bagger:
         if not metadata_path.exists():
             return Status.INVALID_PATH
 
-        folder_to_list = f"s3://{self.wasabi.s3bucket}"
-        wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
+        if upload_to_remote():
+            folder_to_list = f"s3://{self.wasabi.s3bucket}"
+            wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
 
-        if wasabi_error:
-            wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
-            for e in wasabi_errors:
-                self.log.error(f"[Wasabi] {e.strip('ERROR: ')}")
-            return Status.WASABI_ERROR
+            if wasabi_error:
+                wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
+                for e in wasabi_errors:
+                    self.log.error(f"[Wasabi] {e.strip('ERROR: ')}")
+                return Status.WASABI_ERROR
 
-        wasabi_list = get_filenames_from_ls(wasabi_ls)
+            wasabi_list = get_filenames_from_ls(wasabi_ls)
 
-        if bag_name in wasabi_list and not self.overwrite:
-            return Status.DUPLICATE_BAG
+            if bag_name in wasabi_list and not self.overwrite:
+                return Status.DUPLICATE_BAG
 
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
