@@ -303,7 +303,7 @@ class Article:
                         str_version_data_for_hashing = stringify_metadata(version_data_for_hashing).encode("utf-8")
                         version_md5 = hashlib.md5(str_version_data_for_hashing).hexdigest()
 
-                        # Checking archival staging storage (local) for existence of package
+                        # Checking archival staging storage (final local) for existence of package
                         version_local_final_preserved_list = check_local_path(article_id, version['version'])
                         if len(version_local_final_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
@@ -311,7 +311,7 @@ class Article:
                                                         + "found in local final preservation storage",
                                                         True)
 
-                        # Checking archival storage (remote) for existence of package
+                        # Checking archival storage (final remote) for existence of package
                         version_final_storage_preserved_list = \
                             get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
@@ -320,39 +320,18 @@ class Article:
                                                         + "found in preservation final remote storage",
                                                         True)
 
-                        # Checking alternative archival staging storage (remote) for existence of package
-                        if self.system_config['check-remote-staging']:
-                            version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
-                            if len(version_staging_storage_preserved_list) > 1:
-                                self.logs.write_log_in_file("warning",
-                                                            f"Multiple copies of article {article_id} version {version['version']} "
-                                                            + "found in preservation staging remote storage",
-                                                            True)
-                        # Hash comparisons
-                        # Comparison in local storages
-                        if compare_hash(version_md5, version_local_final_preserved_list): # Local final storage check
-                            self.preservation_storage_location['articles_locally_preserved'] += 1
+                        # Comparison in archival staging storage (final local)
+                        if compare_hash(version_md5, version_local_final_preserved_list):
+                            already_preserved = True
+                            self.already_preserved_counts_dict['articles_locally_preserved'] += 1
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
                                                         + "already preserved in preservation local final storage",
                                                         True)
-                            return None
 
-                        ## Comparison in remote storages
-                        if compare_hash(version_md5, version_staging_storage_preserved_list) and \
-                                compare_hash(version_md5, version_final_storage_preserved_list):
-                            already_preserved = in_ap_trust = True
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
-                            self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation staging remote storage"
-                                                        + " and preservation final remote storage.",
-                                                        True)
-
-                        elif compare_hash(version_md5, version_final_storage_preserved_list):  # Preservation final remote storage only check
+                        # Comparison in archival storage (final remote)
+                        if compare_hash(version_md5, version_final_storage_preserved_list):
                             already_preserved = in_ap_trust = True
                             self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
@@ -360,15 +339,22 @@ class Article:
                                                         f"Article {article_id} version {version['version']} "
                                                         + "already preserved in preservation final remote storage.",
                                                         True)
-                        # Comparison in alternative remote storage only check
-                        if self.system_config['check-remote-staging'] and compare_hash(version_md5, version_staging_storage_preserved_list):
-                            already_preserved = True
-                            in_ap_trust = False
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                            self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
-                                                                + "already preserved in preservation staging remote storage.",
-                                                        True)
+
+                        # Checking alternative archival staging storage (remote) for existence of package
+                        if self.system_config['check-remote-staging'] == 'True':
+                            version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
+                            if len(version_staging_storage_preserved_list) > 1:
+                                self.logs.write_log_in_file("warning",
+                                                            f"Multiple copies of article {article_id} version {version['version']} "
+                                                            + "found in preservation staging remote storage",
+                                                            True)
+
+                            # Comparison in alternative archival staging storage (remote)
+                            if compare_hash(version_md5, version_staging_storage_preserved_list):
+                                self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                                self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
+                                                                    + "already preserved in preservation staging remote storage.",
+                                                            True)
 
                         if already_preserved:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)

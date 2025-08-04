@@ -283,14 +283,6 @@ class Collection:
                                                 + "found in preservation final remote storage",
                                                 True)
 
-                # Checking alternative archival staging storage (remote) for existence of package
-                version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
-                if len(version_staging_storage_preserved_list) > 1:
-                    self.logs.write_log_in_file("warning",
-                                                f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                + "found in preservation staging remote storage",
-                                                True)
-
                 # Hash comparisons
                 if compare_hash(version_md5, version_local_final_preserved_list):  # Local final storage check
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
@@ -301,28 +293,6 @@ class Collection:
                                                 True)
                     continue
 
-                if compare_hash(version_md5, version_staging_storage_preserved_list) and \
-                        compare_hash(version_md5, version_final_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
-                    self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} already preserved "
-                                                + "in preservation staging remote storage and preservation final remote storage.",
-                                                True)
-                    continue
-
-                if compare_hash(version_md5, version_staging_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                    self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} already preserved"
-                                                + " in preservation staging remote storage.",
-                                                True)
-                    continue
-
                 if compare_hash(version_md5, version_final_storage_preserved_list):
                     self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
@@ -330,6 +300,25 @@ class Collection:
                     self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in"
                                                         + " preservation final remote storage.")
                     continue
+
+                # Checking alternative archival staging storage (remote) for existence of package
+                if self.system_config['check-remote-staging'] == 'True':
+                    version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
+                    if len(version_staging_storage_preserved_list) > 1:
+                        self.logs.write_log_in_file("warning",
+                                                    f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                    + "found in preservation staging remote storage",
+                                                    True)
+
+                    if compare_hash(version_md5, version_staging_storage_preserved_list):
+                        self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                        self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                        self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                        self.logs.write_log_in_file("info",
+                                                    f"Collection {version['id']} version {version['version']} already preserved"
+                                                    + " in preservation staging remote storage.",
+                                                    True)
+                        continue
 
                 # Checking local staging storage if a folder exists for package
                 # Reuse folder name if folder exists
