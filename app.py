@@ -242,11 +242,11 @@ if __name__ == "__main__":
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved article versions in preservation final remote storage: \t\t"
+                          "Total count of already preserved article versions in archival storage: \t\t"
                           + f'{ap_trust_preserved_article_version_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved article versions in preservation staging remote storage: \t"
+                          "Total count of already preserved article versions in alternative archival staging storage: \t"
                           + f'{wasabi_preserved_versions}',
                           True)
 
@@ -285,12 +285,12 @@ if __name__ == "__main__":
                               True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in preservation final remote storage: \t"
+                          "Total count of already preserved collection versions in archival storage: \t"
                           + f'{preserved_collection_versions_in_ap_trust}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in preservation staging remote storage: \t"
+                          "Total count of already preserved collection versions in alternative archival staging storage: \t"
                           + f'{preserved_collection_versions_in_wasabi}',
                           True)
 

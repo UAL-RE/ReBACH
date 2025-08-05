@@ -274,7 +274,7 @@ class Collection:
                 if len(version_local_final_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                + "found in local final preservation storage",
+                                                + "found in archival staging storage",
                                                 True)
 
                 # Checking archival storage (remote) for existence of package
@@ -283,7 +283,7 @@ class Collection:
                 if len(version_final_storage_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                + "found in preservation final remote storage",
+                                                + "found in archival storage",
                                                 True)
 
                 # Hash comparisons
@@ -291,14 +291,14 @@ class Collection:
                     self.already_preserved_counts_dict['locally_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
                                                 f"Collection {version['id']} version {version['version']} already preserved"
-                                                + " in preservation local final storage.",
+                                                + " in archival staging storage.",
                                                 True)
                     already_preserved = True
 
                 if compare_hash(version_md5, version_final_storage_preserved_list):
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                     self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in"
-                                                        + " preservation final remote storage.")
+                                                        + " archival storage.")
                     already_preserved = True
 
                 # Checking alternative archival staging storage (remote) for existence of package
@@ -307,14 +307,14 @@ class Collection:
                     if len(version_staging_storage_preserved_list) > 1:
                         self.logs.write_log_in_file("warning",
                                                     f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                    + "found in preservation staging remote storage",
+                                                    + "found in alternative archival staging storage",
                                                     True)
 
                     if compare_hash(version_md5, version_staging_storage_preserved_list):
                         self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                         self.logs.write_log_in_file("info",
                                                     f"Collection {version['id']} version {version['version']} already preserved"
-                                                    + " in preservation staging remote storage.",
+                                                    + " in alternative archival staging storage.",
                                                     True)
                         if upload_item:
                             in_alternative_remote_storage = True
@@ -336,14 +336,14 @@ class Collection:
                     self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     continue
 
-                # Checking local staging storage if a folder exists for package
+                # Checking archival staging (local) storage if a folder exists for package
                 # Reuse folder name if folder exists
                 version_staging_local_storage_list = check_local_path(version['id'], version['version'], \
                                                                       self.system_config['preservation_storage_location'])
                 if len(version_staging_local_storage_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of article {version['id']} version {version['version']} "
-                                                + "found in preservation staging local storage",
+                                                + "found in archival staging storage",
                                                 True)
                 if compare_hash(version_md5, version_staging_local_storage_list):
                     self.logs.write_log_in_file("info",

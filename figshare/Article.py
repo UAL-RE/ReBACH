@@ -309,7 +309,7 @@ class Article:
                         if len(version_local_final_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
                                                         f"Multiple copies of article {article_id} version {version['version']} "
-                                                        + "found in local final preservation storage",
+                                                        + "found in archival staging storage",
                                                         True)
 
                         # Checking archival storage (final remote) for existence of package
@@ -318,7 +318,7 @@ class Article:
                         if len(version_final_storage_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
                                                         f"Multiple copies of article {article_id} version {version['version']} "
-                                                        + "found in preservation final remote storage",
+                                                        + "found in archival storage",
                                                         True)
 
                         # Comparison in archival staging storage (final local)
@@ -327,7 +327,7 @@ class Article:
                             self.already_preserved_counts_dict['articles_locally_preserved'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation local final storage",
+                                                        + "already preserved in archival staging storage",
                                                         True)
 
                         # Comparison in archival storage (final remote)
@@ -336,7 +336,7 @@ class Article:
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation final remote storage.",
+                                                        + "already preserved in archival storage.",
                                                         True)
 
                         # Checking alternative archival staging storage (remote) for existence of package
@@ -345,14 +345,14 @@ class Article:
                             if len(version_staging_storage_preserved_list) > 1:
                                 self.logs.write_log_in_file("warning",
                                                             f"Multiple copies of article {article_id} version {version['version']} "
-                                                            + "found in preservation staging remote storage",
+                                                            + "found in alternative archival staging storage",
                                                             True)
 
                             # Comparison in alternative archival staging storage (remote)
                             if compare_hash(version_md5, version_staging_storage_preserved_list):
                                 self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                                 self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
-                                                                    + "already preserved in preservation staging remote storage.",
+                                                                    + "already preserved in alternative archival staging storage.",
                                                             True)
                                 if upload_to_remote():
                                     in_alternative_remote_storage = True
@@ -365,7 +365,7 @@ class Article:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
                                         self.logs.write_log_in_file("warning",
                                                                     f"Article {article_id} version {version['version']} "
-                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    + "found in preservation archival storage but sizes do not match.",
                                                                     True)
                             return None
                         elif not already_preserved and upload_item and in_alternative_remote_storage:
@@ -380,7 +380,7 @@ class Article:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
                                         self.logs.write_log_in_file("warning",
                                                                     f"Article {article_id} version {version['version']} "
-                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    + "found in archival storage but sizes do not match.",
                                                                     True)
                             return None
                         elif already_preserved and not upload_item and not in_alternative_remote_storage:
@@ -391,7 +391,7 @@ class Article:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
                                         self.logs.write_log_in_file("warning",
                                                                     f"Article {article_id} version {version['version']} "
-                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    + "found in archival storage but sizes do not match.",
                                                                     True)
                             return None
 
