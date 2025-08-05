@@ -1,5 +1,5 @@
 [Defaults]
-output_dir = "out"
+archival_staging_storage = "out"
 workflow = "bagger/config/noupload_workflow.json"
 dart_command = "dart-runner"
 overwrite = false

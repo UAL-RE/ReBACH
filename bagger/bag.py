@@ -17,14 +17,14 @@ from bagger.ntf import NamedTemporaryFile, TemporaryFile
 #  class can then take the package_path and other arguments to enable looping.
 class Bagger:
 
-    def __init__(self, workflow: PathLike, output_dir: PathLike, delete: bool,
+    def __init__(self, workflow: PathLike, archival_staging_storage: PathLike, delete: bool,
                  dart_command: str, config: dict, log: Logger,
                  overwrite: bool, dryrun: bool = False) -> None:
         """
         Set up environment for generating bags with DART
 
         :param workflow: Path to workflow JSON file
-        :param output_dir: Directory for generated bag output by DART
+        :param archival_staging_storage: Directory for generated bag output by DART if no upload
         :param delete: Delete output bag if True
         :param dart_command: Path to DART executable
         :param config: Config dict
@@ -35,7 +35,7 @@ class Bagger:
         self.log: Logger = log
         self.dart_command: str = dart_command
         self.delete: bool = delete
-        self.output_dir: PathLike = output_dir
+        self.archival_staging_storage: PathLike = archival_staging_storage
         self.workflow: PathLike = workflow
         self.workflow_file: TemporaryFile = None
         self.overwrite: bool = overwrite
@@ -166,7 +166,7 @@ class Bagger:
         else:
             bag_name, metadata_tags = init_status
 
-        job = Job(self.workflow, bag_name, self.output_dir, self.delete,
+        job = Job(self.workflow, bag_name, self.archival_staging_storage, self.delete,
                   self.dart_command, self.log)
 
         job.add_file(package_path)
