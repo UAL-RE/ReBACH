@@ -154,6 +154,8 @@ if __name__ == "__main__":
 
     already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
     already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
+    locally_preserved_article_version_count = already_preserved_counts_dict['articles_locally_preserved']
+
     articles_with_error_count = len(already_preserved_counts_dict['articles_with_error'])
     article_versions_with_error_count = already_preserved_counts_dict['article_versions_with_error']
     published_articles_count = 0
@@ -198,6 +200,7 @@ if __name__ == "__main__":
     already_preserved_collection_versions = already_preserved_collections_counts['already_preserved_versions']
     preserved_collection_versions_in_wasabi = already_preserved_collections_counts['wasabi_preserved_versions']
     preserved_collection_versions_in_ap_trust = already_preserved_collections_counts['ap_trust_preserved_versions']
+    locally_preserved_collection_versions = already_preserved_collections_counts['locally_preserved_versions']
 
     log.write_log_in_file('info', ' ', True)
     log.write_log_in_file('info', '------- Summary -------', True)
@@ -246,6 +249,10 @@ if __name__ == "__main__":
                           + f'{ap_trust_preserved_article_version_count}',
                           True)
     log.write_log_in_file('info',
+                          "Total count of already preserved article versions in archival staging storage: \t"
+                          + f'{locally_preserved_article_version_count}',
+                          True)
+    log.write_log_in_file('info',
                           "Total count of already preserved article versions in alternative archival staging storage: \t"
                           + f'{wasabi_preserved_versions}',
                           True)
@@ -287,6 +294,11 @@ if __name__ == "__main__":
     log.write_log_in_file('info',
                           "Total count of already preserved collection versions in archival storage: \t"
                           + f'{preserved_collection_versions_in_ap_trust}',
+                          True)
+
+    log.write_log_in_file('info',
+                          "Total count of already preserved collection versions in archival staging storage: \t"
+                          + f'{locally_preserved_collection_versions}',
                           True)
 
     log.write_log_in_file('info',
