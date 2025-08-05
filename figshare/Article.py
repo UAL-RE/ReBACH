@@ -257,7 +257,8 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
-        staged = already_preserved = in_ap_trust = False
+        staged = in_alternative_remote_storage = already_preserved = in_ap_trust = False
+        upload_item = upload_to_remote()
 
         while not success and retries <= int(self.retries):
             try:
@@ -341,7 +342,7 @@ class Article:
                                                         True)
 
                         # Checking alternative archival staging storage (remote) for existence of package
-                        if self.system_config['check-remote-staging'] == 'True':
+                        if self.system_config['check-remote-staging'] == 'True' or upload_item:
                             version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
                             if len(version_staging_storage_preserved_list) > 1:
                                 self.logs.write_log_in_file("warning",
@@ -356,9 +357,21 @@ class Article:
                                                                     + "already preserved in preservation staging remote storage.",
                                                             True)
                                 if upload_to_remote():
-                                    already_preserved = True
+                                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                                    in_alternative_remote_storage = True
 
-                        if already_preserved:
+                        # if already_preserved:
+                        #     self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                        #     if in_ap_trust:
+                        #         for version_hash in version_final_storage_preserved_list:
+                        #             if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                        #                 self.logs.write_log_in_file("warning",
+                        #                                             f"Article {article_id} version {version['version']} "
+                        #                                             + "found in preservation final remote storage but sizes do not match.",
+                        #                                             True)
+                        #     return None
+
+                        if already_preserved and upload_item and in_alternative_remote_storage:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
                             if in_ap_trust:
                                 for version_hash in version_final_storage_preserved_list:
@@ -367,7 +380,33 @@ class Article:
                                                                     f"Article {article_id} version {version['version']} "
                                                                     + "found in preservation final remote storage but sizes do not match.",
                                                                     True)
-                            return None
+                            return None # skip 1
+                        elif not already_preserved and upload_item and in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            # self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            return None  # skip 2
+                        elif already_preserved and not upload_item and in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            if in_ap_trust:
+                                for version_hash in version_final_storage_preserved_list:
+                                    if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                                        self.logs.write_log_in_file("warning",
+                                                                    f"Article {article_id} version {version['version']} "
+                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    True)
+                            # self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            return None  # skip 3
+                        elif already_preserved and not upload_item and not in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            if in_ap_trust:
+                                for version_hash in version_final_storage_preserved_list:
+                                    if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                                        self.logs.write_log_in_file("warning",
+                                                                    f"Article {article_id} version {version['version']} "
+                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    True)
+                            # self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            return None  # skip 4
 
                         version_metadata = self.set_version_metadata(version_data, files, private_version_no, version_md5, total_file_size)
                         version_data['total_num_files'] = file_len

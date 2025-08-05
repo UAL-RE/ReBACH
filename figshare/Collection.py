@@ -250,9 +250,10 @@ class Collection:
     """
     def process_collections(self, collections):
         processed_count = 0
-
+        upload_item = upload_to_remote()
         self.logs.write_log_in_file("info", " ", True)
         self.logs.write_log_in_file("info", "------- Processing collections -------", True)
+        
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
@@ -267,6 +268,8 @@ class Collection:
                 version_no = format_version(version['version'])
 
                 # Checking archival staging storage (local) for existence of package
+                already_preserved = False
+                in_alternative_remote_storage = False
                 version_local_final_preserved_list = check_local_path(version['id'], version['version'])
                 if len(version_local_final_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
@@ -285,24 +288,21 @@ class Collection:
 
                 # Hash comparisons
                 if compare_hash(version_md5, version_local_final_preserved_list):  # Local final storage check
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
                     self.already_preserved_counts_dict['locally_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
                                                 f"Collection {version['id']} version {version['version']} already preserved"
                                                 + " in preservation local final storage.",
                                                 True)
-                    continue
+                    already_preserved = True
 
                 if compare_hash(version_md5, version_final_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                     self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in"
                                                         + " preservation final remote storage.")
-                    continue
+                    already_preserved = True
 
                 # Checking alternative archival staging storage (remote) for existence of package
-                if self.system_config['check-remote-staging'] == 'True':
+                if self.system_config['check-remote-staging'] == 'True' or upload_item:
                     version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
                     if len(version_staging_storage_preserved_list) > 1:
                         self.logs.write_log_in_file("warning",
@@ -311,15 +311,30 @@ class Collection:
                                                     True)
 
                     if compare_hash(version_md5, version_staging_storage_preserved_list):
-                        self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                        self.already_preserved_counts_dict['already_preserved_versions'] += 1
                         self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
                         self.logs.write_log_in_file("info",
                                                     f"Collection {version['id']} version {version['version']} already preserved"
                                                     + " in preservation staging remote storage.",
                                                     True)
-                        if upload_to_remote():
-                            continue
+                        if upload_item:
+                            in_alternative_remote_storage = True
+
+                if already_preserved and upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif not already_preserved and upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif already_preserved and not upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif already_preserved and not upload_item and not in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
 
                 # Checking local staging storage if a folder exists for package
                 # Reuse folder name if folder exists
