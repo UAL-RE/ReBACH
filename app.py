@@ -2,6 +2,7 @@ import os
 import argparse
 from version import __version__, __commit__
 from Log import Log
+from figshare.Utils import upload_to_remote
 from figshare.Article import Article
 from datetime import datetime
 from Config import Config
@@ -252,10 +253,11 @@ if __name__ == "__main__":
                           "Total count of already preserved article versions in archival staging storage: \t"
                           + f'{locally_preserved_article_version_count}',
                           True)
-    log.write_log_in_file('info',
-                          "Total count of already preserved article versions in alternative archival staging storage: \t"
-                          + f'{wasabi_preserved_versions}',
-                          True)
+    if upload_to_remote() or config.system_config()['check-remote-staging'] == 'True':
+        log.write_log_in_file('info',
+                              "Total count of already preserved article versions in alternative archival staging storage: \t"
+                              + f'{wasabi_preserved_versions}',
+                              True)
 
     log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
@@ -301,10 +303,11 @@ if __name__ == "__main__":
                           + f'{locally_preserved_collection_versions}',
                           True)
 
-    log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in alternative archival staging storage: \t"
-                          + f'{preserved_collection_versions_in_wasabi}',
-                          True)
+    if upload_to_remote() or config.system_config()['check-remote-staging'] == 'True':
+        log.write_log_in_file('info',
+                              "Total count of already preserved collection versions in alternative archival staging storage: \t"
+                              + f'{preserved_collection_versions_in_wasabi}',
+                              True)
 
     if processed_articles_versions_count != published_articles_versions_count or \
             processed_collections_versions_count != (collections_versions_count - already_preserved_collection_versions):
