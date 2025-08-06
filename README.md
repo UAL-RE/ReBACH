@@ -4,7 +4,7 @@
 This Python tool enumerates all the items and collections in ReDATA, downloads the associated files and metadata into a predefined structure on preservation staging storage, gathers curation information from curation staging storage, and adds the gathered information to the predefined structure.
 
 ## Description:
-ReBACH is run via the command line as outlined in the 'How to Run' section of this readme. During its run, ReBACH enumarates all published items and their versions on UArizona's Figshare using the Figshare API and downloads their metadata to the system memory. ReBACH then downloads files into the preservation staging storage for items that have a matching curation staging storage folder. The tool then validates the files and folder structure in the curation staging store for those items. For the items that have matching folders in the curation staging storage that pass validation, ReBACH copies the files from the curation staging storage into the corresponding preservation staging storage folder, otherwise the preservation staging storage folder and its contents are deleted. Information and errors are logged in a file with some information and errors displayed in the terminal.
+ReBACH is run via the command line as outlined in the 'How to Run' section of this readme. During its run, ReBACH enumerates all published items and their versions on UArizona's Figshare using the Figshare API and downloads their metadata to the system memory. ReBACH then downloads files into the preservation staging storage for items that have a matching curation staging storage folder. The tool then validates the files and folder structure in the curation staging store for those items. For the items that have matching folders in the curation staging storage that pass validation, ReBACH copies the files from the curation staging storage into the corresponding preservation staging storage folder, otherwise the preservation staging storage folder and its contents are deleted. Information and errors are logged in a file with some information and errors displayed in the terminal.
 
 ## Dependencies:
 - Python >= 3.9
@@ -54,10 +54,11 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 These parameters are only available on the command line.
 |Parameter| Description |
 |---------|-------------|
-|`--xfg`  | The path to the configuration file to use.|
-|`--ids`  | A comma-separated list of article IDs to process. E.g., 12345,12356|
-|`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item.|
-|`--dry-run` | Runs all operations, excluding any that involve writing any storage medium |
+|`--xfg`  | The path to the configuration file to use. |
+|`--ids`  | A comma-separated list of article IDs to process. E.g., 12345,12356. |
+|`--continue-on-error`| If there is an error during the item processing stage for a given item, skip it and continue to the next item. |
+|`--dry-run` | Runs all operations, excluding any that involve writing any storage medium. |
+|`--check-remote-staging` | Checks alternative remote staging storage for duplicate bags. Remote staging storage is also checked if workflow is set to upload. |
 
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.
