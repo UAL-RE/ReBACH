@@ -42,9 +42,9 @@ class Article:
         self.exclude_dirs = [".DS_Store"]
         self.total_all_articles_file_size = 0
         self.institution = int(figshare_config["institution"])
-        self.preservation_storage_location = self.system_config["preservation_storage_location"]
-        if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location = self.preservation_storage_location + "/"
+        self.ingest_staging_storage = self.system_config["ingest_staging_storage"]
+        if self.ingest_staging_storage[-1] != "/":
+            self.ingest_staging_storage = self.ingest_staging_storage + "/"
         self.curation_storage_location = self.system_config["curation_storage_location"]
         if self.curation_storage_location[-1] != "/":
             self.curation_storage_location = self.curation_storage_location + "/"
@@ -484,8 +484,8 @@ class Article:
             for file in files:
                 if (file['is_link_only'] is False):
                     article_files_folder = article_folder + "/DATA"
-                    preservation_storage_location = self.preservation_storage_location
-                    article_folder_path = preservation_storage_location + article_files_folder
+                    ingest_staging_storage = self.ingest_staging_storage
+                    article_folder_path = ingest_staging_storage + article_files_folder
                     article_files_path_exists = os.path.exists(article_folder_path)
                     if (article_files_path_exists is False):
                         os.makedirs(article_folder_path, exist_ok=True)
@@ -667,8 +667,8 @@ class Article:
     def check_required_space(self, required_space):
         self.logs.write_log_in_file("info", "Checking required space, script might stop if there's not enough space.", True)
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"]) / 100))
-        preservation_storage_location = self.preservation_storage_location
-        memory = shutil.disk_usage(preservation_storage_location)
+        ingest_staging_storage = self.ingest_staging_storage
+        memory = shutil.disk_usage(ingest_staging_storage)
         available_space = memory.free
         if (req_space > available_space):
             if self.system_config['continue-on-error'] == "False":
@@ -690,11 +690,11 @@ class Article:
         version_no = format_version(version_data["version"])
         article_version_folder = folder_path + "/" + version_no
         article_files_folder = article_version_folder + "/DATA"
-        preservation_storage_location = self.preservation_storage_location
-        article_folder_path = preservation_storage_location + article_files_folder
+        ingest_staging_storage = self.ingest_staging_storage
+        article_folder_path = ingest_staging_storage + article_files_folder
 
         # check if preservation dir is reachable
-        self.check_access_of_directories(preservation_storage_location, "preservation")
+        self.check_access_of_directories(ingest_staging_storage, "preservation")
 
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
@@ -719,7 +719,7 @@ class Article:
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
                             break
                         else:
-                            self.logs.write_log_in_file('info', f"{file_path.replace(preservation_storage_location + article_files_folder, '')} "
+                            self.logs.write_log_in_file('info', f"{file_path.replace(ingest_staging_storage + article_files_folder, '')} "
                                                         + "file exists (hash match).", True)
                         process_article = False
                     else:
@@ -737,9 +737,9 @@ class Article:
 
         # delete directory if validation failed.
         if (delete_folder is True):
-            self.logs.write_log_in_file("error", f"Validation failed, deleting {preservation_storage_location + folder_path}.", True)
+            self.logs.write_log_in_file("error", f"Validation failed, deleting {ingest_staging_storage + folder_path}.", True)
             if self.system_config['dry-run'] == 'False':
-                self.delete_folder(preservation_storage_location + folder_path)
+                self.delete_folder(ingest_staging_storage + folder_path)
             else:
                 self.logs.write_log_in_file("info", "*Dry Run* Folder not deleted.", True)
             process_article = True
@@ -771,8 +771,8 @@ class Article:
 
         version_no = format_version(version_data["version"])
         json_folder_path = folder_name + "/" + version_no + "/METADATA"
-        preservation_storage_location = self.preservation_storage_location
-        complete_path = preservation_storage_location + json_folder_path
+        ingest_staging_storage = self.ingest_staging_storage
+        complete_path = ingest_staging_storage + json_folder_path
         check_path_exists = os.path.exists(complete_path)
         try:
             if (check_path_exists is False):
@@ -824,8 +824,8 @@ class Article:
         # check curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
 
-        preservation_storage_location = self.preservation_storage_location
-        complete_folder_name = os.path.join(preservation_storage_location, folder_name, version_no, "UAL_RDM")
+        ingest_staging_storage = self.ingest_staging_storage
+        complete_folder_name = os.path.join(ingest_staging_storage, folder_name, version_no, "UAL_RDM")
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -840,7 +840,7 @@ class Article:
                             if (dir == version_no):
                                 curation_dir_name = os.path.join(article_dir_in_curation, dir, "UAL_RDM")
                                 # check preservation dir is reachable
-                                self.check_access_of_directories(preservation_storage_location, "preservation")
+                                self.check_access_of_directories(ingest_staging_storage, "preservation")
                                 try:
                                     check_path_exists = os.path.exists(complete_folder_name)
                                     if (check_path_exists is False):
@@ -1034,12 +1034,12 @@ class Article:
         # get curation directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
-        preservation_storage_location = self.preservation_storage_location
+        ingest_staging_storage = self.ingest_staging_storage
         # curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
 
         # preservation dir is reachable
-        self.check_access_of_directories(preservation_storage_location, "preservation")
+        self.check_access_of_directories(ingest_staging_storage, "preservation")
 
         return curation_storage_location
 
@@ -1087,7 +1087,7 @@ class Article:
                     # Reuse folder name if folder exists
                     version_staging_local_storage_list = \
                         check_local_path(version_data["id"], version_data['version'],
-                                         self.system_config['preservation_storage_location'])
+                                         self.system_config['ingest_staging_storage'])
                     if len(version_staging_local_storage_list) > 1:
                         self.logs.write_log_in_file("warning",
                                                     f"Multiple copies of article {version_data['id']} version {version_data['version']} "
@@ -1097,7 +1097,7 @@ class Article:
                         self.logs.write_log_in_file("info", f"Article {version_data['id']} version {version_data['version']} "
                                                     + "already staged for preservation.",
                                                     True)
-                        folder_name = get_folder_name_in_local_storage(self.system_config['preservation_storage_location'],
+                        folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'],
                                                                        version_data['id'], version_data['version'], version_data['version_md5'])
                     if folder_name is None:
                         first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
@@ -1118,8 +1118,8 @@ class Article:
                         if (value_pre_process == 0):
                             self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
-                            preservation_storage_location = self.preservation_storage_location
-                            check_dir = preservation_storage_location + folder_name
+                            ingest_staging_storage = self.ingest_staging_storage
+                            check_dir = ingest_staging_storage + folder_name
                             check_files = True
                             copy_files = True
                             self.logs.write_log_in_file("info", f"Checking if {check_dir} exists.", True)
@@ -1199,10 +1199,10 @@ class Article:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
-        preservation_storage_location = self.preservation_storage_location
+        ingest_staging_storage = self.ingest_staging_storage
         version_no = format_version(version_data["version"])
         # setup UAL_RDM directory
-        ual_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        ual_folder_name = ingest_staging_storage + folder_name + "/" + version_no + "/UAL_RDM"
         ual_path_exists = os.path.exists(ual_folder_name)
         try:
             if (ual_path_exists is False):
@@ -1212,7 +1212,7 @@ class Article:
                 self.logs.write_log_in_file("info", "UAL_RDM directory already exists. Folder not created", True)
 
             # setup DATA directory
-            data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
+            data_folder_name = ingest_staging_storage + folder_name + "/" + version_no + "/DATA"
             data_path_exists = os.path.exists(data_folder_name)
             if (data_path_exists is False):
                 # create DATA directory if it does not exist

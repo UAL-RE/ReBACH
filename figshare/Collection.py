@@ -34,9 +34,9 @@ class Collection:
         self.logs = log
         self.errors = []
         self.article_obj = Article(config, log, ids)
-        self.preservation_storage_location = self.system_config["preservation_storage_location"]
-        if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location = self.preservation_storage_location + "/"
+        self.ingest_staging_storage = self.system_config["ingest_staging_storage"]
+        if self.ingest_staging_storage[-1] != "/":
+            self.ingest_staging_storage = self.ingest_staging_storage + "/"
         self.input_collection_ids = ids
         self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'locally_preserved_versions': 0,
                                               'already_preserved_versions': 0, 'wasabi_preserved_versions': 0,
@@ -339,7 +339,7 @@ class Collection:
                 # Checking archival staging (local) storage if a folder exists for package
                 # Reuse folder name if folder exists
                 version_staging_local_storage_list = check_local_path(version['id'], version['version'], \
-                                                                      self.system_config['preservation_storage_location'])
+                                                                      self.system_config['ingest_staging_storage'])
                 if len(version_staging_local_storage_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of article {version['id']} version {version['version']} "
@@ -350,7 +350,7 @@ class Collection:
                                                 f"Article {version['id']} version {version['version']} "
                                                 + "already staged for preservation.",
                                                 True)
-                    folder_name = get_folder_name_in_local_storage(self.system_config['preservation_storage_location'], \
+                    folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'], \
                                                                    version['id'], version['version'], version_md5)
                     if folder_name is not None:
                         folder_name += "/" + version_no + "/METADATA"
@@ -367,7 +367,7 @@ class Collection:
 
                 if self.system_config['dry-run'] == 'False':
                     self.__save_json_in_metadata(collection, version, folder_name)
-                    collection_preservation_path = self.preservation_storage_location + \
+                    collection_preservation_path = self.ingest_staging_storage + \
                         os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
                     value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                     if (value_post_process != 0):
@@ -387,11 +387,11 @@ class Collection:
     :param folder_name string
     """
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
-        preservation_storage_location = self.preservation_storage_location
+        ingest_staging_storage = self.ingest_staging_storage
 
-        self.article_obj.check_access_of_directories(preservation_storage_location, "preservation")
+        self.article_obj.check_access_of_directories(ingest_staging_storage, "preservation")
 
-        complete_path = preservation_storage_location + folder_name
+        complete_path = ingest_staging_storage + folder_name
         if (os.path.exists(complete_path)):
             self.delete_folder(complete_path)
 

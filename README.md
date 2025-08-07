@@ -38,7 +38,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
         - alt_identifier_starts_with - Prefix for alternate identifier in AP Trust
 		- retries - required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
 		- retries_wait - required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
-    - preservation_storage_location - required: The file system location where the preservation folders/packages should be created
+    - ingest_staging_storage - required: The file system location where the preservation folders/packages should be created
     - logs_location - required: The file system location where logs should be created. This value will override the one in `bagger/config/default.toml` when bagger is used for post-processing (see post_process_script_command setting below).
     - additional_percentage_required - required: How much extra space the preservation storage location should have in order to handle files as a percent. This percent is applied to the total storage needed for all files. I.e. if the value of this field is 10 and the amount of storage needed for files is 1 GB, the script will make sure that the preservation storage location has at least 1.1 GB free. Defaults to 10
     - pre_process_script_command - optional: The terminal command (including arguments) to invoke a script to be run BEFORE the files are copied and logic applied to the preservation storage (note: this action is not currently implemented)

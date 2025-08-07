@@ -84,7 +84,7 @@ def main():
     figshare_api_url = figshare_config["url"]
     log = Log(env_file)
     log_location = system_config["logs_location"]
-    preservation_storage_location = system_config["preservation_storage_location"]
+    ingest_staging_storage = system_config["ingest_staging_storage"]
     figshare_api_token = figshare_config["token"]
     curation_storage_location = system_config["curation_storage_location"]
     post_process_script_command = system_config["post_process_script_command"]
@@ -100,7 +100,7 @@ def main():
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
 
-    if (preservation_storage_location == ""):
+    if (ingest_staging_storage == ""):
         log.write_log_in_file('error', "Preservation storage location path is required.", True, True)
 
     if (curation_storage_location == ""):
@@ -115,8 +115,8 @@ def main():
     log.write_log_in_file('info', "Configuration file meets requirements.", True)
     check_logs_path_access(env_file)
     # Check storage path exists, if not then give error and stop processing
-    preservation_path_exists = os.path.exists(preservation_storage_location)
-    access = os.access(preservation_storage_location, os.W_OK)
+    preservation_path_exists = os.path.exists(ingest_staging_storage)
+    access = os.access(ingest_staging_storage, os.W_OK)
     if (preservation_path_exists is False or access is False):
         log.write_log_in_file('error',
                               "The preservation storage location specified in the config file could not be reached or read.",
