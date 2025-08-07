@@ -4,7 +4,6 @@ import os
 import re
 from typing import Any
 from time import sleep
-from pathlib import Path
 import tempfile
 from bagger.wasabi import Wasabi
 import configparser
@@ -425,7 +424,7 @@ def check_local_path(article_id: int, version_no: int, path="") -> list:
     preserved_article_size = 0
 
     version_no = format_version(version_no)
-    path = path.replace('\"','')
+    path = path.replace('\"', '')
 
     if os.path.exists(path) and os.access(path, os.R_OK):
         for item in os.scandir(path):

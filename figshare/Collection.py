@@ -253,7 +253,6 @@ class Collection:
         upload_item = upload_to_remote()
         self.logs.write_log_in_file("info", " ", True)
         self.logs.write_log_in_file("info", "------- Processing collections -------", True)
-        
         for collection in collections:
             data = collections[collection]
             articles = data["articles"]
@@ -338,7 +337,7 @@ class Collection:
 
                 # Checking archival staging (local) storage if a folder exists for package
                 # Reuse folder name if folder exists
-                version_staging_local_storage_list = check_local_path(version['id'], version['version'], \
+                version_staging_local_storage_list = check_local_path(version['id'], version['version'],
                                                                       self.system_config['ingest_staging_storage'])
                 if len(version_staging_local_storage_list) > 1:
                     self.logs.write_log_in_file("warning",
@@ -350,7 +349,7 @@ class Collection:
                                                 f"Article {version['id']} version {version['version']} "
                                                 + "already staged for preservation.",
                                                 True)
-                    folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'], \
+                    folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'],
                                                                    version['id'], version['version'], version_md5)
                     if folder_name is not None:
                         folder_name += "/" + version_no + "/METADATA"

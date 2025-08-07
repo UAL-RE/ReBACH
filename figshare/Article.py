@@ -257,7 +257,7 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
-        staged = in_alternative_remote_storage = already_preserved = in_ap_trust = False
+        in_alternative_remote_storage = already_preserved = in_ap_trust = False
         upload_item = upload_to_remote()
 
         while not success and retries <= int(self.retries):
