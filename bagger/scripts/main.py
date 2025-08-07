@@ -50,7 +50,7 @@ def main() -> None:
     os.environ['WASABI_ACCESS_KEY_ID'] = config['Wasabi']['access_key']
     os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
-    bagger = Bagger(workflow=args.workflow, output_dir=args.output_dir,
+    bagger = Bagger(workflow=args.workflow, archival_staging_storage=args.archival_staging_storage,
                     delete=args.delete, dart_command=args.dart_command,
                     config=config, log=log, overwrite=args.overwrite, dryrun=args.dry_run)
 

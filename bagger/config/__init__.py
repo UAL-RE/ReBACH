@@ -62,7 +62,7 @@ def get_args(path: Optional[PathLike] = None,
                         help='Process a batch directory.')
     parser.add_argument('-d', '--delete',
                         help='Delete bags after upload.', action=BooleanOptionalAction)
-    parser.add_argument('-o', '--output_dir', metavar='output_dir',
+    parser.add_argument('-o', '--archival_staging_storage', metavar='archival_staging_storage',
                         help='Output directory for generated bags.')
     parser.add_argument('-w', '--workflow', metavar='workflow_file',
                         help='Path to workflow file.')

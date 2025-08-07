@@ -43,7 +43,7 @@ def test_run_dart(capsys):
     os.environ['WASABI_SECRET_ACCESS_KEY'] = config['Wasabi']['secret_key']
 
     bagger = Bagger(workflow=Path('bagger/config/wasabi_test_workflow.json'),
-                    output_dir=config['Defaults']['output_dir'],
+                    archival_staging_storage=config['Defaults']['archival_staging_storage'],
                     delete=True,
                     dart_command=config['Defaults']['dart_command'],
                     config=config,

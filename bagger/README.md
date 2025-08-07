@@ -39,7 +39,7 @@ ReBACH-Bagger can be used on the command line by running the main script as a mo
 ```text
 $ python -m bagger.scripts.main -h
 usage: main.py [-h] [-c config_file] [-b batch_dir] [-d | --delete | --no-delete]
-               [-o output_dir] [-w workflow_file] [--dart_command dart_command]
+               [-o archival_staging_storage] [-w workflow_file] [--dart_command dart_command]
                [--overwrite | --no-overwrite] [--dry-run]
                path
 
@@ -54,8 +54,8 @@ optional arguments:
                         Process a batch directory.
   -d, --delete, --no-delete
                         Delete bags after upload. (default: True)
-  -o output_dir, --output_dir output_dir
-                        Output directory for generated bags.
+  -o archival_staging_storage, --archival_staging_storage archival_staging_storage
+                        Output directory for generated bags if workflow is not configured to upload to a remote stotage location.
   -w workflow_file, --workflow workflow_file
                         Path to workflow file.
   --dart_command dart_command
@@ -74,7 +74,7 @@ example follows:
 from bagger.bag import Bagger
 
 # Instantiate Bagger with necessary arguments
-B = Bagger(workflow, output_dir, delete, dart_command, config, log)
+B = Bagger(workflow, archival_staging_storage, delete, dart_command, config, log)
 
 # Run DART on the package specified with path
 run = B.run_dart(path)
@@ -135,7 +135,7 @@ command line will override values set in the config file.
 
 ```toml
 [Defaults]
-archival_staging_storage = "out" # DART will output generated bags here if no upload; must be writable
+archival_staging_storage = "out" # DART will output generated bags here if workflow is not configured to upload to a remote storage location; must be writable
 workflow = "default_workflow.json" # Path to the DART workflow file
 dart_command = "dart-runner" # Command or path to DART executable
 ```

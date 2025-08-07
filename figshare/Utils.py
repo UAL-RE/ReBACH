@@ -418,7 +418,7 @@ def check_local_path(article_id: int, version_no: int, path="") -> list:
         config = configparser.ConfigParser()
         config.read('bagger/config/default.toml')
         default_config = config['Defaults']
-        path = default_config['output_dir']
+        path = default_config['archival_staging_storage']
 
     version_preserved_list = []
     preserved_article_hash = ''
