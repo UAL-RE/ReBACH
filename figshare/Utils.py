@@ -71,23 +71,22 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
-def format_version(version_no: int) -> str:
+def format_version(version_no: Any) -> str:
     """
     Formats version number to v[0]{version number}
 
-    :param version_no: version number of item
-    :type: int
+    :param version_no: version number of item. Could be formatted str as in v01 or int as in 1
+    :type: Any
 
     :return: Formatted version number
     :rtype: str
     """
     if 'v' in str(version_no):
-        version_no = version_no
+        return version_no
     elif int(version_no) < 10:
-        version_no = f"v{str(version_no).zfill(2)}"
+        return f"v{str(version_no).zfill(2)}"
     else:
-        version_no = f'v{str(version_no)}'
-    return version_no
+        return f'v{str(version_no)}'
 
 
 def extract_metadata_hash_only(package_name: str) -> str:
@@ -243,7 +242,7 @@ def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int
     return None
 
 
-def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
+def get_preserved_version_hash_and_size(config, article_id: int, version_no: Any) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
     If version is already preserved, it returns a tuple containing
@@ -256,8 +255,8 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     :param article_id: id number of article in Figshare
     :type article_id: int
 
-    :param version_no: version number of article
-    :type version_no: int
+    :param version_no: version number of item. Could be formatted str as in v01 or int as in 1
+    :type version_no: Any
 
     :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
             its size if article version package exists in Wasabi else it returns empty list.
@@ -391,7 +390,7 @@ def check_wasabi(article_id: int, version_no: int) -> list:
     return version_preserved_list
 
 
-def check_local_path(article_id: int, version_no: int, path="") -> list:
+def check_local_path(article_id: int, version_no: Any, path="") -> list:
     """
     Extracts md5 hash and size from preserved article version metadata in a local storage.
     If a version is already preserved, it returns a tuple containing
@@ -401,8 +400,8 @@ def check_local_path(article_id: int, version_no: int, path="") -> list:
     :param article_id: id number of an article in Figshare
     :type article_id: int
 
-    :param version_no: version number of article
-    :type version_no: int
+    :param version_no: version number of article. Could be formatted str as in v01 or int as in 1
+    :type version_no: Any
 
     :param path: An accessible absolute path. It defaults to local preservation storage
     :type path: str
