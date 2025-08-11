@@ -9,6 +9,15 @@ delete = true
 log_dir = "logs"
 logfile_prefix = "ReBACH-Bagger"
 
+[aptrust_api]
+url =
+user =
+token =
+items_per_page =
+alt_identifier_starts_with =
+retries = 3
+retries_wait = 10
+
 [Wasabi]
 name = "***override***"
 host = "***override***"
