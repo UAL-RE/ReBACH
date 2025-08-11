@@ -4,6 +4,7 @@ from pathlib import Path
 from redata.commons import logger
 from bagger.bag import Bagger, Status
 from bagger.config import get_args, TOMLDecodeError
+from figshare.Utils import upload_to_remote
 from Config import Config
 from Log import Log
 
@@ -115,8 +116,11 @@ class Integration:
                     self.bag_preserved_count += 1
                 elif (status == 3):
                     # code 3 is special since we don't want to cause the calling code to interpret duplicates as an error since it will happen a lot
-                    self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "
+                    if upload_to_remote():
+                        self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "
                                                          + f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
+                    else:
+                        self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in archival storage.", True)
                     self.duplicate_bag_in_preservation_storage_count += 1
                     status = 0
                 return status
