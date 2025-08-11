@@ -299,7 +299,7 @@ if __name__ == "__main__":
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in archival staging storage: \t"
+                          "Total count of already preserved collection versions in archival staging storage: "
                           + f'{locally_preserved_collection_versions}',
                           True)
 
