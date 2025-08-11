@@ -152,6 +152,22 @@ log_dir = "logs" # Logger will write logs to this directory
 logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 ```
 
+### AP Trust
+
+Neither ReBACH-Bagger nor Dart uploads to AP Trust directly but like ReBACH, Bagger also checks AP Trust for duplicate bags when workflow does not include upload settings. 
+The configuration and credentials in this section are used to authenticate and check AP Trust for duplicate bags.
+
+```toml
+[aptrust_api]
+url = "***override***" # required: The AP Trust member API url including the version
+user = "***override***" # required: Your user email address on AP Trust
+token = "***override***" # required: Your user secret token on AP Trust
+items_per_page = "***override***" # Maximum number of object to be return per page by the API
+alt_identifier_starts_with = "***override***" # Prefix for alternate identifier in AP Trust
+retries = 3 # required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
+retries_wait = 10 # required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
+```
+
 ### Wasabi
 
 Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi.
