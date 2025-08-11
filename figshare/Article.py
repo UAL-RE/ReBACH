@@ -313,8 +313,7 @@ class Article:
                                                         True)
 
                         # Checking archival storage (final remote) for existence of package
-                        version_final_storage_preserved_list = \
-                            get_preserved_version_hash_and_size(article_id, version['version'])
+                        version_final_storage_preserved_list = get_preserved_version_hash_and_size(article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
                                                         f"Multiple copies of article {article_id} version {version['version']} "
