@@ -4,8 +4,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
-from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote
+from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
+from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote, get_preserved_version_hash_and_size
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -122,6 +122,11 @@ class Bagger:
             wasabi_list = get_filenames_from_ls(wasabi_ls)
 
             if bag_name in wasabi_list and not self.overwrite:
+                return Status.DUPLICATE_BAG
+        else:
+            version_local_final_preserved_list = check_local_path(int(article_id), version)
+            version_final_storage_preserved_list = get_preserved_version_hash_and_size(int(article_id), version)
+            if compare_hash(metadata_hash, version_local_final_preserved_list) or compare_hash(metadata_hash, version_final_storage_preserved_list):
                 return Status.DUPLICATE_BAG
 
         if not self.validate_package(metadata_path):
