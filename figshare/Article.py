@@ -29,7 +29,7 @@ class Article:
     def __init__(self, config, log, ids):
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
-        self.aptrust_config = self.config_obj.aptrust_config()
+        # self.aptrust_config = self.config_obj.aptrust_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
@@ -314,7 +314,7 @@ class Article:
 
                         # Checking archival storage (final remote) for existence of package
                         version_final_storage_preserved_list = \
-                            get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+                            get_preserved_version_hash_and_size(article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
                                                         f"Multiple copies of article {article_id} version {version['version']} "

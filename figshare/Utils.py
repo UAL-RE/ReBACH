@@ -242,15 +242,12 @@ def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int
     return None
 
 
-def get_preserved_version_hash_and_size(config, article_id: int, version_no: Any) -> list:
+def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> list:
     """
     Extracts md5 hash and size from preserved article version metadata.
     If version is already preserved, it returns a tuple containing
     preserved article version md5 hash and preserved article version size
     else it returns a tuple containing empty string and 0.
-
-    :param  config:  Configuration to use for extraction (where to extract)
-    :type config: dict
 
     :param article_id: id number of article in Figshare
     :type article_id: int
@@ -267,14 +264,17 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: Any
     preserved_pkg_hash = ''
     preserved_pkg_size = 0
     version_preserved_list = []
-    base_url = config['url']
-    user = config['user']
-    key = config['token']
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    aptrust_config = config['aptrust_api']
+    base_url = aptrust_config['url']
+    user = aptrust_config['user']
+    key = aptrust_config['token']
     item_type = "objects"
-    items_per_page = int(config['items_per_page'])
+    items_per_page = int(aptrust_config['items_per_page'])
     alt_id = config['alt_identifier_starts_with']
-    retries = int(config['retries'])
-    retries_wait = int(config['retries_wait'])
+    retries = int(aptrust_config['retries'])
+    retries_wait = int(aptrust_config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
     success = False
