@@ -267,12 +267,12 @@ def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> lis
     config = configparser.ConfigParser()
     config.read('bagger/config/default.toml')
     aptrust_config = config['aptrust_api']
-    base_url = aptrust_config['url']
-    user = aptrust_config['user']
-    key = aptrust_config['token']
+    base_url = aptrust_config['url'].replace('\"', '')
+    user = aptrust_config['user'].replace('\"', '')
+    key = aptrust_config['token'].replace('\"', '')
     item_type = "objects"
     items_per_page = int(aptrust_config['items_per_page'])
-    alt_id = config['alt_identifier_starts_with']
+    alt_id = aptrust_config['alt_identifier_starts_with'].replace('\"', '')
     retries = int(aptrust_config['retries'])
     retries_wait = int(aptrust_config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
