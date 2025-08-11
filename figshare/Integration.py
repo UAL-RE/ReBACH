@@ -120,7 +120,8 @@ class Integration:
                         self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in "
                                                          + f"{config['Wasabi']['host']}/{config['Wasabi']['bucket']}. File not uploaded.", True)
                     else:
-                        self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in archival storage.", True)
+                        self._rebachlogger.write_log_in_file("warning", f"'{preservation_package_name}' already exists in"
+                                                             + f"archival staging or archival storage.", True)
                     self.duplicate_bag_in_preservation_storage_count += 1
                     status = 0
                 return status
