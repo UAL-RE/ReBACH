@@ -435,6 +435,18 @@ def check_local_path(article_id: int, version_no: Any, path="") -> list:
     return version_preserved_list
 
 
+def get_archival_staging_storage() -> str:
+    """
+    Gets archival_staging_storage path from bagger configuration
+
+    :return: Return archival_staging_storage path
+    :rtype: str
+    """
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    default_config = config['Defaults']
+    return default_config['archival_staging_storage'].replace('\"', '')
+
 def upload_to_remote() -> bool:
     """
     Checks if packages are uploaded to a remote storage
