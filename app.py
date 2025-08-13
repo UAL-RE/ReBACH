@@ -2,7 +2,7 @@ import os
 import argparse
 from version import __version__, __commit__
 from Log import Log
-from figshare.Utils import upload_to_remote
+from figshare.Utils import upload_to_remote, get_archival_staging_storage
 from figshare.Article import Article
 from datetime import datetime
 from Config import Config
@@ -94,6 +94,11 @@ def main():
     if (log_location == ""):
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Logs file path missing in .env.ini file.")
         exit()
+
+    if get_archival_staging_storage() == ingest_staging_storage:
+        log.write_log_in_file('error',
+                              "ingest_staging_storage in .env.ini file must different from "
+                              + "archival_staging_storage in bagger default.toml.", True, True)
 
     log.write_log_in_file('info', "Logs location is accessible. Logging to file will now start.", True)
 
