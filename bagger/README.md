@@ -55,7 +55,7 @@ optional arguments:
   -d, --delete, --no-delete
                         Delete bags after upload. (default: True)
   -o archival_staging_storage, --archival_staging_storage archival_staging_storage
-                        Output directory for generated bags if workflow is not configured to upload to a remote stotage location.
+                        Output directory for generated bags if workflow is not configured to upload to a remote storage location.
   -w workflow_file, --workflow workflow_file
                         Path to workflow file.
   --dart_command dart_command
@@ -135,7 +135,7 @@ command line will override values set in the config file.
 
 ```toml
 [Defaults]
-archival_staging_storage = "out" # DART will output generated bags here if workflow is not configured to upload to a remote storage location; must be writable
+archival_staging_storage = "out" # DART will output generated bags here; must be writable
 workflow = "default_workflow.json" # Path to the DART workflow file
 dart_command = "dart-runner" # Command or path to DART executable
 ```
@@ -171,8 +171,8 @@ retries_wait = 10 # required: Number of seconds the script should wait between c
 ### Wasabi
 
 Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi.
-ReBACH-Bagger checks Wasabi for duplicate bags when the workflow is configured to upload to 
-remote storage location or when the `--check-remote-staging` flag is set by ReBACH. See [DART Workflow]("#dart-workflow") for details on how these variables are used in DART.
+ReBACH-Bagger checks Wasabi for duplicate bags when the DART workflow is configured to upload to 
+remote storage location or when the `--check-remote-staging` flag is set by ReBACH. See [DART Workflow](#dart-workflow) for details on how these variables are used in DART.
 
 If the `dart_workflow_hostbucket_override` variable is set to `true`
 (default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the

@@ -55,8 +55,8 @@ These parameters are only available on the command line.
 ## Execution notes
 - ReBACH will attempt to fetch all items in the institutional instance. Items that are not published (curation_status != 'approved') will be ignored.
 - Items that are embargoed are also fetched however due to limitations in the API, only the latest version can be fetched until the embargo expires or is removed.
-- While fetching, ReBACH checks `archival_staging_storage` in `bagger/config/default.toml` and `archival storage` for a duplicate bags of each item. If a duplicate of an item is found and confirmed in any of the locations, the item will ignored in subsequent stages except when Bagger's Dart workflow is configured to upload to a S3 storage.
+- While fetching, ReBACH checks `archival_staging_storage` in `bagger/config/default.toml` and `archival storage` for a duplicate bags of each item. If a duplicate of an item is found and confirmed in any of the locations, the item will ignored in subsequent stages except when Bagger's Dart workflow json file is configured to upload to a S3 storage.
 - Checking archival storage for a duplicate bags of an article requires size of the curation storage folder of the article. If an error occurs while calculating the size of an article curation folder, the error will be recorded and execution will stop except if the `--continue-on-error` flag is set.
-- Remote staging storage will be checked for duplicate bags if workflow is set to upload, even if the `--check-remote-staging` flag is not set.
+- Remote staging storage will be checked for duplicate bags if DART workflow json file configured to upload to an S3 storage, even if the `--check-remote-staging` flag is not set.
 - When processing collections, ReBACH records which items are part of the collection by appending them to collection's JSON as returned by the Figshare API.
 - If an item encounters errors, it will not be processed and any partial files are deleted in ingest staging storage.
