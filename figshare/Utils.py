@@ -447,6 +447,7 @@ def get_archival_staging_storage() -> str:
     default_config = config['Defaults']
     return default_config['archival_staging_storage'].replace('\"', '')
 
+
 def upload_to_remote() -> bool:
     """
     Checks if packages are uploaded to a remote storage
