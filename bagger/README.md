@@ -306,3 +306,50 @@ tags defined by the ReBACH-Bagger metadata configuration ([see above]("#metadata
 Profiles can be created and modified [using DART's desktop application](https://aptrust.github.io/dart-docs/users/bagit/).
 Profiles are embedded in the DART workflow file and do not need to be separately provided to
 ReBACH-Bagger.
+
+### Execution Notes
+
+1. **Definition of “Preserved” Bag**  
+   - A bag is considered preserved if it is in:  
+     - Archival staging storage **and/or** archival storage  
+     - S3 storage **if** the Dart workflow JSON includes the *storage services* setting  
+
+2. **Default Storage Behavior**  
+   - By default, ReBACH with Bagger using the Dart workflow JSON stores bags in **archival staging storage**  
+
+3. **Uploading to S3 Storage**  
+   - Possible **only if** the Dart workflow JSON includes the *storage services* setting  
+
+4. **Archival Storage Uploads**  
+   - ReBACH and Bagger **do not** upload bags to archival storage  
+   - They can check for duplicate bags in **all** storage locations, including archival storage  
+
+5. **Duplicate Bag Checking in S3**  
+   - Controlled by the `--check-remote-staging` flag in ReBACH  
+   - **Regardless of the flag**, S3 will be checked for duplicates if Dart workflow JSON is configured to upload to S3.  
+
+6. **Handling of Duplicate Bags**  
+   - If a duplicate bag exists in a storage location:  
+     - The item is **not processed**  
+     - No bag is generated for that item 
+
+7. **Key Determinant for Skipping Processing**  
+   - The storage services setting in the Dart workflow JSON dictates whether Dart uploads to S3 and thus affects duplicate checking behavior  
+
+8. **Storage Location Summary**  
+   - All bags go into archival staging storage by default  
+   - They are later ingested into archival storage by UAL’s preservation workflow  
+   - Bags in archival staging storage are presumed to also be in archival storage
+
+The table below summarizes how bags are placed in different storages.
+
+| **Bag in Archival staging storage/Archival storage** | **Upload bag to S3 storage** | **Bag in S3 storage** | **Process bag** | **Bag location after run**                |
+|------------------------------------------------------|------------------------------|-----------------------|-----------------|-------------------------------------------|
+| No                                                   | No                           | No                    | Yes             | Archival staging storage/Archival storage |
+| No                                                   | No                           | Yes                   | Yes             | All storages                              |
+| No                                                   | Yes                          | No                    | Yes             | All storages                              |
+| No                                                   | Yes                          | Yes                   | No              | All storages                              | 
+| Yes                                                  | No                           | No                    | No              | Archival staging storage/Archival storage | 
+| Yes                                                  | No                           | Yes                   | No              | All storages                              | 
+| Yes                                                  | Yes                          | No                    | Yes             | All storages                              |
+| Yes                                                  | Yes                          | Yes                   | No              | All storages                              |  
