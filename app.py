@@ -96,9 +96,7 @@ def main():
         exit()
 
     if get_archival_staging_storage() == ingest_staging_storage:
-        log.write_log_in_file('error',
-                              "ingest_staging_storage in .env.ini file must different from "
-                              + "archival_staging_storage in bagger default.toml.", True, True)
+        log.write_log_in_file('error', "ingest_staging_storage location must different from archival_staging_storage.", True, True)
 
     log.write_log_in_file('info', "Logs location is accessible. Logging to file will now start.", True)
 
