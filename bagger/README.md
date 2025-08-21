@@ -55,7 +55,7 @@ optional arguments:
   -d, --delete, --no-delete
                         Delete bags after upload. (default: True)
   -o archival_staging_storage, --archival_staging_storage archival_staging_storage
-                        Output directory for generated bags if workflow is not configured to upload to a remote storage location.
+                        Output directory for generated bags.
   -w workflow_file, --workflow workflow_file
                         Path to workflow file.
   --dart_command dart_command
@@ -312,21 +312,21 @@ ReBACH-Bagger.
 1. **Definition of “Preserved” Bag**  
    - A bag is considered preserved if it is in:  
      - Archival staging storage **and/or** archival storage  
-     - S3 storage **if** the Dart workflow JSON includes the *storage services* setting  
+     - Alternative archival staging storage i.e. an S3-compatible storage **if** the Dart workflow JSON includes the *storage services* setting  
 
 2. **Default Storage Behavior**  
    - By default, ReBACH with Bagger using the Dart workflow JSON stores bags in **archival staging storage**  
 
-3. **Uploading to S3 Storage**  
+3. **Uploading to alternative archival staging storage**  
    - Possible **only if** the Dart workflow JSON includes the *storage services* setting  
 
 4. **Archival Storage Uploads**  
    - ReBACH and Bagger **do not** upload bags to archival storage  
    - They can check for duplicate bags in **all** storage locations, including archival storage  
 
-5. **Duplicate Bag Checking in S3**  
+5. **Duplicate Bag Checking in alternative archival staging storage** 
    - Controlled by the `--check-remote-staging` flag in ReBACH  
-   - **Regardless of the flag**, S3 will be checked for duplicates if Dart workflow JSON is configured to upload to S3.  
+   - **Regardless of the flag**, alternative archival staging storage will be checked for duplicates if Dart workflow JSON includes storage services settings.  
 
 6. **Handling of Duplicate Bags**  
    - If a duplicate bag exists in a storage location:  
@@ -334,22 +334,22 @@ ReBACH-Bagger.
      - No bag is generated for that item 
 
 7. **Key Determinant for Skipping Processing**  
-   - The storage services setting in the Dart workflow JSON dictates whether Dart uploads to S3 and thus affects duplicate checking behavior  
+   - The storage services setting in the Dart workflow JSON dictates whether Dart uploads to alternative archival staging storage and thus affects duplicate checking behavior  
 
 8. **Storage Location Summary**  
    - All bags go into archival staging storage by default  
    - They are later ingested into archival storage by UAL’s preservation workflow  
    - Bags in archival staging storage are presumed to also be in archival storage
 
-The table below summarizes how bags are placed in different storages.
+The table below summarizes how bags are placed in different storages. The first three columns represent a specific prior state. The last two columns represent the corresponding behavior.
 
-| **Bag in Archival staging storage/Archival storage** | **Upload bag to S3 storage** | **Bag in S3 storage** | **Process bag** | **Bag location after run**                |
-|------------------------------------------------------|------------------------------|-----------------------|-----------------|-------------------------------------------|
-| No                                                   | No                           | No                    | Yes             | Archival staging storage/Archival storage |
-| No                                                   | No                           | Yes                   | Yes             | All storages                              |
-| No                                                   | Yes                          | No                    | Yes             | All storages                              |
-| No                                                   | Yes                          | Yes                   | No              | All storages                              | 
-| Yes                                                  | No                           | No                    | No              | Archival staging storage/Archival storage | 
-| Yes                                                  | No                           | Yes                   | No              | All storages                              | 
-| Yes                                                  | Yes                          | No                    | Yes             | All storages                              |
-| Yes                                                  | Yes                          | Yes                   | No              | All storages                              |  
+| **Does bag exists in Archival staging or Archival storage** | **Is DART workflow set to upload bag to alternative archival staging storage** | **Is bag in alternative archival staging storage** | **Will bag be processed** | **Bag location after run**                |
+|-------------------------------------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------|---------------------------|-------------------------------------------|
+| No                                                          | No                                                                             | No                                                 | Yes                       | Archival staging storage/Archival storage |
+| No                                                          | No                                                                             | Yes                                                | Yes                       | All storages                              |
+| No                                                          | Yes                                                                            | No                                                 | Yes                       | All storages                              |
+| No                                                          | Yes                                                                            | Yes                                                | No                        | All storages                              | 
+| Yes                                                         | No                                                                             | No                                                 | No                        | Archival staging storage/Archival storage | 
+| Yes                                                         | No                                                                             | Yes                                                | No                        | All storages                              | 
+| Yes                                                         | Yes                                                                            | No                                                 | Yes                       | All storages                              |
+| Yes                                                         | Yes                                                                            | Yes                                                | No                        | All storages                              |  
