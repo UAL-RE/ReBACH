@@ -71,6 +71,24 @@ def sorter_api_result(json_dict_: Any) -> Any:
         return sorted_dict
 
 
+def format_version(version_no: Any) -> str:
+    """
+    Formats version number to v[0]{version number}
+
+    :param version_no: version number of item. Could be formatted str as in v01 or int as in 1
+    :type: Any
+
+    :return: Formatted version number
+    :rtype: str
+    """
+    if 'v' in str(version_no):
+        return version_no
+    elif int(version_no) < 10:
+        return f"v{str(version_no).zfill(2)}"
+    else:
+        return f'v{str(version_no)}'
+
+
 def extract_metadata_hash_only(package_name: str) -> str:
     """
     Extracts MD5 hash of metadata from package name based on the format
@@ -194,21 +212,48 @@ def extract_bag_date(package_name: str) -> str:
     return ''
 
 
-def get_preserved_version_hash_and_size(config, article_id: int, version_no: int) -> list:
+def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int, version_hash: str) -> Any:
     """
-    Extracts md5 hash and size from preserved article version metadata.
-    If version is already preserved, it returns a tuple containing
-    preserved article version md5 hash and preserved article version size
-    else it returns a tuple containing empty string and 0.
+    Gets the name of a package folder from a local storage
 
-    :param  config:  Configuration to use for extraction (where to extract)
-    :type config: dict
+    :param path: Path to local storage folder
+    :type path: str
 
     :param article_id: id number of article in Figshare
     :type article_id: int
 
     :param version_no: version number of article
     :type version_no: int
+
+    :param version_hash: Version metadata Md5 hash
+    :type version_hash: str
+
+    :return: Returns the name of a package folder from a local storage if found else None.
+    :rtype: None
+    """
+
+    if os.path.exists(path) and os.access(path, os.R_OK):
+        folder_name_re = re.compile("\\w*_\\d+-v\\d{2}-[A-Z][A-Za-z]+-[a-z0-9]{32}_bag\\d+of\\d+_\\d{8}")
+        version_no = format_version(version_no)
+        for item in os.scandir(path):
+            if item.is_dir() and item.name.__contains__(str(article_id)) and item.name.__contains__(version_no) \
+                    and item.name.__contains__(version_hash) and folder_name_re.search(item.name) is not None:
+                return item.name
+    return None
+
+
+def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> list:
+    """
+    Extracts md5 hash and size from preserved article version metadata.
+    If version is already preserved, it returns a tuple containing
+    preserved article version md5 hash and preserved article version size
+    else it returns a tuple containing empty string and 0.
+
+    :param article_id: id number of article in Figshare
+    :type article_id: int
+
+    :param version_no: version number of item. Could be formatted str as in v01 or int as in 1
+    :type version_no: Any
 
     :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
             its size if article version package exists in Wasabi else it returns empty list.
@@ -219,14 +264,17 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     preserved_pkg_hash = ''
     preserved_pkg_size = 0
     version_preserved_list = []
-    base_url = config['url']
-    user = config['user']
-    key = config['token']
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    aptrust_config = config['aptrust_api']
+    base_url = aptrust_config['url'].replace('\"', '')
+    user = aptrust_config['user'].replace('\"', '')
+    key = aptrust_config['token'].replace('\"', '')
     item_type = "objects"
-    items_per_page = int(config['items_per_page'])
-    alt_id = config['alt_identifier_starts_with']
-    retries = int(config['retries'])
-    retries_wait = int(config['retries_wait'])
+    items_per_page = int(aptrust_config['items_per_page'])
+    alt_id = aptrust_config['alt_identifier_starts_with'].replace('\"', '')
+    retries = int(aptrust_config['retries'])
+    retries_wait = int(aptrust_config['retries_wait'])
     headers = {'X-Pharos-API-User': user,
                'X-Pharos-API-Key': key}
     success = False
@@ -234,12 +282,7 @@ def get_preserved_version_hash_and_size(config, article_id: int, version_no: int
     if base_url[-1] != '/':
         base_url = base_url + '/'
 
-    if 'v' in str(version_no):
-        version_no = version_no
-    elif int(version_no) < 10:
-        version_no = f"v{str(version_no).zfill(2)}"
-    else:
-        version_no = f'v{str(version_no)}'
+    version_no = format_version(version_no)
 
     tries = 1
 
@@ -337,12 +380,7 @@ def check_wasabi(article_id: int, version_no: int) -> list:
 
     preserved_packages = get_filenames_and_sizes_from_ls(preservation_bucket)
 
-    if 'v' in str(version_no):
-        version_no = version_no
-    elif int(version_no) < 10:
-        version_no = f"v{str(version_no).zfill(2)}"
-    else:
-        version_no = f'v{str(version_no)}'
+    version_no = format_version(version_no)
 
     for package in preserved_packages:
         if package[0].__contains__(str(article_id)) and package[0].__contains__(version_no):
@@ -350,6 +388,83 @@ def check_wasabi(article_id: int, version_no: int) -> list:
             preserved_article_size = package[1]
             version_preserved_list.append((preserved_article_hash, preserved_article_size))
     return version_preserved_list
+
+
+def check_local_path(article_id: int, version_no: Any, path="") -> list:
+    """
+    Extracts md5 hash and size from preserved article version metadata in a local storage.
+    If a version is already preserved, it returns a tuple containing
+    preserved article version md5 hash and preserved article version size
+    else it returns a tuple containing empty string and 0.
+
+    :param article_id: id number of an article in Figshare
+    :type article_id: int
+
+    :param version_no: version number of article. Could be formatted str as in v01 or int as in 1
+    :type version_no: Any
+
+    :param path: An accessible absolute path. It defaults to local preservation storage
+    :type path: str
+
+    :return: Returns a list of tuples. Each tuple contains md5 hash of the article version and
+            its size if article version package exists in Wasabi else it returns empty list.
+            It returns an empty list there is no preserved copy of article version.
+    :rtype: list
+    """
+
+    if path == "":
+        config = configparser.ConfigParser()
+        config.read('bagger/config/default.toml')
+        default_config = config['Defaults']
+        path = default_config['archival_staging_storage']
+
+    version_preserved_list = []
+    preserved_article_hash = ''
+    preserved_article_size = 0
+
+    version_no = format_version(version_no)
+    path = path.replace('\"', '')
+
+    if os.path.exists(path) and os.access(path, os.R_OK):
+        for item in os.scandir(path):
+            if item.name.__contains__(str(article_id)) and item.name.__contains__(version_no):
+                preserved_article_hash = extract_metadata_hash_only(item.name)
+                preserved_article_size = os.path.getsize(item.path)
+                version_preserved_list.append((preserved_article_hash, preserved_article_size))
+        return version_preserved_list
+    return version_preserved_list
+
+
+def get_archival_staging_storage() -> str:
+    """
+    Gets archival_staging_storage path from bagger configuration
+
+    :return: Return archival_staging_storage path
+    :rtype: str
+    """
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    default_config = config['Defaults']
+    return default_config['archival_staging_storage'].replace('\"', '')
+
+
+def upload_to_remote() -> bool:
+    """
+    Checks if packages are uploaded to a remote storage
+
+    :return: Return True if packages will be uploaded, otherwise False
+    :rtype: bool
+    """
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    default_config = config['Defaults']
+    workflow_file = default_config['workflow'].replace('\"', '')
+
+    with open(workflow_file, 'r') as workflow:
+        settings = json.load(workflow)
+        if len(settings['storageServices']) == 0:
+            return False
+        return True
 
 
 def get_filenames_and_sizes_from_ls(ls: str) -> list:

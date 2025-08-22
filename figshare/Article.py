@@ -8,8 +8,9 @@ import hashlib
 import re
 from datetime import datetime
 from figshare.Integration import Integration
-from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash, check_local_path
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
+from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -28,7 +29,7 @@ class Article:
     def __init__(self, config, log, ids):
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
-        self.aptrust_config = self.config_obj.aptrust_config()
+        # self.aptrust_config = self.config_obj.aptrust_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
@@ -41,9 +42,9 @@ class Article:
         self.exclude_dirs = [".DS_Store"]
         self.total_all_articles_file_size = 0
         self.institution = int(figshare_config["institution"])
-        self.preservation_storage_location = self.system_config["preservation_storage_location"]
-        if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location = self.preservation_storage_location + "/"
+        self.ingest_staging_storage = self.system_config["ingest_staging_storage"]
+        if self.ingest_staging_storage[-1] != "/":
+            self.ingest_staging_storage = self.ingest_staging_storage + "/"
         self.curation_storage_location = self.system_config["curation_storage_location"]
         if self.curation_storage_location[-1] != "/":
             self.curation_storage_location = self.curation_storage_location + "/"
@@ -55,7 +56,9 @@ class Article:
         self.no_unmatched = 0
         self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
-                                              'articles_with_error': set(), 'article_versions_with_error': 0}
+                                              'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
+                                              'articles_locally_preserved': 0
+                                              }
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -254,7 +257,8 @@ class Article:
     def __get_article_metadata_by_version(self, version, article_id):
         retries = 1
         success = False
-        already_preserved = in_ap_trust = False
+        in_alternative_remote_storage = already_preserved = in_ap_trust = False
+        upload_item = upload_to_remote()
 
         while not success and retries <= int(self.retries):
             try:
@@ -299,60 +303,94 @@ class Article:
                         version_data_for_hashing = sorter_api_result(version_data_for_hashing)
                         str_version_data_for_hashing = stringify_metadata(version_data_for_hashing).encode("utf-8")
                         version_md5 = hashlib.md5(str_version_data_for_hashing).hexdigest()
-                        version_final_storage_preserved_list = \
-                            get_preserved_version_hash_and_size(self.aptrust_config, article_id, version['version'])
+
+                        # Checking archival staging storage (final local) for existence of package
+                        version_local_final_preserved_list = check_local_path(article_id, version['version'])
+                        if len(version_local_final_preserved_list) > 1:
+                            self.logs.write_log_in_file("warning",
+                                                        f"Multiple copies of article {article_id} version {version['version']} "
+                                                        + "found in archival staging storage",
+                                                        True)
+
+                        # Checking archival storage (final remote) for existence of package
+                        version_final_storage_preserved_list = get_preserved_version_hash_and_size(article_id, version['version'])
                         if len(version_final_storage_preserved_list) > 1:
                             self.logs.write_log_in_file("warning",
                                                         f"Multiple copies of article {article_id} version {version['version']} "
-                                                        + "found in preservation final remote storage",
-                                                        True)
-                        version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
-                        if len(version_staging_storage_preserved_list) > 1:
-                            self.logs.write_log_in_file("warning",
-                                                        f"Multiple copies of article {article_id} version {version['version']} "
-                                                        + "found in preservation staging remote storage",
+                                                        + "found in archival storage",
                                                         True)
 
-                        # Compare hashes
-                        # Checking both remote storages
-                        if compare_hash(version_md5, version_staging_storage_preserved_list) and \
-                                compare_hash(version_md5, version_final_storage_preserved_list):
-                            already_preserved = in_ap_trust = True
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
-                            self.logs.write_log_in_file("info",
-                                                        f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation staging remote storage"
-                                                        + " and preservation final remote storage.",
-                                                        True)
-
-                        elif compare_hash(version_md5, version_staging_storage_preserved_list):  # Preservation staging remote storage only check
+                        # Comparison in archival staging storage (final local)
+                        if compare_hash(version_md5, version_local_final_preserved_list):
                             already_preserved = True
-                            in_ap_trust = False
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                            self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                            self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
-                                                                + "already preserved in preservation staging remote storage.",
+                            self.already_preserved_counts_dict['articles_locally_preserved'] += 1
+                            self.logs.write_log_in_file("info",
+                                                        f"Article {article_id} version {version['version']} "
+                                                        + "already preserved in archival staging storage",
                                                         True)
 
-                        elif compare_hash(version_md5, version_final_storage_preserved_list):  # Preservation final remote storage only check
+                        # Comparison in archival storage (final remote)
+                        if compare_hash(version_md5, version_final_storage_preserved_list):
                             already_preserved = in_ap_trust = True
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
-                                                        + "already preserved in preservation final remote storage.",
+                                                        + "already preserved in archival storage.",
                                                         True)
 
-                        if already_preserved:
+                        # Checking alternative archival staging storage (remote) for existence of package
+                        if self.system_config['check-remote-staging'] == 'True' or upload_item:
+                            version_staging_storage_preserved_list = check_wasabi(article_id, version['version'])
+                            if len(version_staging_storage_preserved_list) > 1:
+                                self.logs.write_log_in_file("warning",
+                                                            f"Multiple copies of article {article_id} version {version['version']} "
+                                                            + "found in alternative archival staging storage",
+                                                            True)
+
+                            # Comparison in alternative archival staging storage (remote)
+                            if compare_hash(version_md5, version_staging_storage_preserved_list):
+                                self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                                self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
+                                                                    + "already preserved in alternative archival staging storage.",
+                                                            True)
+                                if upload_to_remote():
+                                    in_alternative_remote_storage = True
+
+                        if already_preserved and upload_item and in_alternative_remote_storage:
                             self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
                             if in_ap_trust:
                                 for version_hash in version_final_storage_preserved_list:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
                                         self.logs.write_log_in_file("warning",
                                                                     f"Article {article_id} version {version['version']} "
-                                                                    + "found in preservation final remote storage but sizes do not match.",
+                                                                    + "found in preservation archival storage but sizes do not match.",
+                                                                    True)
+                            return None
+                        elif not already_preserved and upload_item and in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            return None
+                        elif already_preserved and not upload_item and in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            if in_ap_trust:
+                                for version_hash in version_final_storage_preserved_list:
+                                    if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                                        self.logs.write_log_in_file("warning",
+                                                                    f"Article {article_id} version {version['version']} "
+                                                                    + "found in archival storage but sizes do not match.",
+                                                                    True)
+                            return None
+                        elif already_preserved and not upload_item and not in_alternative_remote_storage:
+                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            if in_ap_trust:
+                                for version_hash in version_final_storage_preserved_list:
+                                    if version_hash[0] == version_md5 and version_hash[1] != payload_size:
+                                        self.logs.write_log_in_file("warning",
+                                                                    f"Article {article_id} version {version['version']} "
+                                                                    + "found in archival storage but sizes do not match.",
                                                                     True)
                             return None
 
@@ -439,14 +477,14 @@ class Article:
         http.mount("http://", adapter)
 
         if (len(files) > 0):
-            version_no = "v" + str(version_data["version"]).zfill(2)
+            version_no = format_version(version_data["version"])
             article_folder = folder_name + "/" + version_no
             file_no = 0
             for file in files:
                 if (file['is_link_only'] is False):
                     article_files_folder = article_folder + "/DATA"
-                    preservation_storage_location = self.preservation_storage_location
-                    article_folder_path = preservation_storage_location + article_files_folder
+                    ingest_staging_storage = self.ingest_staging_storage
+                    article_folder_path = ingest_staging_storage + article_files_folder
                     article_files_path_exists = os.path.exists(article_folder_path)
                     if (article_files_path_exists is False):
                         os.makedirs(article_folder_path, exist_ok=True)
@@ -521,7 +559,7 @@ class Article:
     def __check_curation_dir(self, version_data):
         curation_storage_location = self.curation_storage_location
         dirs = os.listdir(curation_storage_location)
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         version_data["matched"] = False
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -628,8 +666,8 @@ class Article:
     def check_required_space(self, required_space):
         self.logs.write_log_in_file("info", "Checking required space, script might stop if there's not enough space.", True)
         req_space = required_space * (1 + (int(self.system_config["additional_percentage_required"]) / 100))
-        preservation_storage_location = self.preservation_storage_location
-        memory = shutil.disk_usage(preservation_storage_location)
+        ingest_staging_storage = self.ingest_staging_storage
+        memory = shutil.disk_usage(ingest_staging_storage)
         available_space = memory.free
         if (req_space > available_space):
             if self.system_config['continue-on-error'] == "False":
@@ -648,14 +686,14 @@ class Article:
     :return boolean
     """
     def __check_file_hash(self, files, version_data, folder_path):
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         article_version_folder = folder_path + "/" + version_no
         article_files_folder = article_version_folder + "/DATA"
-        preservation_storage_location = self.preservation_storage_location
-        article_folder_path = preservation_storage_location + article_files_folder
+        ingest_staging_storage = self.ingest_staging_storage
+        article_folder_path = ingest_staging_storage + article_files_folder
 
         # check if preservation dir is reachable
-        self.check_access_of_directories(preservation_storage_location, "preservation")
+        self.check_access_of_directories(ingest_staging_storage, "preservation")
 
         article_files_path_exists = os.path.exists(article_folder_path)
         process_article = False
@@ -680,7 +718,7 @@ class Article:
                             self.logs.write_log_in_file('error', f"{file_path} hash does not match.", True)
                             break
                         else:
-                            self.logs.write_log_in_file('info', f"{file_path.replace(preservation_storage_location + article_files_folder, '')} "
+                            self.logs.write_log_in_file('info', f"{file_path.replace(ingest_staging_storage + article_files_folder, '')} "
                                                         + "file exists (hash match).", True)
                         process_article = False
                     else:
@@ -698,9 +736,9 @@ class Article:
 
         # delete directory if validation failed.
         if (delete_folder is True):
-            self.logs.write_log_in_file("error", f"Validation failed, deleting {preservation_storage_location + folder_path}.", True)
+            self.logs.write_log_in_file("error", f"Validation failed, deleting {ingest_staging_storage + folder_path}.", True)
             if self.system_config['dry-run'] == 'False':
-                self.delete_folder(preservation_storage_location + folder_path)
+                self.delete_folder(ingest_staging_storage + folder_path)
             else:
                 self.logs.write_log_in_file("info", "*Dry Run* Folder not deleted.", True)
             process_article = True
@@ -730,10 +768,10 @@ class Article:
     def __save_json_in_metadata(self, version_data, folder_name):
         result = False
 
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         json_folder_path = folder_name + "/" + version_no + "/METADATA"
-        preservation_storage_location = self.preservation_storage_location
-        complete_path = preservation_storage_location + json_folder_path
+        ingest_staging_storage = self.ingest_staging_storage
+        complete_path = ingest_staging_storage + json_folder_path
         check_path_exists = os.path.exists(complete_path)
         try:
             if (check_path_exists is False):
@@ -780,13 +818,13 @@ class Article:
     def __copy_files_ual_rdm(self, version_data, folder_name):
         result = False
 
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        version_no = format_version(version_data["version"])
         curation_storage_location = self.curation_storage_location
         # check curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
 
-        preservation_storage_location = self.preservation_storage_location
-        complete_folder_name = os.path.join(preservation_storage_location, folder_name, version_no, "UAL_RDM")
+        ingest_staging_storage = self.ingest_staging_storage
+        complete_folder_name = os.path.join(ingest_staging_storage, folder_name, version_no, "UAL_RDM")
         dirs = os.listdir(curation_storage_location)
         for dir in dirs:
             if (dir not in self.exclude_dirs):
@@ -801,7 +839,7 @@ class Article:
                             if (dir == version_no):
                                 curation_dir_name = os.path.join(article_dir_in_curation, dir, "UAL_RDM")
                                 # check preservation dir is reachable
-                                self.check_access_of_directories(preservation_storage_location, "preservation")
+                                self.check_access_of_directories(ingest_staging_storage, "preservation")
                                 try:
                                     check_path_exists = os.path.exists(complete_folder_name)
                                     if (check_path_exists is False):
@@ -833,7 +871,7 @@ class Article:
                     # check curation folder for required files and setup data for further processing.
                     if (version_data is not None and len(version_data) > 0):
                         data = self.__check_curation_dir(version_data)
-                        version_no = "v" + str(data["version"]).zfill(2)
+                        version_no = format_version(data["version"])
                         i += 1
                         if (data["matched"] is True):
                             total_file_size = version_data['size']
@@ -995,12 +1033,12 @@ class Article:
         # get curation directory path
         curation_storage_location = self.curation_storage_location
         # get preservation directory path
-        preservation_storage_location = self.preservation_storage_location
+        ingest_staging_storage = self.ingest_staging_storage
         # curation dir is reachable
         self.check_access_of_directories(curation_storage_location, "curation")
 
         # preservation dir is reachable
-        self.check_access_of_directories(preservation_storage_location, "preservation")
+        self.check_access_of_directories(ingest_staging_storage, "preservation")
 
         return curation_storage_location
 
@@ -1040,12 +1078,31 @@ class Article:
         for article in article_data:
             article_versions_list = article_data[article]
             for version_data in article_versions_list:
+                folder_name = None
                 if version_data is not None or len(version_data) > 0:
-                    version_no = "v" + str(version_data["version"]).zfill(2)
-                    first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
-                    formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
-                    folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-" \
-                        + formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
+                    version_no = format_version(version_data["version"])
+
+                    # Checking local staging storage if a folder exists for package
+                    # Reuse folder name if folder exists
+                    version_staging_local_storage_list = \
+                        check_local_path(version_data["id"], version_data['version'],
+                                         self.system_config['ingest_staging_storage'])
+                    if len(version_staging_local_storage_list) > 1:
+                        self.logs.write_log_in_file("warning",
+                                                    f"Multiple copies of article {version_data['id']} version {version_data['version']} "
+                                                    + "found in preservation staging local storage",
+                                                    True)
+                    if compare_hash(version_data['version_md5'], version_staging_local_storage_list):
+                        self.logs.write_log_in_file("info", f"Article {version_data['id']} version {version_data['version']} "
+                                                    + "already staged for preservation.",
+                                                    True)
+                        folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'],
+                                                                       version_data['id'], version_data['version'], version_data['version_md5'])
+                    if folder_name is None:
+                        first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
+                        formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
+                        folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-"
+                        folder_name += formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
 
                     if (version_data["matched"] is True):
                         self.logs.write_log_in_file("info", f"------- Processing article {article} version {version_data['version']}.", True)
@@ -1060,8 +1117,8 @@ class Article:
                         if (value_pre_process == 0):
                             self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
-                            preservation_storage_location = self.preservation_storage_location
-                            check_dir = preservation_storage_location + folder_name
+                            ingest_staging_storage = self.ingest_staging_storage
+                            check_dir = ingest_staging_storage + folder_name
                             check_files = True
                             copy_files = True
                             self.logs.write_log_in_file("info", f"Checking if {check_dir} exists.", True)
@@ -1141,10 +1198,10 @@ class Article:
                 success = True
 
     def create_required_folders(self, version_data, folder_name):
-        preservation_storage_location = self.preservation_storage_location
-        version_no = "v" + str(version_data["version"]).zfill(2)
+        ingest_staging_storage = self.ingest_staging_storage
+        version_no = format_version(version_data["version"])
         # setup UAL_RDM directory
-        ual_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/UAL_RDM"
+        ual_folder_name = ingest_staging_storage + folder_name + "/" + version_no + "/UAL_RDM"
         ual_path_exists = os.path.exists(ual_folder_name)
         try:
             if (ual_path_exists is False):
@@ -1154,7 +1211,7 @@ class Article:
                 self.logs.write_log_in_file("info", "UAL_RDM directory already exists. Folder not created", True)
 
             # setup DATA directory
-            data_folder_name = preservation_storage_location + folder_name + "/" + version_no + "/DATA"
+            data_folder_name = ingest_staging_storage + folder_name + "/" + version_no + "/DATA"
             data_path_exists = os.path.exists(data_folder_name)
             if (data_path_exists is False):
                 # create DATA directory if it does not exist

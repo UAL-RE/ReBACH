@@ -4,8 +4,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Union
 
-from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only
-from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date
+from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
+from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote, get_preserved_version_hash_and_size
 from bagger import Status, Dryable
 from bagger.job import Job
 from bagger.metadata import Metadata
@@ -17,14 +17,14 @@ from bagger.ntf import NamedTemporaryFile, TemporaryFile
 #  class can then take the package_path and other arguments to enable looping.
 class Bagger:
 
-    def __init__(self, workflow: PathLike, output_dir: PathLike, delete: bool,
+    def __init__(self, workflow: PathLike, archival_staging_storage: PathLike, delete: bool,
                  dart_command: str, config: dict, log: Logger,
                  overwrite: bool, dryrun: bool = False) -> None:
         """
         Set up environment for generating bags with DART
 
         :param workflow: Path to workflow JSON file
-        :param output_dir: Directory for generated bag output by DART
+        :param archival_staging_storage: Directory for generated bag output by DART if no upload
         :param delete: Delete output bag if True
         :param dart_command: Path to DART executable
         :param config: Config dict
@@ -35,7 +35,7 @@ class Bagger:
         self.log: Logger = log
         self.dart_command: str = dart_command
         self.delete: bool = delete
-        self.output_dir: PathLike = output_dir
+        self.archival_staging_storage: PathLike = archival_staging_storage
         self.workflow: PathLike = workflow
         self.workflow_file: TemporaryFile = None
         self.overwrite: bool = overwrite
@@ -109,19 +109,25 @@ class Bagger:
         if not metadata_path.exists():
             return Status.INVALID_PATH
 
-        folder_to_list = f"s3://{self.wasabi.s3bucket}"
-        wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
+        if upload_to_remote():
+            folder_to_list = f"s3://{self.wasabi.s3bucket}"
+            wasabi_ls, wasabi_error = self.wasabi.list_bucket(folder_to_list)
 
-        if wasabi_error:
-            wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
-            for e in wasabi_errors:
-                self.log.error(f"[Wasabi] {e.strip('ERROR: ')}")
-            return Status.WASABI_ERROR
+            if wasabi_error:
+                wasabi_errors = (e for e in wasabi_error.split('\n') if e != '')
+                for e in wasabi_errors:
+                    self.log.error(f"[Wasabi] {e.strip('ERROR: ')}")
+                return Status.WASABI_ERROR
 
-        wasabi_list = get_filenames_from_ls(wasabi_ls)
+            wasabi_list = get_filenames_from_ls(wasabi_ls)
 
-        if bag_name in wasabi_list and not self.overwrite:
-            return Status.DUPLICATE_BAG
+            if bag_name in wasabi_list and not self.overwrite:
+                return Status.DUPLICATE_BAG
+        else:
+            version_local_final_preserved_list = check_local_path(int(article_id), version)
+            version_final_storage_preserved_list = get_preserved_version_hash_and_size(int(article_id), version)
+            if compare_hash(metadata_hash, version_local_final_preserved_list) or compare_hash(metadata_hash, version_final_storage_preserved_list):
+                return Status.DUPLICATE_BAG
 
         if not self.validate_package(metadata_path):
             return Status.INVALID_PACKAGE
@@ -165,7 +171,7 @@ class Bagger:
         else:
             bag_name, metadata_tags = init_status
 
-        job = Job(self.workflow, bag_name, self.output_dir, self.delete,
+        job = Job(self.workflow, bag_name, self.archival_staging_storage, self.delete,
                   self.dart_command, self.log)
 
         job.add_file(package_path)

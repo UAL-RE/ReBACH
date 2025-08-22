@@ -6,8 +6,8 @@ import hashlib
 from datetime import datetime
 from figshare.Article import Article
 from figshare.Integration import Integration
-from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size
-from figshare.Utils import compare_hash, check_wasabi
+from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, format_version
+from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage, upload_to_remote
 
 
 class Collection:
@@ -23,7 +23,7 @@ class Collection:
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
         self.system_config = self.config_obj.system_config()
-        self.aptrust_config = self.config_obj.aptrust_config()
+        # self.aptrust_config = self.config_obj.aptrust_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
         self.bag_name_prefix = self.system_config['bag_name_prefix']
@@ -34,12 +34,14 @@ class Collection:
         self.logs = log
         self.errors = []
         self.article_obj = Article(config, log, ids)
-        self.preservation_storage_location = self.system_config["preservation_storage_location"]
-        if self.preservation_storage_location[-1] != "/":
-            self.preservation_storage_location = self.preservation_storage_location + "/"
+        self.ingest_staging_storage = self.system_config["ingest_staging_storage"]
+        if self.ingest_staging_storage[-1] != "/":
+            self.ingest_staging_storage = self.ingest_staging_storage + "/"
         self.input_collection_ids = ids
-        self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'already_preserved_versions': 0,
-                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0}
+        self.already_preserved_counts_dict = {'already_preserved_collection_ids': set(), 'locally_preserved_versions': 0,
+                                              'already_preserved_versions': 0, 'wasabi_preserved_versions': 0,
+                                              'ap_trust_preserved_versions': 0
+                                              }
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -248,7 +250,7 @@ class Collection:
     """
     def process_collections(self, collections):
         processed_count = 0
-
+        upload_item = upload_to_remote()
         self.logs.write_log_in_file("info", " ", True)
         self.logs.write_log_in_file("info", "------- Processing collections -------", True)
         for collection in collections:
@@ -256,60 +258,105 @@ class Collection:
             articles = data["articles"]
             versions = data['versions']
             for version in versions:
+                folder_name = None
                 dict_data = version
                 dict_data = standardize_api_result(dict_data)
                 dict_data = sorter_api_result(dict_data)
                 json_data = json.dumps(dict_data).encode("utf-8")
                 version_md5 = hashlib.md5(json_data).hexdigest()
-                version_no = f"v{str(version['version']).zfill(2)}"
+                version_no = format_version(version['version'])
 
+                # Checking archival staging storage (local) for existence of package
+                already_preserved = False
+                in_alternative_remote_storage = False
+                version_local_final_preserved_list = check_local_path(version['id'], version['version'])
+                if len(version_local_final_preserved_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                + "found in archival staging storage",
+                                                True)
+
+                # Checking archival storage (remote) for existence of package
                 version_final_storage_preserved_list = \
-                    get_preserved_version_hash_and_size(self.aptrust_config, version['id'], version_no)
+                    get_preserved_version_hash_and_size(version['id'], version['version'])
                 if len(version_final_storage_preserved_list) > 1:
                     self.logs.write_log_in_file("warning",
                                                 f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                + "found in preservation final remote storage",
-                                                True)
-                version_staging_storage_preserved_list = check_wasabi(version['id'], version_no)
-                if len(version_staging_storage_preserved_list) > 1:
-                    self.logs.write_log_in_file("warning",
-                                                f"Multiple copies of collection {version['id']} version {version['version']} "
-                                                + "found in preservation staging remote storage",
+                                                + "found in archival storage",
                                                 True)
 
-                if compare_hash(version_md5, version_staging_storage_preserved_list) and \
-                        compare_hash(version_md5, version_final_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
-                    self.logs.write_log_in_file("info",
-                                                f"Collection {version['id']} version {version['version']} already preserved "
-                                                + "in preservation staging remote storage and preservation final remote storage.",
-                                                True)
-                    continue
-
-                if compare_hash(version_md5, version_staging_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
-                    self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                # Hash comparisons
+                if compare_hash(version_md5, version_local_final_preserved_list):  # Local final storage check
+                    self.already_preserved_counts_dict['locally_preserved_versions'] += 1
                     self.logs.write_log_in_file("info",
                                                 f"Collection {version['id']} version {version['version']} already preserved"
-                                                + " in preservation staging remote storage.",
+                                                + " in archival staging storage.",
                                                 True)
-                    continue
+                    already_preserved = True
 
                 if compare_hash(version_md5, version_final_storage_preserved_list):
-                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
-                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
                     self.logs.write_log_in_file("info", f"{collection} version {version['version']} already preserved in"
-                                                        + " preservation final remote storage.")
+                                                        + " archival storage.")
+                    already_preserved = True
+
+                # Checking alternative archival staging storage (remote) for existence of package
+                if self.system_config['check-remote-staging'] == 'True' or upload_item:
+                    version_staging_storage_preserved_list = check_wasabi(version['id'], version['version'])
+                    if len(version_staging_storage_preserved_list) > 1:
+                        self.logs.write_log_in_file("warning",
+                                                    f"Multiple copies of collection {version['id']} version {version['version']} "
+                                                    + "found in alternative archival staging storage",
+                                                    True)
+
+                    if compare_hash(version_md5, version_staging_storage_preserved_list):
+                        self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                        self.logs.write_log_in_file("info",
+                                                    f"Collection {version['id']} version {version['version']} already preserved"
+                                                    + " in alternative archival staging storage.",
+                                                    True)
+                        if upload_item:
+                            in_alternative_remote_storage = True
+
+                if already_preserved and upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif not already_preserved and upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif already_preserved and not upload_item and in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                    continue
+                elif already_preserved and not upload_item and not in_alternative_remote_storage:
+                    self.already_preserved_counts_dict['already_preserved_collection_ids'].add(version['id'])
+                    self.already_preserved_counts_dict['already_preserved_versions'] += 1
                     continue
 
-                author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
-                folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
-                folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
+                # Checking archival staging (local) storage if a folder exists for package
+                # Reuse folder name if folder exists
+                version_staging_local_storage_list = check_local_path(version['id'], version['version'],
+                                                                      self.system_config['ingest_staging_storage'])
+                if len(version_staging_local_storage_list) > 1:
+                    self.logs.write_log_in_file("warning",
+                                                f"Multiple copies of article {version['id']} version {version['version']} "
+                                                + "found in archival staging storage",
+                                                True)
+                if compare_hash(version_md5, version_staging_local_storage_list):
+                    self.logs.write_log_in_file("info",
+                                                f"Article {version['id']} version {version['version']} "
+                                                + "already staged for preservation.",
+                                                True)
+                    folder_name = get_folder_name_in_local_storage(self.system_config['ingest_staging_storage'],
+                                                                   version['id'], version['version'], version_md5)
+                    if folder_name is not None:
+                        folder_name += "/" + version_no + "/METADATA"
+                if folder_name is None:
+                    author_name = version['authors'][0]['last_name'].replace('-', '').replace(' ', '')
+                    folder_name = self.bag_name_prefix + "_" + str(collection) + "-" + version_no + "-" + author_name + "-" + version_md5
+                    folder_name += "_bag1of1_" + str(self.bag_creation_date) + "/" + version_no + "/METADATA"
                 version["articles"] = articles
 
                 # Collections don't have an explicit license. Make them CC0
@@ -319,7 +366,7 @@ class Collection:
 
                 if self.system_config['dry-run'] == 'False':
                     self.__save_json_in_metadata(collection, version, folder_name)
-                    collection_preservation_path = self.preservation_storage_location + \
+                    collection_preservation_path = self.ingest_staging_storage + \
                         os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
                     value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                     if (value_post_process != 0):
@@ -339,11 +386,11 @@ class Collection:
     :param folder_name string
     """
     def __save_json_in_metadata(self, collection_id, version_data, folder_name):
-        preservation_storage_location = self.preservation_storage_location
+        ingest_staging_storage = self.ingest_staging_storage
 
-        self.article_obj.check_access_of_directories(preservation_storage_location, "preservation")
+        self.article_obj.check_access_of_directories(ingest_staging_storage, "preservation")
 
-        complete_path = preservation_storage_location + folder_name
+        complete_path = ingest_staging_storage + folder_name
         if (os.path.exists(complete_path)):
             self.delete_folder(complete_path)
 

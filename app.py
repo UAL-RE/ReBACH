@@ -2,6 +2,7 @@ import os
 import argparse
 from version import __version__, __commit__
 from Log import Log
+from figshare.Utils import upload_to_remote, get_archival_staging_storage
 from figshare.Article import Article
 from datetime import datetime
 from Config import Config
@@ -23,6 +24,8 @@ def get_args():
                         help='list of article and/or collection IDs to process. E.g., "2323,4353,5454"')
     parser.add_argument('--continue-on-error', action='store_true',
                         help='If an item encounters an error during the processing stage, continue to the next item.')
+    parser.add_argument('--check-remote-staging', action='store_true',
+                        help='Checks if a preservation package exists in remote staging storage.')
     parser.add_argument('--dry-run', action='store_true',
                         help='Fetch, match and verify items only. Do not download, delete, or upload to preservation any files.')
     args = parser.parse_args()
@@ -74,13 +77,14 @@ def main():
 
     config_obj.add_setting(name='continue-on-error', value=args.continue_on_error)
     config_obj.add_setting(name='dry-run', value=args.dry_run)
+    config_obj.add_setting(name='check-remote-staging', value=args.check_remote_staging)
 
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
     figshare_api_url = figshare_config["url"]
     log = Log(env_file)
     log_location = system_config["logs_location"]
-    preservation_storage_location = system_config["preservation_storage_location"]
+    ingest_staging_storage = system_config["ingest_staging_storage"]
     figshare_api_token = figshare_config["token"]
     curation_storage_location = system_config["curation_storage_location"]
     post_process_script_command = system_config["post_process_script_command"]
@@ -91,12 +95,15 @@ def main():
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S,%f")[:-3] + ":ERROR: " + "Logs file path missing in .env.ini file.")
         exit()
 
+    if get_archival_staging_storage() == ingest_staging_storage:
+        log.write_log_in_file('error', "ingest_staging_storage location must different from archival_staging_storage.", True, True)
+
     log.write_log_in_file('info', "Logs location is accessible. Logging to file will now start.", True)
 
     if (figshare_api_url == "" or figshare_api_token == ""):
         log.write_log_in_file('error', "Figshare API URL and Token is required.", True, True)
 
-    if (preservation_storage_location == ""):
+    if (ingest_staging_storage == ""):
         log.write_log_in_file('error', "Preservation storage location path is required.", True, True)
 
     if (curation_storage_location == ""):
@@ -111,8 +118,8 @@ def main():
     log.write_log_in_file('info', "Configuration file meets requirements.", True)
     check_logs_path_access(env_file)
     # Check storage path exists, if not then give error and stop processing
-    preservation_path_exists = os.path.exists(preservation_storage_location)
-    access = os.access(preservation_storage_location, os.W_OK)
+    preservation_path_exists = os.path.exists(ingest_staging_storage)
+    access = os.access(ingest_staging_storage, os.W_OK)
     if (preservation_path_exists is False or access is False):
         log.write_log_in_file('error',
                               "The preservation storage location specified in the config file could not be reached or read.",
@@ -151,6 +158,8 @@ if __name__ == "__main__":
 
     already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
     already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
+    locally_preserved_article_version_count = already_preserved_counts_dict['articles_locally_preserved']
+
     articles_with_error_count = len(already_preserved_counts_dict['articles_with_error'])
     article_versions_with_error_count = already_preserved_counts_dict['article_versions_with_error']
     published_articles_count = 0
@@ -195,6 +204,7 @@ if __name__ == "__main__":
     already_preserved_collection_versions = already_preserved_collections_counts['already_preserved_versions']
     preserved_collection_versions_in_wasabi = already_preserved_collections_counts['wasabi_preserved_versions']
     preserved_collection_versions_in_ap_trust = already_preserved_collections_counts['ap_trust_preserved_versions']
+    locally_preserved_collection_versions = already_preserved_collections_counts['locally_preserved_versions']
 
     log.write_log_in_file('info', ' ', True)
     log.write_log_in_file('info', '------- Summary -------', True)
@@ -239,13 +249,18 @@ if __name__ == "__main__":
                           + f'{processed_articles_versions_count} / {article_obj.no_matched}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved article versions in preservation final remote storage: \t\t"
+                          "Total count of already preserved article versions in archival storage: \t\t"
                           + f'{ap_trust_preserved_article_version_count}',
                           True)
     log.write_log_in_file('info',
-                          "Total count of already preserved article versions in preservation staging remote storage: \t"
-                          + f'{wasabi_preserved_versions}',
+                          "Total count of already preserved article versions in archival staging storage: \t"
+                          + f'{locally_preserved_article_version_count}',
                           True)
+    if upload_to_remote() or config.system_config()['check-remote-staging'] == 'True':
+        log.write_log_in_file('info',
+                              "Total count of already preserved article versions in alternative archival staging storage: \t"
+                              + f'{wasabi_preserved_versions}',
+                              True)
 
     log.write_log_in_file('info',
                           "Total articles versions unmatched (published-matched): \t\t\t\t"
@@ -282,14 +297,20 @@ if __name__ == "__main__":
                               True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in preservation final remote storage: \t"
+                          "Total count of already preserved collection versions in archival storage: \t"
                           + f'{preserved_collection_versions_in_ap_trust}',
                           True)
 
     log.write_log_in_file('info',
-                          "Total count of already preserved collection versions in preservation staging remote storage: \t"
-                          + f'{preserved_collection_versions_in_wasabi}',
+                          "Total count of already preserved collection versions in archival staging storage: "
+                          + f'{locally_preserved_collection_versions}',
                           True)
+
+    if upload_to_remote() or config.system_config()['check-remote-staging'] == 'True':
+        log.write_log_in_file('info',
+                              "Total count of already preserved collection versions in alternative archival staging storage: \t"
+                              + f'{preserved_collection_versions_in_wasabi}',
+                              True)
 
     if processed_articles_versions_count != published_articles_versions_count or \
             processed_collections_versions_count != (collections_versions_count - already_preserved_collection_versions):

@@ -39,7 +39,7 @@ ReBACH-Bagger can be used on the command line by running the main script as a mo
 ```text
 $ python -m bagger.scripts.main -h
 usage: main.py [-h] [-c config_file] [-b batch_dir] [-d | --delete | --no-delete]
-               [-o output_dir] [-w workflow_file] [--dart_command dart_command]
+               [-o archival_staging_storage] [-w workflow_file] [--dart_command dart_command]
                [--overwrite | --no-overwrite] [--dry-run]
                path
 
@@ -54,7 +54,7 @@ optional arguments:
                         Process a batch directory.
   -d, --delete, --no-delete
                         Delete bags after upload. (default: True)
-  -o output_dir, --output_dir output_dir
+  -o archival_staging_storage, --archival_staging_storage archival_staging_storage
                         Output directory for generated bags.
   -w workflow_file, --workflow workflow_file
                         Path to workflow file.
@@ -74,7 +74,7 @@ example follows:
 from bagger.bag import Bagger
 
 # Instantiate Bagger with necessary arguments
-B = Bagger(workflow, output_dir, delete, dart_command, config, log)
+B = Bagger(workflow, archival_staging_storage, delete, dart_command, config, log)
 
 # Run DART on the package specified with path
 run = B.run_dart(path)
@@ -135,7 +135,7 @@ command line will override values set in the config file.
 
 ```toml
 [Defaults]
-output_dir = "out" # DART will output generated bags here; must be writable
+archival_staging_storage = "out" # DART will output generated bags here; must be writable
 workflow = "default_workflow.json" # Path to the DART workflow file
 dart_command = "dart-runner" # Command or path to DART executable
 ```
@@ -152,11 +152,27 @@ log_dir = "logs" # Logger will write logs to this directory
 logfile_prefix = "ReBACH-Bagger" # Log filename prefix
 ```
 
+### AP Trust
+
+Neither ReBACH-Bagger nor Dart uploads to AP Trust directly but like ReBACH, Bagger also checks AP Trust for duplicate bags when workflow does not include upload settings. 
+The configuration and credentials in this section are used to authenticate and check AP Trust for duplicate bags.
+
+```toml
+[aptrust_api]
+url = "***override***" # required: The AP Trust member API url including the version
+user = "***override***" # required: Your user email address on AP Trust
+token = "***override***" # required: Your user secret token on AP Trust
+items_per_page = "***override***" # Maximum number of object to be return per page by the API
+alt_identifier_starts_with = "***override***" # Prefix for alternate identifier in AP Trust
+retries = 3 # required: Number of times the script should retry API or file system calls if it is unable to connect. Defaults to 3
+retries_wait = 10 # required: Number of seconds the script should wait between call retries if it is unable to connect. Defaults to 10
+```
+
 ### Wasabi
 
 Both DART and ReBACH-Bagger use the credentials in this section to authenticate to Wasabi.
-ReBACH-Bagger checks Wasabi for duplicate bags. See [DART Workflow]("#dart-workflow") for details on how
-these variables are used in DART.
+ReBACH-Bagger checks Wasabi for duplicate bags when the DART workflow is configured to upload to 
+remote storage location or when the `--check-remote-staging` flag is set by ReBACH. See [DART Workflow](#dart-workflow) for details on how these variables are used in DART.
 
 If the `dart_workflow_hostbucket_override` variable is set to `true`
 (default), the values of `host` and `bucket` defined here are used in the DART workflow defined in the
@@ -290,3 +306,50 @@ tags defined by the ReBACH-Bagger metadata configuration ([see above]("#metadata
 Profiles can be created and modified [using DART's desktop application](https://aptrust.github.io/dart-docs/users/bagit/).
 Profiles are embedded in the DART workflow file and do not need to be separately provided to
 ReBACH-Bagger.
+
+### Execution Notes
+
+1. **Definition of “Preserved” Bag**  
+   - A bag is considered preserved if it is in:  
+     - Archival staging storage **and/or** archival storage  
+     - Alternative archival staging storage i.e. an S3-compatible storage **if** the Dart workflow JSON includes the *storage services* setting  
+
+2. **Default Storage Behavior**  
+   - By default, ReBACH with Bagger using the Dart workflow JSON stores bags in **archival staging storage**  
+
+3. **Uploading to alternative archival staging storage**  
+   - Possible **only if** the Dart workflow JSON includes the *storage services* setting  
+
+4. **Archival Storage Uploads**  
+   - ReBACH and Bagger **do not** upload bags to archival storage  
+   - They can check for duplicate bags in **all** storage locations, including archival storage  
+
+5. **Duplicate Bag Checking in alternative archival staging storage** 
+   - Controlled by the `--check-remote-staging` flag in ReBACH  
+   - **Regardless of the flag**, alternative archival staging storage will be checked for duplicates if Dart workflow JSON includes storage services settings.  
+
+6. **Handling of Duplicate Bags**  
+   - If a duplicate bag exists in a storage location:  
+     - The item is **not processed**  
+     - No bag is generated for that item 
+
+7. **Key Determinant for Skipping Processing**  
+   - The storage services setting in the Dart workflow JSON dictates whether Dart uploads to alternative archival staging storage and thus affects duplicate checking behavior  
+
+8. **Storage Location Summary**  
+   - All bags go into archival staging storage by default  
+   - They are later ingested into archival storage by UAL’s preservation workflow  
+   - Bags in archival staging storage are presumed to also be in archival storage
+
+The table below summarizes how bags are placed in different storages. The first three columns represent a specific prior state. The last two columns represent the corresponding behavior.
+
+| **Does bag exists in Archival staging or Archival storage** | **Is DART workflow set to upload bag to alternative archival staging storage** | **Is bag in alternative archival staging storage** | **Will bag be processed** | **Bag location after run**                |
+|-------------------------------------------------------------|--------------------------------------------------------------------------------|----------------------------------------------------|---------------------------|-------------------------------------------|
+| No                                                          | No                                                                             | No                                                 | Yes                       | Archival staging storage/Archival storage |
+| No                                                          | No                                                                             | Yes                                                | Yes                       | All storages                              |
+| No                                                          | Yes                                                                            | No                                                 | Yes                       | All storages                              |
+| No                                                          | Yes                                                                            | Yes                                                | No                        | All storages                              | 
+| Yes                                                         | No                                                                             | No                                                 | No                        | Archival staging storage/Archival storage | 
+| Yes                                                         | No                                                                             | Yes                                                | No                        | All storages                              | 
+| Yes                                                         | Yes                                                                            | No                                                 | Yes                       | All storages                              |
+| Yes                                                         | Yes                                                                            | Yes                                                | No                        | All storages                              |  

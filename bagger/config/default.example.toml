@@ -1,5 +1,5 @@
 [Defaults]
-output_dir = "out"
+archival_staging_storage = "out"
 workflow = "bagger/config/noupload_workflow.json"
 dart_command = "dart-runner"
 overwrite = false
@@ -8,6 +8,15 @@ delete = true
 [Logging]
 log_dir = "logs"
 logfile_prefix = "ReBACH-Bagger"
+
+[aptrust_api]
+url = "***override***"
+user = "***override***"
+token = "***override***"
+items_per_page = "***override***"
+alt_identifier_starts_with = "***override***"
+retries = 3
+retries_wait = 10
 
 [Wasabi]
 name = "***override***"
