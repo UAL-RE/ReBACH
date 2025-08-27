@@ -4,7 +4,6 @@ from os import PathLike
 from pathlib import Path
 from shutil import rmtree
 from typing import Union
-from wsgiref.validate import validator
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
 from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote, get_preserved_version_hash_and_size
