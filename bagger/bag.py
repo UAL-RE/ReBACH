@@ -2,6 +2,7 @@ import json
 from logging import Logger
 from os import PathLike
 from pathlib import Path
+from shutil import rmtree
 from typing import Union
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
@@ -189,6 +190,11 @@ class Bagger:
         # TODO: What if not data?
         if data:
             data_json = json.loads(data)
+
+            package_artifact = data_json['packageResult']['filepath'].replace('.tar', '_artifacts')
+            package_artifact = Path(package_artifact)
+            if package_artifact.exists() and package_artifact.is_dir():
+                rmtree(package_artifact)
 
             errors = data_json['packageResult']['errors']
             errors |= data_json['validationResult']['errors']
