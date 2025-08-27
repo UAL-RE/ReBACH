@@ -4,6 +4,7 @@ from os import PathLike
 from pathlib import Path
 from shutil import rmtree
 from typing import Union
+from wsgiref.validate import validator
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
 from figshare.Utils import extract_lastname_only, extract_bag_count, extract_bag_date, upload_to_remote, get_preserved_version_hash_and_size
@@ -197,7 +198,13 @@ class Bagger:
                 rmtree(package_artifact)
 
             errors = data_json['packageResult']['errors']
-            errors |= data_json['validationResult']['errors']
+            validation_result = data_json.get('validationResult', data_json.get('validationResults'))
+            if isinstance(validation_result, list):
+                for result in validation_result:
+                    errors |= result['errors']
+            else:
+                errors |= validation_result['errors']
+
             if len(data_json['uploadResults']) > 0:
                 errors |= data_json['uploadResults'][0]['errors']
 
