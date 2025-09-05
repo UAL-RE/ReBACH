@@ -142,3 +142,5 @@ dmypy.json
 
 #Other
 .DS_Store
+
+playwright/.auth
