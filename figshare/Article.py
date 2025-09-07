@@ -478,18 +478,18 @@ class Article:
 
         if (len(files) > 0):
             version_no = format_version(version_data["version"])
-            article_folder = folder_name + "/" + version_no
+            article_folder = os.path.join(folder_name, version_no)
             file_no = 0
             for file in files:
                 if (file['is_link_only'] is False):
-                    article_files_folder = article_folder + "/DATA"
+                    article_files_folder = os.path.join(article_folder, "DATA")
                     ingest_staging_storage = self.ingest_staging_storage
-                    article_folder_path = ingest_staging_storage + article_files_folder
+                    article_folder_path = os.path.join(ingest_staging_storage, article_files_folder)
                     article_files_path_exists = os.path.exists(article_folder_path)
                     if (article_files_path_exists is False):
                         os.makedirs(article_folder_path, exist_ok=True)
 
-                    file_name_with_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
+                    file_name_with_path = os.path.join(article_folder_path, str(file['id']) + "_" + file['name'])
                     self.logs.write_log_in_file("info",
                                                 f"Downloading file {file['id']} for article {version_data['id']} - "
                                                 + f"version {version_data['version']}", True)
@@ -687,10 +687,10 @@ class Article:
     """
     def __check_file_hash(self, files, version_data, folder_path):
         version_no = format_version(version_data["version"])
-        article_version_folder = folder_path + "/" + version_no
-        article_files_folder = article_version_folder + "/DATA"
+        article_version_folder = os.path.join(folder_path, version_no)
+        article_files_folder = os.path.join(article_version_folder, "DATA")
         ingest_staging_storage = self.ingest_staging_storage
-        article_folder_path = ingest_staging_storage + article_files_folder
+        article_folder_path = os.path.join(ingest_staging_storage, article_files_folder)
 
         # check if preservation dir is reachable
         self.check_access_of_directories(ingest_staging_storage, "preservation")
@@ -704,7 +704,7 @@ class Article:
             if (len(get_files) > 0):
                 self.logs.write_log_in_file('info', "Comparing Figshare file hashes against existing local files.", True)
                 for file in files:
-                    file_path = article_folder_path + "/" + str(file['id']) + "_" + file['name']
+                    file_path = os.path.join(article_folder_path, str(file['id']) + "_" + file['name'])
                     file_exists = os.path.exists(file_path)
                     compare_hash = file['supplied_md5']
                     if (compare_hash == ""):
@@ -1059,7 +1059,7 @@ class Article:
         if (self.matched_curation_folder_list):
             curation_folder_size = 0
             for folder in self.matched_curation_folder_list:
-                path = curation_storage_location + folder
+                path = os.path.join(curation_storage_location, folder)
                 curation_folder_size += self.get_file_size_of_given_path(path, "UAL_RDM")
         elif len(self.matched_curation_folder_list) == 0 and len(article_data) != 0:
             curation_folder_size = 0
@@ -1118,7 +1118,7 @@ class Article:
                             self.logs.write_log_in_file("info", "Pre-processing script finished successfully.", True)
                             # check main folder exists in preservation storage.
                             ingest_staging_storage = self.ingest_staging_storage
-                            check_dir = ingest_staging_storage + folder_name
+                            check_dir = os.path.join(ingest_staging_storage, folder_name)
                             check_files = True
                             copy_files = True
                             self.logs.write_log_in_file("info", f"Checking if {check_dir} exists.", True)

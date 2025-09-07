@@ -414,7 +414,7 @@ def check_local_path(article_id: int, version_no: Any, path="") -> list:
 
     if path == "":
         config = configparser.ConfigParser()
-        config.read('bagger/config/default.toml')
+        config.read(os.path.join('bagger', 'config', 'default.toml'))
         default_config = config['Defaults']
         path = default_config['archival_staging_storage']
 
@@ -603,9 +603,9 @@ def get_article_id_and_version_from_path(path: str) -> tuple:
     version_no = ''
     article_id = ''
     if path:
-        path_elements = path.split('/')
-        version_no = path_elements[-2]
-        article_id = path_elements[-3].split('_')[-1]
+        path_elements = os.path.split(os.path.split(path)[0])
+        version_no = path_elements[1]
+        article_id = os.path.split(path_elements[0])[1].split('_')[-1]
 
     return article_id, version_no
 
