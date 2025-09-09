@@ -1,12 +1,12 @@
 import json
-from playwright.sync_api import Playwright, sync_playwright, expect
+from playwright.sync_api import Playwright, sync_playwright
 
 
 def run(p: Playwright) -> None:
-    browser = playwright.chromium.launch(headless=True, channel='chromium')
+    browser = p.chromium.launch(headless=True, channel='chromium')
     context = browser.new_context()
     page = context.new_page()
-    page.goto("https://arizona.figshare.com/articles/dataset/Optical_Phenotyping_Using_Label-Free_Microscopy_and_Deep_Learning/28664747/1")
+    page.goto("https://arizona.figshare.com/articles/dataset/Supplementary_Information_for_The_Journey_of_Sediment-Rich_M_langes_in_Subduction_Zones_Table_S1_to_S12/27989354/1")
 
     itemdatastr = ''
     for script in page.locator('//script').all():
@@ -16,17 +16,19 @@ def run(p: Playwright) -> None:
             break
 
     itemdata = json.loads(itemdatastr)
-    
+    print(itemdatastr)
+
     # find the key that contains the folder structure.
     filtered_keys = [key for key in itemdata.keys() if key.startswith('ItemVersion:')]
-    if len(filtered_keys) != 1:
-        raise Exception('More than one ItemVersion key found in item data structure on page ' + page.url)
-    itemversiondata = itemdata[filtered_keys[0]]
-    if not 'folderStructure' in itemversiondata.keys():
-        raise Exception('folderStructure not found in item version data structure on page ' + page.url)
-    folderstructure = itemversiondata['folderStructure']
-    print(folderstructure)
-    
+    for key in filtered_keys:
+        itemversiondata = itemdata[key]
+        if 'folderStructure' in itemversiondata.keys():
+            folderstructure = itemversiondata['folderStructure']
+        else:
+            folderstructure = {}
+        print(f'Item Version {key.split(':')[-1].replace('}', '')}\n---------')
+        print(folderstructure)
+
     # ---------------------
     context.close()
     browser.close()
