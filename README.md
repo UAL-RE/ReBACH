@@ -11,6 +11,19 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - requests Python library >= 2.18.4
 - Ubuntu >= 20.04
 - Slugify >= 7.0.0
+- Playwright >= 0.7
+
+## Installation:
+Using mamba, create a new environment called `rebach`.
+- Add `- microsoft` to the channels list in `~/.condarc`
+- `mamba activate rebach`
+- `pip install -r requirements.txt`
+- Create a new subfolder in the `rebach` environment (run `mamba env list` to see the env path) called `playwright/browsers`
+- Set a new environment variable `mamba config vars set PLAYWRIGHT_BROWSERS_PATH=<env path>/playwright/browsers`
+- `mamba deactivate`
+- `mamba activate rebach`
+- `playwright install --with-deps --no-shell chromium` to install the browser.
+- Download dart-runner and place it in the `<env path>/bin` folder and add the executable permission
 
 ## Requirements:
 - Figshare organization number
@@ -39,7 +52,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
     - bag_name_prefix - required: This is the prefix for bag names. It is the first set of characters before the underscore("_") that precedes the article_id in bag name, and it defaults to "azu" in env.ini file if not changed.
 - Ensure the aforementioned Dependencies and Requirements are met.
 - Navigate to the root directory of ReBACH via the terminal and start the script by entering the command `python3 app.py --xfg /path/of/.env.ini` or `python app.py --xfg /path/of/.env.ini` depending on your system configuration (note: the script must be run using Python 3.9 or greater).
-- Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file. The log details are described in [Description of ReBACH Log Messages](ReBACH_Logs_Summary_Description.md).  
+- Informational and error output will occur in the terminal. The same output will be appended to a file in the logs location with today's date with some additional information and error logging occurring in the file. The log details are described in [Description of ReBACH Log Messages](ReBACH_Logs_Summary_Description.md).
 - Final preservation package output will occur in the `ingest_staging_storage` you specified in the env.ini file.
 
 ## Command line
