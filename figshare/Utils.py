@@ -7,6 +7,7 @@ from time import sleep
 import tempfile
 from bagger.wasabi import Wasabi
 import configparser
+from playwright.sync_api import Playwright, sync_playwright
 
 
 def standardize_api_result(api_result) -> dict:
@@ -655,3 +656,57 @@ def stringify_metadata(metadata: Any) -> str:
         metadata_str += str(metadata)
 
     return metadata_str
+
+
+def get_article_folder_structure(article_url: str, article_version: str) -> dict:
+    """
+    Returns the folder structure for the files in the given item
+
+    :param  article_url:  URL of the article to retrieve the list of files from
+    :type: str
+
+    :return: A dictionary containing the information. The keys are file ids, the values are the file paths
+    :rtype: dict
+    """
+    with sync_playwright() as playwright:
+        return __get_folders(playwright, article_url, article_version)
+
+
+def __get_folders(p: Playwright, url, version) -> dict:
+    browser = p.chromium.launch(headless=True, channel='chromium')
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto(url)
+
+    itemdatastr = ''
+    for script in page.locator('//script').all():
+        if script.inner_text().startswith(';(function() { window.__APOLLO_STATE__ = '):
+            itemdatastr = script.inner_text()
+            itemdatastr = itemdatastr.replace(';(function() { window.__APOLLO_STATE__ = ', '').replace('; }());', '')
+            break
+
+    itemdata = json.loads(itemdatastr)
+
+    # find the key that contains the folder structure.
+    filtered_keys = [key for key in itemdata.keys() if key.startswith('ItemVersion:')]
+    version_found = False
+    for key in filtered_keys:
+        itemversiondata = itemdata[key]
+        itemversiondata_version = key.split(':')[-1].replace('}', '')
+        if itemversiondata_version == str(version):
+            version_found = True
+
+            # the folderStructure won't be present in items with no folders
+            if 'folderStructure' in itemversiondata.keys():
+                folderstructure = itemversiondata['folderStructure']
+            else:
+                folderstructure = {}
+            break
+
+    context.close()
+    browser.close()
+
+    if not version_found:
+        raise Exception(f'Version {version} not found in ItemVersion data structure on page ' + page.url)
+
+    return folderstructure

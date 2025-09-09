@@ -10,7 +10,7 @@ from datetime import datetime
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash, check_local_path
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
-from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote
+from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote, get_article_folder_structure
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -293,9 +293,17 @@ class Article:
                             private_version_no = private_data['private_version_no']
                             file_len = private_data['file_len']
                             version_data['files'] = files
+                            version_data['folders'] = {} # Folders can't be retrieved for embargoed data w/o logging into figshare
                         else:
                             file_len = len(version_data['files'])
                             files = version_data['files']
+
+                            try:
+                                version_data['folders'] = get_article_folder_structure(version_data['url_public_html'], version_data['version'])
+                            except Exception as e:
+                                self.logs.write_log_in_file("error", str(e), True)
+                                if self.system_config['continue-on-error'] == "False":
+                                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
 
                         version_md5 = ''
                         version_data_for_hashing = metadata_to_hash(version_data)
@@ -489,7 +497,14 @@ class Article:
                     if (article_files_path_exists is False):
                         os.makedirs(article_folder_path, exist_ok=True)
 
-                    file_name_with_path = os.path.join(article_folder_path, str(file['id']) + "_" + file['name'])
+                    folder_for_file = ''
+                    # if an item version has no folders, folders dict will be empty
+                    if len(version_data['folders'].keys()) > 0 and str(file['id']) in version_data['folders'].keys():
+                        folder_for_file = version_data['folders'][str(file['id'])]
+                    filepath = os.path.join(article_folder_path, folder_for_file)
+                    if not os.path.exists(filepath):
+                        os.makedirs(filepath, exist_ok=True)
+                    file_name_with_path = os.path.join(filepath, str(file['id']) + "_" + file['name'])
                     self.logs.write_log_in_file("info",
                                                 f"Downloading file {file['id']} for article {version_data['id']} - "
                                                 + f"version {version_data['version']}", True)
@@ -704,7 +719,12 @@ class Article:
             if (len(get_files) > 0):
                 self.logs.write_log_in_file('info', "Comparing Figshare file hashes against existing local files.", True)
                 for file in files:
-                    file_path = os.path.join(article_folder_path, str(file['id']) + "_" + file['name'])
+                    # if an item version has no folders, folders dict will be empty
+                    if len(version_data['folders'].keys()) > 0 and str(file['id']) in version_data['folders'].keys():
+                        folder_for_file = version_data['folders'][str(file['id'])]
+                    else:
+                        folder_for_file = ''
+                    file_path = os.path.join(article_folder_path, folder_for_file, str(file['id']) + "_" + file['name'])
                     file_exists = os.path.exists(file_path)
                     compare_hash = file['supplied_md5']
                     if (compare_hash == ""):
