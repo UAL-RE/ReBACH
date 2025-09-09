@@ -6,7 +6,10 @@ def run(p: Playwright) -> None:
     browser = p.chromium.launch(headless=True, channel='chromium')
     context = browser.new_context()
     page = context.new_page()
-    page.goto("https://arizona.figshare.com/articles/dataset/Supplementary_Information_for_The_Journey_of_Sediment-Rich_M_langes_in_Subduction_Zones_Table_S1_to_S12/27989354/1")
+    page.goto(
+        "https://arizona.figshare.com/articles/dataset/"
+        + "Supplementary_Information_for_The_Journey_of_Sediment-Rich_M_langes_in_Subduction_Zones_Table_S1_to_S12/27989354/1"
+    )
 
     itemdatastr = ''
     for script in page.locator('//script').all():

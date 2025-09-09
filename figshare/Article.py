@@ -293,7 +293,7 @@ class Article:
                             private_version_no = private_data['private_version_no']
                             file_len = private_data['file_len']
                             version_data['files'] = files
-                            version_data['folders'] = {} # Folders can't be retrieved for embargoed data w/o logging into figshare
+                            version_data['folders'] = {}  # Folders can't be retrieved for embargoed data w/o logging into figshare
                         else:
                             file_len = len(version_data['files'])
                             files = version_data['files']
