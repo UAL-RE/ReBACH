@@ -75,12 +75,12 @@ class Article:
         if self.api_endpoint[-1] == "/":
             articles_api = self.api_endpoint + "account/institution/articles"
         retries = 1
+        page = 1
         success = False
         article_data = {}
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented.
-                page = 1
                 page_size = 100
                 page_empty = False
                 self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
@@ -119,6 +119,7 @@ class Article:
 
             except Exception as e:
                 retries = self.retries_if_error(e, 500, retries)
+                success = False
                 if (retries > self.retries):
                     break
 
@@ -184,6 +185,7 @@ class Article:
                             break
             except requests.exceptions.RequestException as e:
                 retries = self.retries_if_error(e, 500, retries)
+                success = False
                 if (retries > self.retries):
                     break
 
