@@ -57,10 +57,10 @@ class Collection:
         retries = 1
         success = False
         collection_data = {}
+        page = 1
         while not success and retries <= int(self.retries):
             try:
                 # pagination implemented.
-                page = 1
                 page_size = 100
                 page_empty = False
                 self.logs.write_log_in_file("info", f"Page size is {page_size}.", True)
