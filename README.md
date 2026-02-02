@@ -1,18 +1,20 @@
 # ReBACH
 
-## Purpose:
+## Purpose
 This Python tool enumerates all the items and collections in ReDATA, downloads the associated files and metadata into a predefined structure on ingest staging storage, gathers curation information from curation storage, and adds the gathered information to the predefined structure.
 
-## Description:
+## Description
 ReBACH is run via the command line as outlined in the 'How to Run' section of this readme. During its run, ReBACH enumerates all published items and their versions on UArizona's Figshare using the Figshare API and downloads their metadata to the system memory. ReBACH then downloads files into the ingest staging storage for items that have a matching curation storage folder. The tool then validates the files and folder structure in the curation storage for those items. For the items that have matching folders in the curation storage that pass validation, ReBACH copies the files from the curation storage into the corresponding ingest staging storage folder, otherwise the ingest staging storage folder and its contents are deleted. Information and errors are logged in a file with some information and errors displayed in the terminal.
 
-## Dependencies:
-- Python >= 3.9
-- requests Python library >= 2.18.4
-- Ubuntu >= 20.04
-- Slugify >= 7.0.0
+## Dependencies
+- Python 3.14
+- Ubuntu >= 22.04
+- redata >= 0.6.0
+- s3cmd >= 2.4.0
+- tomli >= 2.4.0
+- python-slugify >= 8.0.4
 
-## Requirements:
+## Requirements
 - Figshare organization number
 - Figshare API token for respective organization
 - Archival storage (AP Trust) user email
@@ -21,7 +23,41 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 - Write privileges to ingest staging storage and archival staging storage
 - Write privileges to logs location
 
-## How to run:
+## Installation Instructions
+
+#### Python and setting up a `mamba` environment
+
+First, install a working version of Python (>=3.14).  We recommend using the [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) package installer.
+Mamba is a drop-in replacement for Anaconda and you will be able to use `conda` commands in an environment created with `mamba`. After installing Mamba, set `conda-forge` as the default channel to fetch packages. Run the following commands to set `conda-forge` as the default channel and remove Ananconda channels.
+
+Add conda-forge to your channels: 
+
+`conda config --add channels conda-forge`
+
+Set strict channel priority: 
+
+`conda config --set channel_priority strict`
+
+Remove Anaconda channels: 
+
+`conda config --remove channels defaults`
+
+After you have installed and configured Mamba, you will want to create a separate `mamba` environment and activate it:
+
+```
+$ mamba create -n rebach python=3.14
+$ mamba activate rebach
+```
+
+With the activated `mamba` environment, next clone [this repository (ReBACH)](https://github.com/UAL-RE/ReBACH) . Ensure the user has read and write permissions to the cloned folder and install the dependencies with following commands:
+
+```
+(rebach) $ cd /path/to/cloned/rebach/folder
+(rebach) $ pip install -r requirements.txt
+```
+
+
+## How to run
 - Copy the .env.sample.ini file and give it a name of your choice (e.g. .env.ini).
 - Fill out the .env.ini file (IMPORTANT: Make sure not to commit this file to Github)
     - figshare_api
