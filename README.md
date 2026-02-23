@@ -9,7 +9,7 @@ ReBACH is run via the command line as outlined in the 'How to Run' section of th
 ## Dependencies
 - Python 3.14
 - Ubuntu >= 22.04
-- redata >= 0.6.0
+- redata >= 0.6.1
 - s3cmd >= 2.4.0
 - tomli >= 2.4.0
 - python-slugify >= 8.0.4

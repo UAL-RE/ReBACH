@@ -1,5 +1,4 @@
-# requests redata-commons installs requests
-redata>=0.6.0
+redata>=0.6.1
 s3cmd>=2.4.0
 tomli>=2.4.0
 python-slugify>=8.0.4
