@@ -1,5 +1,4 @@
-requests>=2.18.4
-redata==0.4.1
-s3cmd==2.3.0
-tomli~=2.0.1 ; python_version < "3.11"
-python-slugify >= 7.0.0
+redata>=0.6.1
+s3cmd>=2.4.0
+tomli>=2.4.0
+python-slugify>=8.0.4
