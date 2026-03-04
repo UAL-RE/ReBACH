@@ -1,5 +1,22 @@
 # Changelog
 
+## [v1.2.0](https://github.com/UAL-RE/ReQUIAM/tree/v1.2.0)
+
+## What's Changed
+
+### Features
+* Select specific metadata for hash calculation in https://github.com/UAL-RE/ReBACH/pull/112
+* Addresses changes to the bagit profiles for UAL preservation workflow (Issue #114) in https://github.com/UAL-RE/ReBACH/pull/115
+* Make bag names conform to format of bag names in UAL preservation workflow in https://github.com/UAL-RE/ReBACH/pull/119
+* Check if a bag exists in a local storage in https://github.com/UAL-RE/ReBACH/pull/121
+
+### Bug fixes
+* Remove artifacts directory created by dart-runner v>0.96 in the directory where bags are placed in https://github.com/UAL-RE/ReBACH/pull/123
+* Sometimes API requests fail but retry doesn't work in https://github.com/UAL-RE/ReBACH/pull/127
+
+### Others
+* Update redata commons dependency in https://github.com/UAL-RE/ReBACH/pull/129
+
 
 ## [v1.0.0](https://github.com/UAL-RE/ReQUIAM/tree/v1.0.0)
 Initial version
