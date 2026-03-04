@@ -11,4 +11,4 @@ def get_commit(repo_path):
 
 
 __commit__ = get_commit('.')
-__version__ = '1.0.1'
+__version__ = '1.2.0'
