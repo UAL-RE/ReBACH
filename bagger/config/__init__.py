@@ -74,7 +74,7 @@ def get_args(path: Optional[PathLike] = None,
                         help='Log execution steps without actually executing. (default: False)',
                         action='store_true')
     parser.add_argument('--skip-artifacts',
-                        help='Don\'t save artifacts (tag files and manifests) to a separate directory when creating bags.',
+                        help='Don\'t save artifacts (tag files and manifests) to a separate directory when creating bags. (default: True)',
                         action='store_false')
     parser.add_argument('path', help='Path to the package or batch directory.')
     args, remaining_argv = parser.parse_known_args(remaining_argv)
