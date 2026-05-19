@@ -24,7 +24,7 @@ the environment path. One simple way to do this is to download the executable to
 environment bin directory:
 
 ```text
-$ wget -P venv/bin https://s3.amazonaws.com/aptrust.public.download/dart-runner/v0.95-beta/linux-x64/dart-runner
+$ wget -P venv/bin https://s3.amazonaws.com/aptrust.public.download/dart-runner/v1.0.4/linux/amd64/dart-runner
 $ chmod +x venv/bin/dart-runner
 ```
 
@@ -40,7 +40,7 @@ ReBACH-Bagger can be used on the command line by running the main script as a mo
 $ python -m bagger.scripts.main -h
 usage: main.py [-h] [-c config_file] [-b batch_dir] [-d | --delete | --no-delete]
                [-o archival_staging_storage] [-w workflow_file] [--dart_command dart_command]
-               [--overwrite | --no-overwrite] [--dry-run]
+               [--overwrite | --no-overwrite] [--skip-artifacts] [--dry-run]
                path
 
 positional arguments:
@@ -62,7 +62,7 @@ optional arguments:
                         Command to invoke DART Runner.
   --overwrite, --no-overwrite
                         Overwrite duplicate bags. (default: False)
-  --skip-artifacts, --no-skip-artifacts
+  --skip-artifacts
                         Do not include the artifacts folder if true (default: True. Requires dart-runner v1.0 or higher) 
   --dry-run, --dryrun   Log execution steps without actually executing. (default: False)
 ```
