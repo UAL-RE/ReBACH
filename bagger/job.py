@@ -9,7 +9,7 @@ from bagger import Dryable, Status
 class Job:
 
     def __init__(self, workflow: PathLike, bag_name: str, archival_staging_storage: PathLike,
-                 delete: bool, dart_command: str, log: Logger) -> None:
+                 delete: bool, dart_command: str, log: Logger, skip_artifacts: bool) -> None:
         """
         Init the Job class with attributes for passing to DART
 
@@ -17,12 +17,14 @@ class Job:
         :param bag_name: Name of bag to generate
         :param archival_staging_storage: Directory for outputting temp bag prior to upload
         :param delete: Delete the output bag if true
+        :param skip_artifacts: Do not include the artifacts folder if true
         :param dart_command: Command to run DART executable
         """
         self.workflow: PathLike = workflow
         self.bag_name: str = bag_name
         self.archival_staging_storage: PathLike = archival_staging_storage
         self.delete: bool = delete
+        self.skip_artifacts: bool = skip_artifacts
         self.dart_command: str = dart_command
         self.files: list[str] = []
         self.tags: list[dict[str, str]] = []
@@ -30,7 +32,7 @@ class Job:
 
     def __str__(self):
         return f"Job( workflow='{self.workflow}', bag_name='{self.bag_name}', " \
-               f"archival_staging_storage='{self.archival_staging_storage}', delete={self.delete}, " \
+               f"archival_staging_storage='{self.archival_staging_storage}', delete={self.delete}, skip_artifacts={self.skip_artifacts}, " \
                f"dart_command='{self.dart_command}', log='{self.log.handlers[-1].baseFilename}' " \
                f"files={self.files} " \
                f"tags={self.tags} )" \
@@ -81,7 +83,8 @@ class Job:
         cmd = (f"{self.dart_command} "
                f"--workflow={self.workflow} "
                f"--output-dir={self.archival_staging_storage} "
-               f"--delete={self.delete}")
+               f"--delete={self.delete} "
+               f"--skip-artifacts={self.skip_artifacts}")
         child = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE,
                       close_fds=True, text=True)
         stdout_data, stderr_data = child.communicate(job_params + "\n")

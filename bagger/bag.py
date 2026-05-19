@@ -2,7 +2,6 @@ import json
 from logging import Logger
 from os import PathLike
 from pathlib import Path
-from shutil import rmtree
 from typing import Union
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
@@ -19,7 +18,7 @@ from bagger.ntf import NamedTemporaryFile, TemporaryFile
 class Bagger:
 
     def __init__(self, workflow: PathLike, archival_staging_storage: PathLike, delete: bool,
-                 dart_command: str, config: dict, log: Logger,
+                 dart_command: str, skip_artifacts: bool, config: dict, log: Logger,
                  overwrite: bool, dryrun: bool = False) -> None:
         """
         Set up environment for generating bags with DART
@@ -28,6 +27,7 @@ class Bagger:
         :param archival_staging_storage: Directory for generated bag output by DART if no upload
         :param delete: Delete output bag if True
         :param dart_command: Path to DART executable
+        :param skip_artifacts: Do not include the artifacts folder if true
         :param config: Config dict
         :param log: Logger object
         :param overwrite: Overwrite duplicate bags if True
@@ -36,6 +36,7 @@ class Bagger:
         self.log: Logger = log
         self.dart_command: str = dart_command
         self.delete: bool = delete
+        self.skip_artifacts: bool = skip_artifacts
         self.archival_staging_storage: PathLike = archival_staging_storage
         self.workflow: PathLike = workflow
         self.workflow_file: TemporaryFile = None
@@ -173,7 +174,7 @@ class Bagger:
             bag_name, metadata_tags = init_status
 
         job = Job(self.workflow, bag_name, self.archival_staging_storage, self.delete,
-                  self.dart_command, self.log)
+                  self.dart_command, self.log, self.skip_artifacts)
 
         job.add_file(package_path)
 
@@ -190,11 +191,6 @@ class Bagger:
         # TODO: What if not data?
         if data:
             data_json = json.loads(data)
-
-            package_artifact = data_json['packageResult']['filepath'].replace('.tar', '_artifacts')
-            package_artifact = Path(package_artifact)
-            if package_artifact.exists() and package_artifact.is_dir():
-                rmtree(package_artifact)
 
             errors = data_json['packageResult']['errors']
             validation_result = data_json.get('validationResult', data_json.get('validationResults'))

@@ -93,7 +93,7 @@ class Integration:
 
             preservation_package_name = os.path.basename(preservation_package_path)
             bagger = Bagger(workflow=args.workflow, archival_staging_storage=args.archival_staging_storage,
-                            delete=args.delete, dart_command=args.dart_command,
+                            delete=args.delete, dart_command=args.dart_command, skip_artifacts=args.skip_artifacts,
                             config=config, log=log, overwrite=args.overwrite, dryrun=False)
 
             if args.batch:
