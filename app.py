@@ -11,7 +11,6 @@ from pathlib import Path
 
 args = None
 
-
 def get_args():
     """
     Parse command line arguments
