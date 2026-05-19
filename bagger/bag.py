@@ -2,7 +2,6 @@ import json
 from logging import Logger
 from os import PathLike
 from pathlib import Path
-from shutil import rmtree
 from typing import Union
 
 from figshare.Utils import extract_item_id_only, extract_version_only, extract_metadata_hash_only, check_local_path, compare_hash
