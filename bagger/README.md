@@ -62,6 +62,8 @@ optional arguments:
                         Command to invoke DART Runner.
   --overwrite, --no-overwrite
                         Overwrite duplicate bags. (default: False)
+  --skip-artifacts, --no-skip-artifacts
+                        Do not include the artifacts folder if true (default: True. Requires dart-runner v1.0 or higher) 
   --dry-run, --dryrun   Log execution steps without actually executing. (default: False)
 ```
 
@@ -74,7 +76,7 @@ example follows:
 from bagger.bag import Bagger
 
 # Instantiate Bagger with necessary arguments
-B = Bagger(workflow, archival_staging_storage, delete, dart_command, config, log)
+B = Bagger(workflow, archival_staging_storage, delete, dart_command, skip_artifacts, config, log)
 
 # Run DART on the package specified with path
 run = B.run_dart(path)
