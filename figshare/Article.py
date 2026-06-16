@@ -439,6 +439,43 @@ class Article:
                     }
                 }
 
+    """
+    Fetch article version files list, even if version files are private.
+    :param article_id int value.
+    :param version int value.
+    """
+    def get_article_version_files(self, article_id: int, version: int):
+        success = False
+        retries = 1
+        while not success and retries <= self.retries:
+            page = 1
+            try:
+                page_size = 100
+                page_empty = False
+                header = {'Authorization': 'token ' + self.api_token}
+                article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/files".format(article_id, version)
+                article_version_files = []
+                while not page_empty:
+                    params = {'page': page, 'page_size': page_size}
+                    get_response = requests.get(article_version_files_api, headers=header, params=params, timeout=self.retry_wait)
+                    if get_response.status_code == 200:
+                        if len(get_response.json()) > 0:
+                            article_version_files += get_response.json()
+                            page += 1
+                        else:
+                            page_empty = True
+                        success = True
+                    else:
+                        retries = self.retries_if_error(f"{article_id} Public API not reachable. Retry {retries}",
+                                                        get_response.status_code, retries)
+                        if retries > self.retries:
+                            break
+                return article_version_files
+            except requests.exceptions.RequestException as e:
+                retries = self.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
+                if retries > self.retries:
+                    break
+
     def private_article_for_files(self, version_data):
         get_response = requests.get(version_data['url_private_api'],
                                     headers={'Authorization': 'token ' + self.api_token},
@@ -963,11 +1000,13 @@ class Article:
             # save json in metadata folder for each version
             self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
             success = success & self.__save_json_in_metadata(version_data, folder_name)
+            # article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
 
         if check_files and copy_files:
+            article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
             try:
                 # download all files and verify hash with downloaded file.
-                delete_now = self.__download_files(version_data['files'], version_data, folder_name)
+                delete_now = self.__download_files(article_version_files, version_data, folder_name)
             except Exception as e:
                 self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
                 if self.system_config['continue-on-error'] == "False":
