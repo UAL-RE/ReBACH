@@ -472,7 +472,8 @@ class Article:
                             break
                 return article_version_files
             except requests.exceptions.RequestException as e:
-                retries = self.retries_if_error(f"{e}. Retry {retries}", get_response.status_code, retries)
+                error_code = get_response.status_code if 'get_response' in locals() else 500
+                retries = self.retries_if_error(f"{e}. Retry {retries}", error_code, retries)
                 if retries > self.retries:
                     break
 
