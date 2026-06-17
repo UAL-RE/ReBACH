@@ -447,10 +447,10 @@ class Article:
     def get_article_version_files(self, article_id: int, version: int):
         success = False
         retries = 1
+        page_size = 100
         page = 1
         while not success and retries <= self.retries:
             try:
-                page_size = 100
                 page_empty = False
                 header = {'Authorization': 'token ' + self.api_token}
                 article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/files".format(article_id, version)
