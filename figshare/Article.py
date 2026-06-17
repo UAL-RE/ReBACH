@@ -1000,7 +1000,6 @@ class Article:
             # save json in metadata folder for each version
             self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
             success = success & self.__save_json_in_metadata(version_data, folder_name)
-            # article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
 
         if check_files and copy_files:
             article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
