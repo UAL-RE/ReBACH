@@ -447,8 +447,8 @@ class Article:
     def get_article_version_files(self, article_id: int, version: int):
         success = False
         retries = 1
+        page = 1
         while not success and retries <= self.retries:
-            page = 1
             try:
                 page_size = 100
                 page_empty = False
