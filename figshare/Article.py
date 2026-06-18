@@ -54,10 +54,15 @@ class Article:
         self.matched_curation_folder_list = []
         self.no_matched = 0
         self.no_unmatched = 0
-        self.already_preserved_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
+
+        # This dict is used to store counts of skipped items. Set articles_with_error keeps article_ids at failed during preprocessing.
+        # while set articles_with_processing_error keeps articled_ids that failed during processing and their intersection is o
+        # to avoid double counting.
+        self.skipped_items_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                               'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
                                               'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
-                                              'articles_locally_preserved': 0
+                                              'articles_with_processing_error': set(),
+                                              'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
                                               }
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
@@ -123,7 +128,7 @@ class Article:
                 if (retries > self.retries):
                     break
 
-        return article_data, self.already_preserved_counts_dict
+        return article_data, self.skipped_items_counts_dict
 
     def article_loop(self, articles, page_size, page, article_data):
         no_of_article = 0
@@ -277,8 +282,8 @@ class Article:
                                                             f"Curation folder for article {article_id} version {version['version']} not found.",
                                                             True)
                                 self.logs.write_log_in_file("info", "Aborting execution.", True, True)
-                            self.already_preserved_counts_dict['articles_with_error'].add(article_id)
-                            self.already_preserved_counts_dict['article_versions_with_error'] += 1
+                            self.skipped_items_counts_dict['articles_with_error'].add(article_id)
+                            self.skipped_items_counts_dict['article_versions_with_error'] += 1
                             self.logs.write_log_in_file("error",
                                                         f"Curation folder for article {article_id} version {version['version']} not found."
                                                         + " Article version will be skipped.",
@@ -325,7 +330,7 @@ class Article:
                         # Comparison in archival staging storage (final local)
                         if compare_hash(version_md5, version_local_final_preserved_list):
                             already_preserved = True
-                            self.already_preserved_counts_dict['articles_locally_preserved'] += 1
+                            self.skipped_items_counts_dict['articles_locally_preserved'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
                                                         + "already preserved in archival staging storage",
@@ -334,7 +339,7 @@ class Article:
                         # Comparison in archival storage (final remote)
                         if compare_hash(version_md5, version_final_storage_preserved_list):
                             already_preserved = in_ap_trust = True
-                            self.already_preserved_counts_dict['ap_trust_preserved_versions'] += 1
+                            self.skipped_items_counts_dict['ap_trust_preserved_versions'] += 1
                             self.logs.write_log_in_file("info",
                                                         f"Article {article_id} version {version['version']} "
                                                         + "already preserved in archival storage.",
@@ -351,7 +356,7 @@ class Article:
 
                             # Comparison in alternative archival staging storage (remote)
                             if compare_hash(version_md5, version_staging_storage_preserved_list):
-                                self.already_preserved_counts_dict['wasabi_preserved_versions'] += 1
+                                self.skipped_items_counts_dict['wasabi_preserved_versions'] += 1
                                 self.logs.write_log_in_file("info", f"Article {article_id} version {version['version']} "
                                                                     + "already preserved in alternative archival staging storage.",
                                                             True)
@@ -359,8 +364,8 @@ class Article:
                                     in_alternative_remote_storage = True
 
                         if already_preserved and upload_item and in_alternative_remote_storage:
-                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.skipped_items_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.skipped_items_counts_dict['already_preserved_versions'] += 1
                             if in_ap_trust:
                                 for version_hash in version_final_storage_preserved_list:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
@@ -370,12 +375,12 @@ class Article:
                                                                     True)
                             return None
                         elif not already_preserved and upload_item and in_alternative_remote_storage:
-                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.skipped_items_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.skipped_items_counts_dict['already_preserved_versions'] += 1
                             return None
                         elif already_preserved and not upload_item and in_alternative_remote_storage:
-                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.skipped_items_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.skipped_items_counts_dict['already_preserved_versions'] += 1
                             if in_ap_trust:
                                 for version_hash in version_final_storage_preserved_list:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
@@ -385,8 +390,8 @@ class Article:
                                                                     True)
                             return None
                         elif already_preserved and not upload_item and not in_alternative_remote_storage:
-                            self.already_preserved_counts_dict['already_preserved_article_ids'].add(article_id)
-                            self.already_preserved_counts_dict['already_preserved_versions'] += 1
+                            self.skipped_items_counts_dict['already_preserved_article_ids'].add(article_id)
+                            self.skipped_items_counts_dict['already_preserved_versions'] += 1
                             if in_ap_trust:
                                 for version_hash in version_final_storage_preserved_list:
                                     if version_hash[0] == version_md5 and version_hash[1] != payload_size:
@@ -441,6 +446,7 @@ class Article:
 
     """
     Fetch article version files list, even if version files are private.
+    Could return None if request fails, otherwise returns a list
     :param article_id int value.
     :param version int value.
     """
@@ -453,7 +459,7 @@ class Article:
             try:
                 page_empty = False
                 header = {'Authorization': 'token ' + self.api_token}
-                article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/files".format(article_id, version)
+                article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/fies".format(article_id, version)
                 article_version_files = []
                 while not page_empty:
                     params = {'page': page, 'page_size': page_size}
@@ -469,13 +475,13 @@ class Article:
                         retries = self.retries_if_error(f"{article_id} Public API not reachable. Retry {retries}",
                                                         get_response.status_code, retries)
                         if retries > self.retries:
-                            break
+                            return None
                 return article_version_files
             except requests.exceptions.RequestException as e:
                 error_code = get_response.status_code if 'get_response' in locals() else 500
                 retries = self.retries_if_error(f"{e}. Retry {retries}", error_code, retries)
                 if retries > self.retries:
-                    break
+                    return None
 
     def private_article_for_files(self, version_data):
         get_response = requests.get(version_data['url_private_api'],
@@ -960,9 +966,9 @@ class Article:
         self.logs.write_log_in_file("info", f"Total matched article versions: {self.no_matched}.", True)
         self.logs.write_log_in_file("info", f"Total unmatched article versions: {self.no_unmatched}.", True)
         self.logs.write_log_in_file("info", "Total skipped unique articles: "
-                                    + f"{len(self.already_preserved_counts_dict['already_preserved_article_ids'])}.", True)
+                                    + f"{len(self.skipped_items_counts_dict['already_preserved_article_ids'])}.", True)
         self.logs.write_log_in_file("info", "Total skipped article versions: "
-                                    + f"{self.already_preserved_counts_dict['already_preserved_versions']}.", True)
+                                    + f"{self.skipped_items_counts_dict['already_preserved_versions']}.", True)
 
         if len(set(unmatched_articles)) > 0 or len(self.article_non_match_info) > 0:
             self.logs.write_log_in_file("warning", "There were unmatched articles or article versions."
@@ -1004,14 +1010,22 @@ class Article:
 
         if check_files and copy_files:
             article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
-            try:
-                # download all files and verify hash with downloaded file.
-                delete_now = self.__download_files(article_version_files, version_data, folder_name)
-            except Exception as e:
-                self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
-                if self.system_config['continue-on-error'] == "False":
-                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
+            if article_version_files is None and len(version_data['files']) > 1:
+                # self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
+                if version_data['id'] not in self.skipped_items_counts_dict['articles_with_error']:
+                    self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
+                self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
+                self.logs.write_log_in_file("error", f"Error retrieving file list for article {version_data['id']} {version_no}. Skipping", True)
                 delete_now = True
+            else:
+                try:
+                    # download all files and verify hash with downloaded file.
+                    delete_now = self.__download_files(article_version_files, version_data, folder_name)
+                except Exception as e:
+                    self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
+                    if self.system_config['continue-on-error'] == "False":
+                        self.logs.write_log_in_file("info", "Aborting execution.", True, True)
+                    delete_now = True
 
             # check if download process has error or not.
             if (delete_now is False):
@@ -1212,8 +1226,9 @@ class Article:
                             if (value_post_process != 0):
                                 self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                             + "Post-processing script failed.", True)
-        return processed_count, self.already_preserved_counts_dict['ap_trust_preserved_versions'], \
-            self.already_preserved_counts_dict['wasabi_preserved_versions']
+        return processed_count, self.skipped_items_counts_dict['ap_trust_preserved_versions'], \
+            self.skipped_items_counts_dict['wasabi_preserved_versions'], len(self.skipped_items_counts_dict['articles_with_processing_error']), \
+            self.skipped_items_counts_dict['articles_versions_with_processing_error']
 
     """
     Preservation and Curation directory access check while processing.
