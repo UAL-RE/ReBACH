@@ -29,7 +29,6 @@ class Article:
     def __init__(self, config, log, ids):
         self.config_obj = config
         figshare_config = self.config_obj.figshare_config()
-        # self.aptrust_config = self.config_obj.aptrust_config()
         self.system_config = self.config_obj.system_config()
         self.api_endpoint = figshare_config["url"]
         self.api_token = figshare_config["token"]
@@ -1011,7 +1010,6 @@ class Article:
         if check_files and copy_files:
             article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
             if article_version_files is None and len(version_data['files']) > 1:
-                # self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
                 if version_data['id'] not in self.skipped_items_counts_dict['articles_with_error']:
                     self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
                 self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
