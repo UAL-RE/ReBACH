@@ -154,14 +154,14 @@ if __name__ == "__main__":
     log.write_log_in_file('info', " ", True)
     log.write_log_in_file('info', "------- Fetching articles -------", True)
     article_obj = Article(config, log, args.ids)
-    article_data, already_preserved_counts_dict = article_obj.get_articles()
+    article_data, skipped_items_counts_dict = article_obj.get_articles()
 
-    already_preserved_articles_count = len(already_preserved_counts_dict['already_preserved_article_ids'])
-    already_preserved_versions_count = already_preserved_counts_dict['already_preserved_versions']
-    locally_preserved_article_version_count = already_preserved_counts_dict['articles_locally_preserved']
+    already_preserved_articles_count = len(skipped_items_counts_dict['already_preserved_article_ids'])
+    already_preserved_versions_count = skipped_items_counts_dict['already_preserved_versions']
+    locally_preserved_article_version_count = skipped_items_counts_dict['articles_locally_preserved']
 
-    articles_with_error_count = len(already_preserved_counts_dict['articles_with_error'])
-    article_versions_with_error_count = already_preserved_counts_dict['article_versions_with_error']
+    articles_with_error_count = len(skipped_items_counts_dict['articles_with_error'])
+    article_versions_with_error_count = skipped_items_counts_dict['article_versions_with_error']
     published_articles_count = 0
     published_articles_versions_count = 0
     published_unpublished_count = 0
@@ -195,8 +195,8 @@ if __name__ == "__main__":
     print(" ")
 
     # Start articles processing after completing fetching data from API
-    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions \
-        = article_obj.process_articles(article_data)
+    processed_articles_versions_count, ap_trust_preserved_article_version_count, wasabi_preserved_versions, articles_with_processing_error, \
+        articles_versions_with_processing_error = article_obj.process_articles(article_data)
 
     # Start collections processing after completing fetching data from API and articles processing.
     processed_collections_versions_count, already_preserved_collections_counts = collection_obj.process_collections(collection_data)
@@ -220,18 +220,19 @@ if __name__ == "__main__":
 
     log.write_log_in_file('info',
                           "Total count of already preserved (skipped) articles / article versions: \t\t"
-                          + f'{already_preserved_articles_count} / {already_preserved_versions_count}',
+                          + f'{already_preserved_articles_count} / '
+                          + f'{published_articles_versions_count + already_preserved_versions_count + article_versions_with_error_count}',
                           True)
 
     log.write_log_in_file('info',
                           "Total count of articles with fetch error / articles: \t\t\t\t"
-                          + f'{articles_with_error_count} / '
+                          + f'{articles_with_error_count + articles_with_processing_error} / '
                           + f'{published_articles_count + already_preserved_articles_count + articles_with_error_count}',
                           True)
 
     log.write_log_in_file('info',
                           "Total count of article versions with fetch error / article versions: \t\t"
-                          + f'{article_versions_with_error_count} / '
+                          + f'{article_versions_with_error_count + articles_versions_with_processing_error} / '
                           + f'{published_articles_versions_count + already_preserved_versions_count + article_versions_with_error_count}',
                           True)
 
