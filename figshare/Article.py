@@ -56,13 +56,13 @@ class Article:
 
         # This dict is used to store counts of skipped items. Set articles_with_error keeps article_ids at failed during preprocessing.
         # while set articles_with_processing_error keeps articled_ids that failed during processing and their intersection is o
-        # to avoid double counting.
+        # to avoid double counting. Items in articles_(version)_with_processing_error included published_articles_(version) count.
         self.skipped_items_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
-                                              'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
-                                              'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
-                                              'articles_with_processing_error': set(),
-                                              'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
-                                              }
+                                          'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
+                                          'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
+                                          'articles_with_processing_error': set(),
+                                          'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
+                                          }
         self.skipped_article_versions = {}
         self.processor = Integration(self.config_obj, self.logs)
 
@@ -458,7 +458,7 @@ class Article:
             try:
                 page_empty = False
                 header = {'Authorization': 'token ' + self.api_token}
-                article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/fies".format(article_id, version)
+                article_version_files_api = self.api_endpoint + "/articles/{0}/versions/{1}/files".format(article_id, version)
                 article_version_files = []
                 while not page_empty:
                     params = {'page': page, 'page_size': page_size}
