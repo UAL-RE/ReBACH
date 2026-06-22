@@ -54,12 +54,12 @@ class Article:
         self.no_matched = 0
         self.no_unmatched = 0
 
-        # This dict is used to store counts of skipped items. Set articles_with_error keeps article_ids at failed during preprocessing.
-        # while set articles_with_processing_error keeps articled_ids that failed during processing and their intersection is o
-        # to avoid double counting. Items in articles_(version)_with_processing_error included published_articles_(version) count.
+        # This dict is used to store counts of skipped items. Set articles_with_fetch_error keeps article_ids that failed during preprocessing.
+        # while set articles_with_processing_error keeps articled_ids that failed during processing and their intersection is o to avoid
+        # double counting. Items in articles_(version)_with_processing_error are included in published_articles_(version) count.
         self.skipped_items_counts_dict = {'already_preserved_article_ids': set(), 'already_preserved_versions': 0,
                                           'wasabi_preserved_versions': 0, 'ap_trust_preserved_versions': 0,
-                                          'articles_with_error': set(), 'article_versions_with_error': 0, 'articles_staged': 0,
+                                          'articles_with_fetch_error': set(), 'article_versions_with_fetch_error': 0, 'articles_staged': 0,
                                           'articles_with_processing_error': set(),
                                           'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
                                           }
@@ -282,8 +282,8 @@ class Article:
                                                             f"Curation folder for article {article_id} version {version['version']} not found.",
                                                             True)
                                 self.logs.write_log_in_file("info", "Aborting execution.", True, True)
-                            self.skipped_items_counts_dict['articles_with_error'].add(article_id)
-                            self.skipped_items_counts_dict['article_versions_with_error'] += 1
+                            self.skipped_items_counts_dict['articles_with_fetch_error'].add(article_id)
+                            self.skipped_items_counts_dict['article_versions_with_fetch_error'] += 1
                             self.logs.write_log_in_file("error",
                                                         f"Curation folder for article {article_id} version {version['version']} not found."
                                                         + " Article version will be skipped.",
@@ -1011,20 +1011,14 @@ class Article:
         if check_files and copy_files:
             article_version_files = self.get_article_version_files(int(version_data['id']), int(version_data['version']))
             if article_version_files is None and len(version_data['files']) > 1:
-                if version_data['id'] not in self.skipped_items_counts_dict['articles_with_error']:
-                    self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
-                self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
-                if str(version_data['id']) not in self.skipped_article_versions.keys():
-                    self.skipped_article_versions[str(version_data['id'])] = set()
-                self.skipped_article_versions[str(version_data['id'])].add(version_no)
-                self.logs.write_log_in_file("error", f"Error retrieving file list for article {version_data['id']} {version_no}. Skipping", True)
+                self.logs.write_log_in_file("error", f"Error retrieving file list for article {version_data['id']} {version_no}.", True)
                 delete_now = True
             else:
                 try:
                     # download all files and verify hash with downloaded file.
                     delete_now = self.__download_files(article_version_files, version_data, folder_name)
                 except Exception as e:
-                    self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}" , True)
+                    self.logs.write_log_in_file("error", f"{str(e)} for {'_'.join(os.path.basename(folder_name).split('_')[0:-1])}." , True)
                     if self.system_config['continue-on-error'] == "False":
                         self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                     delete_now = True
@@ -1060,6 +1054,12 @@ class Article:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
                 self.delete_folder(check_dir)
+                if version_data['id'] not in self.skipped_items_counts_dict['articles_with_fetch_error']:
+                    self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
+                self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
+                if str(version_data['id']) not in self.skipped_article_versions.keys():
+                    self.skipped_article_versions[str(version_data['id'])] = set()
+                self.skipped_article_versions[str(version_data['id'])].add(format_version(version_data['version']))
                 success = False
         else:
             if check_files or copy_files:
