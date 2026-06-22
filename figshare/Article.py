@@ -171,8 +171,9 @@ class Article:
                                     article_version = 'v' + str(version['version']).zfill(2) if version['version'] <= 9 \
                                         else 'v' + str(version['version'])
                                     article_id = str(article['id'])
-                                    self.skipped_article_versions[article_id] = []
-                                    self.skipped_article_versions[article_id].append(article_version)
+                                    if article_id not in self.skipped_article_versions.keys():
+                                        self.skipped_article_versions[article_id] = set()
+                                    self.skipped_article_versions[article_id].add(article_version)
                                     continue
                                 metadata.append(version_data)
                         else:
@@ -1013,6 +1014,9 @@ class Article:
                 if version_data['id'] not in self.skipped_items_counts_dict['articles_with_error']:
                     self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
                 self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
+                if str(version_data['id']) not in self.skipped_article_versions.keys():
+                    self.skipped_article_versions[str(version_data['id'])] = set()
+                self.skipped_article_versions[str(version_data['id'])].add(version_no)
                 self.logs.write_log_in_file("error", f"Error retrieving file list for article {version_data['id']} {version_no}. Skipping", True)
                 delete_now = True
             else:
