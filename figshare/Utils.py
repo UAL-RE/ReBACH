@@ -610,21 +610,22 @@ def get_article_id_and_version_from_path(path: str) -> tuple:
     return article_id, version_no
 
 
-def metadata_to_hash(metadata: dict) -> dict:
+def metadata_to_hash(metadata: dict, hashing_metadata: list) -> dict:
     """
     Reduces an article metadata to specific metadata fields
 
     :param  metadata:  Complete article metadata
     :type: dict
 
+    :param hashing_metadata: metadata fields to keep and perform hashing on
+    :type: list
+
     :return: A dictionary containing only metadata fields for hash calculation
     :rtype: dict
     """
     article_metadata = dict(metadata)
-    full_metadata = list(article_metadata.keys())
-    focus_metadata = ['description', 'funding_list', 'related_materials']
-    for key in full_metadata:
-        if key not in focus_metadata:
+    for key in list(article_metadata.keys()):
+        if key not in hashing_metadata:
             del article_metadata[key]
 
     return article_metadata

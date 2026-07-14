@@ -305,7 +305,8 @@ class Article:
                             files = version_data['files']
 
                         version_md5 = ''
-                        version_data_for_hashing = metadata_to_hash(version_data)
+                        fields_for_hashing = ['description', 'funding_list', 'related_materials']
+                        version_data_for_hashing = metadata_to_hash(version_data, fields_for_hashing)
                         version_data_for_hashing = standardize_api_result(version_data_for_hashing)
                         version_data_for_hashing = sorter_api_result(version_data_for_hashing)
                         str_version_data_for_hashing = stringify_metadata(version_data_for_hashing).encode("utf-8")
