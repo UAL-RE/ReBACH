@@ -2,7 +2,7 @@ import os
 import argparse
 from version import __version__, __commit__
 from Log import Log
-from figshare.Utils import upload_to_remote, get_archival_staging_storage
+from figshare.Utils import inspect_dart, upload_to_remote, get_archival_staging_storage
 from figshare.Article import Article
 from datetime import datetime
 from Config import Config
@@ -143,6 +143,14 @@ def main():
                                   "The post process script location specified in the config file could"
                                   + " not be reached or read.",
                                   True, False)
+
+    if inspect_dart() is None:
+        log.write_log_in_file('warning',
+                              "dart-runner executable not found. Bagging will not occur.",True)
+    elif inspect_dart() is False:
+        log.write_log_in_file('warning',
+                              "dart-runner is not executable or version is lower than 1.0. Bagging will not occur.",
+                              True)
 
     return config_obj, log
 
