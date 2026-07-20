@@ -1066,7 +1066,7 @@ class Article:
                         success = False
                 else:
                     success = False
-                    self.logs.write_log_in_file("Warning",
+                    self.logs.write_log_in_file("error",
                                                 f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
                                                 True)
 
@@ -1101,7 +1101,7 @@ class Article:
                         success = False
                 else:
                     success = False
-                    self.logs.write_log_in_file("Warning",
+                    self.logs.write_log_in_file("error",
                                                 f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
                                                 True)
             else:
@@ -1256,7 +1256,7 @@ class Article:
                                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
                                                                 + "Post-processing script failed.", True)
                             else:
-                                self.logs.write_log_in_file("Warning",
+                                self.logs.write_log_in_file("error",
                                                             f"dart-runner not available. No bagging for {version_data['id']} "
                                                             + f"version {version_data['version']}",
                                                             True)

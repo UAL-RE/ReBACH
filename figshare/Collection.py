@@ -378,7 +378,7 @@ class Collection:
                         else:
                             processed_count += 1
                     else:
-                        self.logs.write_log_in_file("Warning",
+                        self.logs.write_log_in_file("error",
                                                     f"dart-runner not available. No bagging for collection {collection}",
                                                     True)
                 else:
