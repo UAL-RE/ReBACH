@@ -2,11 +2,46 @@ import requests
 import json
 import os
 import re
+import tempfile
+import configparser
 from typing import Any
 from time import sleep
-import tempfile
+from subprocess import Popen, PIPE
 from bagger.wasabi import Wasabi
-import configparser
+
+
+def inspect_dart() -> Any:
+    """
+    Checks if dart-runner executable exists and it's usable
+
+    :return: Return True if dart-runner executable exists and it's usable
+    :rtype: Any
+    """
+    config = configparser.ConfigParser()
+    config.read('bagger/config/default.toml')
+    default_config = config['Defaults']
+    dart_cmd = default_config['dart_command'].replace('\"', '')
+
+    try:
+        dart_cmd = f'{dart_cmd} --version'
+        dart = Popen(dart_cmd,
+                     shell=True,
+                     stdin=PIPE,
+                     stdout=PIPE,
+                     stderr=PIPE,
+                     text=True,
+                     close_fds=True
+                     )
+        dart_version, _ = dart.communicate()
+        dart_version_re = re.compile("v[0-9]*.")
+        dart_major_version = re.findall(dart_version_re, dart_version)[0].replace('v', '').replace('.', '')
+        if int(dart_major_version) < 1:
+            return False
+        return True
+    except FileNotFoundError:
+        return None
+    except PermissionError:
+        return False
 
 
 def standardize_api_result(api_result) -> dict:

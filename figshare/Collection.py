@@ -8,6 +8,7 @@ from figshare.Article import Article
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, format_version, metadata_to_hash
 from figshare.Utils import compare_hash, check_wasabi, check_local_path, get_folder_name_in_local_storage, upload_to_remote, stringify_metadata
+from figshare.Utils import inspect_dart
 
 
 class Collection:
@@ -42,6 +43,7 @@ class Collection:
                                               'already_preserved_versions': 0, 'wasabi_preserved_versions': 0,
                                               'ap_trust_preserved_versions': 0
                                               }
+        self.check_dart = inspect_dart()
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -370,11 +372,18 @@ class Collection:
                     self.__save_json_in_metadata(collection, version, folder_name)
                     collection_preservation_path = self.ingest_staging_storage + \
                         os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
-                    value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
-                    if (value_post_process != 0):
-                        self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
+                    if self.check_dart:
+                        value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
+                        if (value_post_process != 0):
+                            self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)
+                        else:
+                            processed_count += 1
                     else:
-                        processed_count += 1
+                        self.logs.write_log_in_file("error",
+                                                    f"dart-runner not available. No bagging for collection {collection}",
+                                                    True)
+                        if self.system_config['continue-on-error'] == "False":
+                            self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                 else:
                     self.logs.write_log_in_file("info", "*Dry Run* File download and post-processing with "
                                                 + f"{self.system_config['post_process_script_command']} skipped.", True)

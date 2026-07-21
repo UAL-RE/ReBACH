@@ -10,7 +10,7 @@ from datetime import datetime
 from figshare.Integration import Integration
 from figshare.Utils import standardize_api_result, sorter_api_result, get_preserved_version_hash_and_size, metadata_to_hash, check_local_path
 from figshare.Utils import compare_hash, check_wasabi, calculate_payload_size, get_article_id_and_version_from_path, stringify_metadata
-from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote
+from figshare.Utils import format_version, get_folder_name_in_local_storage, upload_to_remote, inspect_dart
 from slugify import slugify
 from requests.adapters import HTTPAdapter, Retry
 
@@ -64,6 +64,7 @@ class Article:
                                           'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
                                           }
         self.skipped_article_versions = {}
+        self.check_dart = inspect_dart()
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -1048,21 +1049,31 @@ class Article:
                 self.logs.write_log_in_file("info", "Saving json in metadata folder for each version.", True)
                 success = success & self.__save_json_in_metadata(version_data, folder_name)
 
-                # only run the postprocessor if all above steps succeeded
-                if success:
-                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-                    if (value_post_process != 0):
-                        self.logs.write_log_in_file("error",
-                                                    f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                # only run the postprocessor if all above steps succeeded and dart-runner is available
+                if self.check_dart:
+                    if success:
+                        value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                        if (value_post_process != 0):
+                            self.logs.write_log_in_file("error",
+                                                        f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                        True)
+                            success = False
+                        else:
+                            success = True
+                    else:
+                        self.logs.write_log_in_file("info",
+                                                    f"No further processing for {version_data['id']} version "
+                                                    + f"{version_data['version']} due to errors.",
                                                     True)
                         success = False
-                    else:
-                        success = True
                 else:
-                    self.logs.write_log_in_file("info",
-                                                f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
-                                                True)
                     success = False
+                    self.logs.write_log_in_file("error",
+                                                f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
+                                                True)
+                    if self.system_config['continue-on-error'] == "False":
+                        self.logs.write_log_in_file("info", "Aborting execution.", True, True)
+
             else:
                 # if download process has any errors then delete complete folder
                 self.logs.write_log_in_file("info", "Download process had an error so complete folder is being deleted.", True)
@@ -1076,23 +1087,32 @@ class Article:
                 success = False
         else:
             if check_files or copy_files:
-                if success:
-                    # call post process script function for each matched item.
-                    value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-                    if (value_post_process != 0):
-                        self.logs.write_log_in_file("error",
-                                                    f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                if self.check_dart:
+                    if success:
+                        # call post process script function for each matched item.
+                        value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                        if (value_post_process != 0):
+                            self.logs.write_log_in_file("error",
+                                                        f"{version_data['id']} version {version_data['version']} - Post-processing script failed.",
+                                                        True)
+                            success = False
+                        else:
+                            success = True
+                    else:
+                        self.logs.write_log_in_file("info",
+                                                    f"No further processing for {version_data['id']} version "
+                                                    + f"{version_data['version']} due to errors.",
                                                     True)
                         success = False
-                    else:
-                        success = True
                 else:
-                    self.logs.write_log_in_file("info",
-                                                f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
-                                                True)
                     success = False
+                    self.logs.write_log_in_file("error",
+                                                f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
+                                                True)
+                    if self.system_config['continue-on-error'] == "False":
+                        self.logs.write_log_in_file("info", "Aborting execution.", True, True)
             else:
-                self.logs.write_log_in_file("error", "Unexpected condidion in final processing. No further actions taken.", True)
+                self.logs.write_log_in_file("error", "Unexpected condition in final processing. No further actions taken.", True)
                 success = False
         return success
 
@@ -1237,10 +1257,18 @@ class Article:
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
-                            if (value_post_process != 0):
-                                self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
-                                                            + "Post-processing script failed.", True)
+                            if self.check_dart:
+                                value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
+                                if (value_post_process != 0):
+                                    self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
+                                                                + "Post-processing script failed.", True)
+                            else:
+                                self.logs.write_log_in_file("error",
+                                                            f"dart-runner not available. No bagging for {version_data['id']} "
+                                                            + f"version {version_data['version']}",
+                                                            True)
+                                if self.system_config['continue-on-error'] == "False":
+                                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
         return processed_count, self.skipped_items_counts_dict['ap_trust_preserved_versions'], \
             self.skipped_items_counts_dict['wasabi_preserved_versions'], len(self.skipped_items_counts_dict['articles_with_processing_error']), \
             self.skipped_items_counts_dict['articles_versions_with_processing_error']
