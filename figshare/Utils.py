@@ -33,7 +33,9 @@ def inspect_dart() -> Any:
                      close_fds=True
                      )
         dart_version, _ = dart.communicate()
-        if int(dart_version.split(" ")[2].replace('v', '')[0]) < 1:
+        dart_version_re = re.compile("v[0-9]*.")
+        dart_major_version = re.findall(dart_version_re, dart_version)[0].replace('v','').replace(".", "")
+        if int(dart_major_version) < 1:
             return False
         return True
     except FileNotFoundError:
