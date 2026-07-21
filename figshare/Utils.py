@@ -34,7 +34,7 @@ def inspect_dart() -> Any:
                      )
         dart_version, _ = dart.communicate()
         dart_version_re = re.compile("v[0-9]*.")
-        dart_major_version = re.findall(dart_version_re, dart_version)[0].replace('v','').replace(".", "")
+        dart_major_version = re.findall(dart_version_re, dart_version)[0].replace('v', '').replace('.', '')
         if int(dart_major_version) < 1:
             return False
         return True
