@@ -43,6 +43,7 @@ class Collection:
                                               'already_preserved_versions': 0, 'wasabi_preserved_versions': 0,
                                               'ap_trust_preserved_versions': 0
                                               }
+        self.check_dart = inspect_dart()
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -371,7 +372,7 @@ class Collection:
                     self.__save_json_in_metadata(collection, version, folder_name)
                     collection_preservation_path = self.ingest_staging_storage + \
                         os.path.basename(os.path.dirname(os.path.dirname(folder_name)))
-                    if inspect_dart():
+                    if self.check_dart:
                         value_post_process = self.processor.post_process_script_function("Collection", collection_preservation_path)
                         if (value_post_process != 0):
                             self.logs.write_log_in_file("error", f"collection {collection} - post-processing script failed.", True)

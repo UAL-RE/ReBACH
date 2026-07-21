@@ -82,6 +82,7 @@ def main():
     figshare_config = config_obj.figshare_config()
     system_config = config_obj.system_config()
     figshare_api_url = figshare_config["url"]
+    check_dart = inspect_dart()
     log = Log(env_file)
     log_location = system_config["logs_location"]
     ingest_staging_storage = system_config["ingest_staging_storage"]
@@ -144,10 +145,10 @@ def main():
                                   + " not be reached or read.",
                                   True, False)
 
-    if inspect_dart() is None:
+    if check_dart is None:
         log.write_log_in_file('warning',
                               "dart-runner executable not found. Bagging will not occur.", True)
-    elif inspect_dart() is False:
+    elif check_dart is False:
         log.write_log_in_file('warning',
                               "dart-runner is not executable or version is lower than 1.0. Bagging will not occur.",
                               True)

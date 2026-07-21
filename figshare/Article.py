@@ -64,6 +64,7 @@ class Article:
                                           'articles_locally_preserved': 0, 'articles_versions_with_processing_error': 0
                                           }
         self.skipped_article_versions = {}
+        self.check_dart = inspect_dart()
         self.processor = Integration(self.config_obj, self.logs)
 
     """
@@ -1049,7 +1050,7 @@ class Article:
                 success = success & self.__save_json_in_metadata(version_data, folder_name)
 
                 # only run the postprocessor if all above steps succeeded and dart-runner is available
-                if inspect_dart():
+                if self.check_dart:
                     if success:
                         value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                         if (value_post_process != 0):
@@ -1086,7 +1087,7 @@ class Article:
                 success = False
         else:
             if check_files or copy_files:
-                if inspect_dart():
+                if self.check_dart:
                     if success:
                         # call post process script function for each matched item.
                         value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
@@ -1256,7 +1257,7 @@ class Article:
                         else:
                             self.logs.write_log_in_file("error", "Pre-processing script failed. Running post-processing script.", True)
                             # call post process script function for each matched item.
-                            if inspect_dart():
+                            if self.check_dart:
                                 value_post_process = self.processor.post_process_script_function("Article", check_dir, value_pre_process)
                                 if (value_post_process != 0):
                                     self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - "
