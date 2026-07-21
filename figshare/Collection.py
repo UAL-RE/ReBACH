@@ -381,6 +381,8 @@ class Collection:
                         self.logs.write_log_in_file("error",
                                                     f"dart-runner not available. No bagging for collection {collection}",
                                                     True)
+                        if self.system_config['continue-on-error'] == "False":
+                            self.logs.write_log_in_file("info", "Aborting execution.", True, True)
                 else:
                     self.logs.write_log_in_file("info", "*Dry Run* File download and post-processing with "
                                                 + f"{self.system_config['post_process_script_command']} skipped.", True)

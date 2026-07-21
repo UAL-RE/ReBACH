@@ -1070,6 +1070,8 @@ class Article:
                     self.logs.write_log_in_file("error",
                                                 f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
                                                 True)
+                    if self.system_config['continue-on-error'] == "False":
+                        self.logs.write_log_in_file("info", "Aborting execution.", True, True)
 
             else:
                 # if download process has any errors then delete complete folder
@@ -1106,6 +1108,8 @@ class Article:
                     self.logs.write_log_in_file("error",
                                                 f"dart-runner not available. No bagging for {version_data['id']} version {version_data['version']}",
                                                 True)
+                    if self.system_config['continue-on-error'] == "False":
+                        self.logs.write_log_in_file("info", "Aborting execution.", True, True)
             else:
                 self.logs.write_log_in_file("error", "Unexpected condition in final processing. No further actions taken.", True)
                 success = False
@@ -1262,6 +1266,8 @@ class Article:
                                                             f"dart-runner not available. No bagging for {version_data['id']} "
                                                             + f"version {version_data['version']}",
                                                             True)
+                                if self.system_config['continue-on-error'] == "False":
+                                    self.logs.write_log_in_file("info", "Aborting execution.", True, True)
         return processed_count, self.skipped_items_counts_dict['ap_trust_preserved_versions'], \
             self.skipped_items_counts_dict['wasabi_preserved_versions'], len(self.skipped_items_counts_dict['articles_with_processing_error']), \
             self.skipped_items_counts_dict['articles_versions_with_processing_error']
