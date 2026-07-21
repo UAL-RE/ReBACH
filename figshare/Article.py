@@ -1061,7 +1061,8 @@ class Article:
                             success = True
                     else:
                         self.logs.write_log_in_file("info",
-                                                    f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
+                                                    f"No further processing for {version_data['id']} version "
+                                                    + f"{version_data['version']} due to errors.",
                                                     True)
                         success = False
                 else:
@@ -1096,7 +1097,8 @@ class Article:
                             success = True
                     else:
                         self.logs.write_log_in_file("info",
-                                                    f"No further processing for {version_data['id']} version {version_data['version']} due to errors.",
+                                                    f"No further processing for {version_data['id']} version "
+                                                    + f"{version_data['version']} due to errors.",
                                                     True)
                         success = False
                 else:

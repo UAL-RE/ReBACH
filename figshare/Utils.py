@@ -36,9 +36,9 @@ def inspect_dart() -> Any:
         if int(dart_version.split(" ")[2].replace('v', '')[0]) < 1:
             return False
         return True
-    except FileNotFoundError as e:
+    except FileNotFoundError:
         return None
-    except PermissionError as e:
+    except PermissionError:
         return False
 
 

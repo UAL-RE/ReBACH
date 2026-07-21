@@ -146,7 +146,7 @@ def main():
 
     if inspect_dart() is None:
         log.write_log_in_file('warning',
-                              "dart-runner executable not found. Bagging will not occur.",True)
+                              "dart-runner executable not found. Bagging will not occur.", True)
     elif inspect_dart() is False:
         log.write_log_in_file('warning',
                               "dart-runner is not executable or version is lower than 1.0. Bagging will not occur.",
