@@ -539,7 +539,8 @@ class Article:
 
                     folder_for_file = ''
                     # if an item version has no folders, folders dict will be empty
-                    if len(version_data['folder_structure'].keys()) > 0 and str(file['id']) in version_data['folder_structure'].keys():
+                    if 'folder_structure' in version_data.keys() and len(version_data['folder_structure'].keys()) > 0 and \
+                            str(file['id']) in version_data['folder_structure'].keys():
                         folder_for_file = version_data['folder_structure'][str(file['id'])]
                     filepath = os.path.join(article_folder_path, folder_for_file)
                     if not os.path.exists(filepath):
@@ -760,7 +761,8 @@ class Article:
                 self.logs.write_log_in_file('info', "Comparing Figshare file hashes against existing local files.", True)
                 for file in files:
                     # if an item version has no folders, folders dict will be empty
-                    if len(version_data['folder_structure'].keys()) > 0 and str(file['id']) in version_data['folder_structure'].keys():
+                    if 'folder_structure' in version_data.keys() and len(version_data['folder_structure'].keys()) > 0 and \
+                            str(file['id']) in version_data['folder_structure'].keys():
                         folder_for_file = version_data['folder_structure'][str(file['id'])]
                     else:
                         folder_for_file = ''
