@@ -1000,6 +1000,13 @@ class Article:
             self.logs.write_log_in_file("error", f"{version_data['id']} version {version_data['version']} - UAL_RDM directory doesn't have required "
                                         + "files in curation storage. Folder will be deleted.", True)
             copy_files = False
+            if version_data['id'] not in self.skipped_items_counts_dict['articles_with_fetch_error']:
+                self.skipped_items_counts_dict['articles_with_processing_error'].add(version_data['id'])
+            self.skipped_items_counts_dict['articles_versions_with_processing_error'] += 1
+            if str(version_data['id']) not in self.skipped_article_versions.keys():
+                self.skipped_article_versions[str(version_data['id'])] = set()
+            self.skipped_article_versions[str(version_data['id'])].add(format_version(version_data['version']))
+
         else:
             self.logs.write_log_in_file("info", "Curation files exist. Continuing execution.", True)
             copy_files = True
