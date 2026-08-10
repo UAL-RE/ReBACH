@@ -306,7 +306,7 @@ def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> lis
     user = aptrust_config['user'].replace('\"', '')
     key = aptrust_config['token'].replace('\"', '')
     item_type = "objects"
-    state = 'A' # A = Active, D = Deleted. Empty string = any or all
+    state = 'A'  # A = Active, D = Deleted. Empty string = any or all
     items_per_page = int(aptrust_config['items_per_page'])
     alt_id = aptrust_config['alt_identifier_starts_with'].replace('\"', '')
     retries = int(aptrust_config['retries'])
