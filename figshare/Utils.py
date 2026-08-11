@@ -306,6 +306,7 @@ def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> lis
     user = aptrust_config['user'].replace('\"', '')
     key = aptrust_config['token'].replace('\"', '')
     item_type = "objects"
+    state = 'A'  # A = Active, D = Deleted. Empty string = any or all
     items_per_page = int(aptrust_config['items_per_page'])
     alt_id = aptrust_config['alt_identifier_starts_with'].replace('\"', '')
     retries = int(aptrust_config['retries'])
@@ -326,7 +327,7 @@ def get_preserved_version_hash_and_size(article_id: int, version_no: Any) -> lis
             page_empty = False
             page = 1
             while not page_empty:
-                endpoint = f'{base_url}{item_type}?page={page}&per_page={items_per_page}&alt_identifier__starts_with={alt_id}'
+                endpoint = f'{base_url}{item_type}?page={page}&per_page={items_per_page}&alt_identifier__starts_with={alt_id}&state={state}'
                 get_preserved_pkgs = requests.get(endpoint, headers=headers, timeout=retries_wait)
                 if get_preserved_pkgs.status_code == 200:
                     success = True
