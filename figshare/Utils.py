@@ -268,7 +268,7 @@ def get_folder_name_in_local_storage(path: str, article_id: int, version_no: int
     """
 
     if os.path.exists(path) and os.access(path, os.R_OK):
-        folder_name_re = re.compile("\\w*_\\d+-v\\d{2}-[A-Z][A-Za-z]+-[a-z0-9]{32}_bag\\d+of\\d+_\\d{8}")
+        folder_name_re = re.compile("\\w*_\\d+-v\\d{2}-.+-[a-z0-9]{32}_bag\\d+of\\d+_\\d{8}")
         version_no = format_version(version_no)
         for item in os.scandir(path):
             if item.is_dir() and item.name.__contains__(str(article_id)) and item.name.__contains__(version_no) \
