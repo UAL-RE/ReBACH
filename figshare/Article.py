@@ -1199,7 +1199,7 @@ class Article:
                                                                        version_data['id'], version_data['version'], version_data['version_md5'])
                     if folder_name is None:
                         first_depositor_last_name = version_data['authors'][0]['last_name'].replace('-', '').replace(' ', '')
-                        formatted_depositor_full_name = slugify(first_depositor_last_name, separator="_", lowercase=False)
+                        formatted_depositor_full_name = slugify(first_depositor_last_name, separator="", lowercase=False)
                         folder_name = self.bag_name_prefix + "_" + str(version_data["id"]) + "-" + version_no + "-"
                         folder_name += formatted_depositor_full_name + "-" + version_data['version_md5'] + "_bag1of1_" + str(self.bag_creation_date)
 
